@@ -3,9 +3,6 @@
 build/
 bin/
 
-# IDE files
-.settings
-
 # Log files
 *.log
 

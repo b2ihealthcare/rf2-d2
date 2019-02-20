@@ -1,7 +1,7 @@
 plugins {
 	id 'java-library'
 	id 'org.beryx.runtime' version '1.1.5'
-} 
+}
 
 sourceCompatibility = 11
 targetCompatibility = 11
