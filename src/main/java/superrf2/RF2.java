@@ -15,19 +15,29 @@
  */
 package superrf2;
 
+import java.util.Properties;
+
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
+import picocli.CommandLine.IVersionProvider;
+import picocli.CommandLine.Option;
 
 @Command(
 	name = "rf2", 
 	subcommands = {
-		HelpCommand.class,
-		RF2Check.class
+		RF2Check.class,
+		HelpCommand.class
 	},
-	mixinStandardHelpOptions = true
+	versionProvider = RF2.VersionProvider.class
 )
 public class RF2 implements Runnable {
+
+	@Option(names = {"-v", "--version"}, versionHelp = true, description = "Print version information and exit.")
+	boolean versionInfoRequested;
+
+	@Option(names = {"-h", "--help"}, usageHelp = true, description = "Show this help message and exit.")
+	boolean usageHelpRequested;
 
 	@Override
 	public void run() {
@@ -36,6 +46,17 @@ public class RF2 implements Runnable {
 	
 	public static void main(String[] args) {
 		CommandLine.run(new RF2(), args);
+	}
+	
+	public static final class VersionProvider implements IVersionProvider {
+		
+		@Override
+		public String[] getVersion() throws Exception {
+			var properties = new Properties();
+			properties.load(getClass().getResourceAsStream("/cli.properties"));
+			return new String[] { properties.getProperty("version") };
+		}
+		
 	}
 	
 }
