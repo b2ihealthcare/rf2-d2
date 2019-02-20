@@ -22,6 +22,6 @@ application {
 runtime {
 	options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
 	modules = ['java.base']
-	imageDir = file("$buildDir/super-rf2")
-	imageZip = file("$buildDir/super-rf2.zip")
+	imageDir = file("$buildDir/${rootProject.name}-${version}")
+	imageZip = file("$buildDir/${rootProject.name}-${version}.zip")
 }
