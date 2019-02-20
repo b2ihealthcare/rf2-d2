@@ -1,0 +1,27 @@
+plugins {
+	id 'java-library'
+	id 'org.beryx.runtime' version '1.1.5'
+} 
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+	implementation 'info.picocli:picocli:3.9.5'
+}
+
+application {
+    mainClassName = 'superrf2.RF2'
+    applicationName = 'rf2'
+}
+
+runtime {
+	options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+	modules = ['java.base']
+	imageDir = file("$buildDir/super-rf2")
+	imageZip = file("$buildDir/super-rf2.zip")
+}
