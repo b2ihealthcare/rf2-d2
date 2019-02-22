@@ -22,6 +22,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
 import picocli.CommandLine.IVersionProvider;
 import picocli.CommandLine.Option;
+import superrf2.model.RF2Format;
 
 @Command(
 	name = "rf2", 
@@ -54,7 +55,10 @@ public class RF2 implements Runnable {
 		public String[] getVersion() throws Exception {
 			var properties = new Properties();
 			properties.load(getClass().getResourceAsStream("/cli.properties"));
-			return new String[] { properties.getProperty("version") };
+			return new String[] {
+				"Super-RF2 v" + properties.getProperty("version"),
+				"Supported RF2 Version: " + RF2Format.VERSION
+			};
 		}
 		
 	}
