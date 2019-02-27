@@ -25,5 +25,5 @@ public final class RF2Bundle extends RF2File {
 	public RF2Bundle(Path path) {
 		super(path);
 	}
-
+	
 }

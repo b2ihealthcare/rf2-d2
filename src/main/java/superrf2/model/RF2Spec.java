@@ -16,28 +16,12 @@
 package superrf2.model;
 
 /**
+ * Annotation to indicate the {@link RF2Spec} for an {@link RF2File} type.
+ * 
  * @since 0.1
  */
-public enum RF2ReleaseType {
+public @interface RF2Spec {
 
-	/**
-	 * Represents an RF2 Release with at least two RF2 releases. Mostly used in {@link RF2Bundle} types.  
-	 */
-	COMBINED,
-	
-	/**
-	 * Represents an RF2 Full Release
-	 */
-	FULL,
-	
-	/**
-	 * Represents an RF2 Snapshot Release 
-	 */
-	SNAPSHOT,
-	
-	/**
-	 * Represents an RF2 Delta Release
-	 */
-	DELTA
+	public static final String VERSION = "20190131";
 	
 }

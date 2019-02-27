@@ -24,7 +24,6 @@ import java.util.List;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 import superrf2.model.RF2File;
-import superrf2.model.RF2Format;
 
 @Command(
 	name = "check",
@@ -53,7 +52,7 @@ public class RF2Check extends RF2Command {
 		if (Files.isDirectory(path)) {
 			console.log("Directories are not supported yet! Path: %s", path);
 		} else {
-			RF2File rf2File = RF2Format.detect(path);
+			RF2File rf2File = RF2File.detect(path);
 			rf2File.printInfo(console);
 		}
 	}

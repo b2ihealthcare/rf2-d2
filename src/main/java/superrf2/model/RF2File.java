@@ -17,9 +17,12 @@ package superrf2.model;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
 
 import superrf2.Console;
+import superrf2.Constants;
+import superrf2.naming.RF2FileName;
 
 /**
  * @since 0.1
@@ -27,15 +30,11 @@ import superrf2.Console;
 public abstract class RF2File {
 
 	private final Path path;
-	private final String fileName;
-	private final RF2ReleaseType releaseType;
-	private final RF2FileType fileType;
+	private final RF2FileName fileName;
 
 	public RF2File(Path path) {
 		this.path = Objects.requireNonNull(path);
-		this.fileName = path.getFileName().toString();
-		this.fileType = RF2FileType.SCT;
-		this.releaseType = RF2ReleaseType.FULL;
+		this.fileName = new RF2FileName(path.getFileName().toString());
 	}
 
 	/**
@@ -48,26 +47,12 @@ public abstract class RF2File {
 	/**
 	 * @return the file name of this RF2 file.
 	 */
-	public final String getFileName() {
+	public final RF2FileName getFileName() {
 		return fileName;
 	}
 
 	/**
-	 * @return the {@link RF2FileType} for this kind of RF2 files.
-	 */
-	public final RF2FileType getFileType() {
-		return fileType;
-	}
-	
-	/**
-	 * @return the {@link RF2ReleaseType} currently specified for this file.
-	 */
-	public final RF2ReleaseType getReleaseType() {
-		return releaseType;
-	}
-	
-	/**
-	 * @return <code>true</code> if this RF2 file cannot be recognized as a valid RF2 file up to the currently supported {@link RF2Format#VERSION RF2 version}.
+	 * @return <code>true</code> if this RF2 file cannot be recognized as a valid RF2 file up to the currently supported {@link RF2Spec#VERSION RF2 version}.
 	 */
 	public final boolean isUnrecognized() {
 		return this instanceof RF2UnrecognizedFile;
@@ -82,8 +67,36 @@ public abstract class RF2File {
 	 */
 	public void printInfo(Console console) throws IOException {
 		console.log("File: %s", getFileName());
-		console.log("Type: %s", getFileType());
-		console.log("Release: %s", getReleaseType());
+//		console.log("Type: %s", getFileName());
+//		console.log("Release: %s", getReleaseType());
+	}
+	
+	public static <T extends RF2File> T detect(String path) {
+		return detect(Paths.get(path));
+	}
+
+	public static <T extends RF2File> T detect(final Path filePath) {
+		// first try to detect RF2 file type by its file name 
+		RF2File file = detectByFileName(filePath); 
+		if (file.isUnrecognized()) {
+			// then by the content type aka header
+			file = detectByContent(filePath);
+		}
+		return (T) file;
+	}
+	
+	private static RF2File detectByFileName(Path path) {
+		String fileName = path.getFileName().toString();
+		if (fileName.startsWith("sct2_Concept")) {
+			return new RF2ConceptFile(path);
+		} else if (fileName.endsWith(Constants.ZIP)) {
+			return new RF2Bundle(path);
+		}
+		return new RF2UnrecognizedFile(path);
+	}
+	
+	private static RF2File detectByContent(Path path) {
+		return new RF2UnrecognizedFile(path);
 	}
 
 }
