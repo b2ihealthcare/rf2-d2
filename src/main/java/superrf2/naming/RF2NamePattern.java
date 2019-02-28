@@ -22,14 +22,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Specifies the RF2 Naming Pattern for an {@link RF2FileNameElement}. The pattern should be a valid regular expression with exactly the same number of capture groups as the number of arguments in the annotated {@link RF2FileNameElement} subclass' only constructor.
+ * Specifies the RF2 Naming Pattern for an {@link RF2NameElement}. The pattern should be a valid regular expression with exactly the same number of capture groups as the number of arguments in the annotated {@link RF2NameElement} subclass' only constructor.
  * 
  * @since 0.1
  */
 @Documented
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RF2FileNamingPattern {
+public @interface RF2NamePattern {
 
 	/**
 	 * @return the regular expression to match when parsing an RF2 File Name.

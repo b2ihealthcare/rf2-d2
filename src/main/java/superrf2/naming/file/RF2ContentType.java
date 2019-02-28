@@ -13,15 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package superrf2.naming;
+package superrf2.naming.file;
 
 import java.util.Objects;
+
+import superrf2.naming.RF2NameElement;
+import superrf2.naming.RF2NamePattern;
 
 /**
  * @since 0.1
  */
-@RF2FileNamingPattern("(.+)")
-public final class RF2ContentType implements RF2FileNameElement {
+@RF2NamePattern("(.+)")
+public final class RF2ContentType implements RF2NameElement {
 
 	public static final RF2ContentType CONCEPT = new RF2ContentType("Concept");
 	public static final RF2ContentType DESCRIPTION = new RF2ContentType("Description");

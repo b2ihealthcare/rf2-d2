@@ -13,29 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package superrf2.naming;
+package superrf2.naming.file;
 
 import java.util.Objects;
+
+import superrf2.naming.RF2NameElement;
+import superrf2.naming.RF2NamePattern;
 
 /**
  * @since 0.1
  */
-@RF2FileNamingPattern("([0-9]{8})")
-public final class RF2VersionDate implements RF2FileNameElement {
+@RF2NamePattern("(INT|[A-Z]{2})?([0-9]{7})?")
+public final class RF2CountryNamespace implements RF2NameElement {
 
-	private final String versionDate;
+	public static final RF2CountryNamespace INT = new RF2CountryNamespace("INT", "");
+	
+	private final String countryCode;
+	private final String namespaceId;
 
-	public RF2VersionDate(String versionDate) {
-		this.versionDate = versionDate;
+	public RF2CountryNamespace(String countryCode, String namespaceId) {
+		this.countryCode = countryCode;
+		this.namespaceId = namespaceId;
 	}
 	
-	public String getVersionDate() {
-		return versionDate;
+	public String getCountryCode() {
+		return countryCode;
+	}
+	
+	public String getNamespaceId() {
+		return namespaceId;
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(versionDate);
+		return Objects.hash(countryCode, namespaceId);
 	}
 	
 	@Override
@@ -43,13 +54,14 @@ public final class RF2VersionDate implements RF2FileNameElement {
 		if (this == obj) return true;
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
-		RF2VersionDate other = (RF2VersionDate) obj;
-		return Objects.equals(versionDate, other.versionDate);
+		RF2CountryNamespace other = (RF2CountryNamespace) obj;
+		return Objects.equals(countryCode, other.countryCode)
+				&& Objects.equals(namespaceId, other.namespaceId);
 	}
 	
 	@Override
 	public String toString() {
-		return versionDate;
+		return String.join("", countryCode, namespaceId);
 	}
 	
 }

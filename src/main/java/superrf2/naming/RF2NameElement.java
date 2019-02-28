@@ -20,20 +20,20 @@ import java.util.regex.Pattern;
 /**
  * @since 0.1
  */
-public interface RF2FileNameElement {
+public interface RF2NameElement {
 	
 	/**
 	 * @param type
-	 * @return the RF2 naming pattern of the given {@link RF2FileNameElement} subclass compiled to a regex {@link Pattern}. 
+	 * @return the RF2 naming pattern of the given {@link RF2NameElement} subclass compiled to a regex {@link Pattern}. 
 	 */
 	static Pattern getNamingPattern(Class<?> type) {
-		if (!RF2FileNameElement.class.isAssignableFrom(type)) {
-			throw new IllegalArgumentException("Only subtypes of " + RF2FileNameElement.class.getName() + " are accepted.");
+		if (!RF2NameElement.class.isAssignableFrom(type)) {
+			throw new IllegalArgumentException("Only subtypes of " + RF2NameElement.class.getName() + " are accepted.");
 		}
-		if (!type.isAnnotationPresent(RF2FileNamingPattern.class)) {
-			throw new IllegalArgumentException("The type " + type.getName() + " must have an " + RF2FileNamingPattern.class.getName() + " annotation present to get the naming pattern.");
+		if (!type.isAnnotationPresent(RF2NamePattern.class)) {
+			throw new IllegalArgumentException("The type " + type.getName() + " must have an " + RF2NamePattern.class.getName() + " annotation present to get the naming pattern.");
 		}
-		return Pattern.compile(type.getAnnotation(RF2FileNamingPattern.class).value());
+		return Pattern.compile(type.getAnnotation(RF2NamePattern.class).value());
 	}
 	
 }

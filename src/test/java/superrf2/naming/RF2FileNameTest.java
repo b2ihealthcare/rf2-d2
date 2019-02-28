@@ -20,6 +20,12 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import superrf2.naming.file.RF2ContentSubType;
+import superrf2.naming.file.RF2ContentType;
+import superrf2.naming.file.RF2CountryNamespace;
+import superrf2.naming.file.RF2FileType;
+import superrf2.naming.file.RF2VersionDate;
+
 /**
  * @since 0.1
  */

@@ -24,6 +24,12 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
+import superrf2.naming.file.RF2ContentSubType;
+import superrf2.naming.file.RF2ContentType;
+import superrf2.naming.file.RF2CountryNamespace;
+import superrf2.naming.file.RF2FileType;
+import superrf2.naming.file.RF2VersionDate;
+
 /**
  * @since 0.1
  */
@@ -43,7 +49,7 @@ public final class RF2FileName {
 	
 	private final String fileName;
 	private final String extension;
-	private final List<RF2FileNameElement> elements = new ArrayList<>(EXPECTED_RF2_FILE_NAME_ELEMENTS);
+	private final List<RF2NameElement> elements = new ArrayList<>(EXPECTED_RF2_FILE_NAME_ELEMENTS);
 	private final List<String> unrecognizedElements = new ArrayList<>(EXPECTED_RF2_FILE_NAME_ELEMENTS);
 	private final List<Class<?>> missingElements = new ArrayList<>(EXPECTED_RF2_FILE_NAME_ELEMENTS);
 	
@@ -65,14 +71,14 @@ public final class RF2FileName {
 			String actualElement = actualElements.next();
 			Class<?> expectedElement = expectedElements.next();
 			
-			Matcher matcher = RF2FileNameElement.getNamingPattern(expectedElement).matcher(actualElement);
+			Matcher matcher = RF2NameElement.getNamingPattern(expectedElement).matcher(actualElement);
 			if (matcher.matches()) {
 				String[] args = new String[matcher.groupCount()];
 				for (int i = 0; i < matcher.groupCount(); i++) {
 					args[i] = Objects.toString(matcher.group(i + 1), "");
 				}
 				try {
-					elements.add((RF2FileNameElement) expectedElement.getConstructors()[0].newInstance(args));
+					elements.add((RF2NameElement) expectedElement.getConstructors()[0].newInstance(args));
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
@@ -101,7 +107,7 @@ public final class RF2FileName {
 		return extension;
 	}
 	
-	public List<RF2FileNameElement> getElements() {
+	public List<RF2NameElement> getElements() {
 		return Collections.unmodifiableList(elements);
 	}
 	

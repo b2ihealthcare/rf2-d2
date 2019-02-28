@@ -13,15 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package superrf2.naming;
+package superrf2.naming.file;
 
 import java.util.Objects;
+
+import superrf2.naming.RF2NameElement;
+import superrf2.naming.RF2NamePattern;
 
 /**
  * @since 0.1
  */
-@RF2FileNamingPattern("(x|z)?(sct|der|doc|res|tls)(1|2)?")
-public final class RF2FileType implements RF2FileNameElement {
+@RF2NamePattern("(x|z)?(sct|der|doc|res|tls)(1|2)?")
+public final class RF2FileType implements RF2NameElement {
 
 	public static final RF2FileType SCT1 = new RF2FileType("", "sct", "1");
 	public static final RF2FileType SCT2 = new RF2FileType("", "sct", "2");

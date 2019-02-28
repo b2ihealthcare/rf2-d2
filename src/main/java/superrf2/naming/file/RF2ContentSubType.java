@@ -13,15 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package superrf2.naming;
+package superrf2.naming.file;
 
 import java.util.Objects;
+
+import superrf2.naming.RF2NameElement;
+import superrf2.naming.RF2NamePattern;
 
 /**
  * @since 0.1
  */
-@RF2FileNamingPattern("(.*)(Full|Snapshot|Delta|Current|Draft|Review)(?:-([a-z]{2}(?:-[A-Za-z]{2})?)?)?")
-public final class RF2ContentSubType implements RF2FileNameElement {
+@RF2NamePattern("(.*)(Full|Snapshot|Delta|Current|Draft|Review)(?:-([a-z]{2}(?:-[A-Za-z]{2})?)?)?")
+public final class RF2ContentSubType implements RF2NameElement {
 
 	private final String summary;
 	private final String releaseType;
