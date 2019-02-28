@@ -15,7 +15,7 @@
  */
 package superrf2.model;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
@@ -28,9 +28,7 @@ public class RF2ConceptFileTest {
 	public void detectConceptDeltaFile() throws Exception {
 		var file = "sct2_Concept_Delta_INT_20190131.txt";
 		var conceptFile = RF2File.detect(file);
-		assertEquals(file, conceptFile.getFileName().toString());
-//		assertEquals(RF2FileType.SCT, conceptFile.getFileType());
-//		assertEquals(RF2ReleaseType.DELTA, conceptFile.getReleaseType());
+		assertFalse(conceptFile.isUnrecognized());
 	}
 	
 }

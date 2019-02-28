@@ -19,14 +19,15 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 import superrf2.Console;
+import superrf2.naming.RF2FileNameBase;
 
 /**
  * @since 0.1
  */
 public final class RF2UnrecognizedFile extends RF2File {
 
-	public RF2UnrecognizedFile(Path path) {
-		super(path);
+	public RF2UnrecognizedFile(Path path, RF2FileNameBase fileName) {
+		super(path, fileName);
 	}
 	
 	@Override

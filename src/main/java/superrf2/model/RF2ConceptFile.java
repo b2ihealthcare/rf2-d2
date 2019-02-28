@@ -17,13 +17,15 @@ package superrf2.model;
 
 import java.nio.file.Path;
 
+import superrf2.naming.RF2FileName;
+
 /**
  * @since 0.1
  */
 public final class RF2ConceptFile extends RF2ContentFile {
 
-	public RF2ConceptFile(Path path) {
-		super(path);
+	public RF2ConceptFile(Path path, RF2FileName fileName) {
+		super(path, fileName);
 	}
 	
 	@Override

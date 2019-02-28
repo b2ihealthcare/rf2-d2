@@ -21,14 +21,15 @@ import java.nio.file.Path;
 
 import superrf2.Console;
 import superrf2.Constants;
+import superrf2.naming.RF2FileName;
 
 /**
  * @since 0.1
  */
 public abstract class RF2ContentFile extends RF2File {
 
-	public RF2ContentFile(Path path) {
-		super(path);
+	public RF2ContentFile(Path path, RF2FileName fileName) {
+		super(path, fileName);
 	}
 	
 	/**

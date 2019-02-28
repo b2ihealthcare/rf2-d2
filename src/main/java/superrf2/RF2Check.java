@@ -25,6 +25,9 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 import superrf2.model.RF2File;
 
+/**
+ * @since 0.1
+ */
 @Command(
 	name = "check",
 	description = "Checks a set of RF2 files and/or archives against the current RF2 specification"

@@ -16,13 +16,14 @@
 package superrf2;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @since 0.1
  */
 public final class Constants {
 
-	public static final Charset UTF8 = Charset.forName("UTF-8");
+	public static final Charset UTF8 = StandardCharsets.UTF_8;
 	public static final String TXT = "txt";
 	public static final String ZIP = "zip";
 	public static final String ACCEPTED_FILES = String.join(",", TXT, ZIP);

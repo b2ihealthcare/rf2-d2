@@ -17,13 +17,15 @@ package superrf2.model;
 
 import java.nio.file.Path;
 
+import superrf2.naming.RF2ReleaseName;
+
 /**
  * @since 0.1 
  */
-public final class RF2Bundle extends RF2File {
+public final class RF2Release extends RF2File {
 
-	public RF2Bundle(Path path) {
-		super(path);
+	public RF2Release(Path parent, RF2ReleaseName fileName) {
+		super(parent, fileName);
 	}
 	
 }

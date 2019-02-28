@@ -24,6 +24,9 @@ import picocli.CommandLine.IVersionProvider;
 import picocli.CommandLine.Option;
 import superrf2.model.RF2Spec;
 
+/**
+ * @since 0.1
+ */
 @Command(
 	name = "rf2", 
 	subcommands = {
