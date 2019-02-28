@@ -17,24 +17,22 @@ package superrf2.naming;
 
 import java.util.List;
 
-import superrf2.naming.file.RF2ContentSubType;
-import superrf2.naming.file.RF2ContentType;
-import superrf2.naming.file.RF2CountryNamespace;
-import superrf2.naming.file.RF2FileType;
-import superrf2.naming.file.RF2VersionDate;
+import superrf2.naming.release.RF2Product;
+import superrf2.naming.release.RF2ReleaseDate;
+import superrf2.naming.release.RF2ReleaseInitial;
+import superrf2.naming.release.RF2ReleaseStatus;
 
 /**
  * @since 0.1
  */
-public final class RF2FileName extends BaseRF2Name {
+public final class RF2ReleaseName extends BaseRF2Name {
 
-	public RF2FileName(String fileName) {
+	public RF2ReleaseName(String fileName) {
 		super(fileName, List.of(
-			RF2FileType.class,
-			RF2ContentType.class,
-			RF2ContentSubType.class,
-			RF2CountryNamespace.class,
-			RF2VersionDate.class
+			RF2ReleaseInitial.class,
+			RF2Product.class,
+			RF2ReleaseStatus.class,
+			RF2ReleaseDate.class
 		));
 	}
 	
