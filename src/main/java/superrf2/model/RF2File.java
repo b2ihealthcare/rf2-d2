@@ -60,7 +60,7 @@ public abstract class RF2File {
 	}
 
 	/**
-	 * @return <code>true</code> if this RF2 file cannot be recognized as a valid RF2 file up to the currently supported {@link RF2Spec#VERSION RF2 version}.
+	 * @return <code>true</code> if this RF2 file cannot be recognized as a valid RF2 file up to the currently supported {@link RF2Spec#RF2_VERSION RF2 version}.
 	 */
 	public final boolean isUnrecognized() {
 		return this instanceof RF2UnrecognizedFile || getFileName().isUnrecognized();
@@ -75,8 +75,6 @@ public abstract class RF2File {
 	 */
 	public void printInfo(Console console) throws IOException {
 		console.log("File: %s", getFileName());
-//		console.log("Type: %s", getFileName());
-//		console.log("Release: %s", getReleaseType());
 	}
 	
 	public static <T extends RF2File> T detect(final String path) {

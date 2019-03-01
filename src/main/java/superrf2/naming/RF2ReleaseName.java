@@ -19,8 +19,8 @@ import java.nio.file.Path;
 import java.util.List;
 
 import superrf2.Constants;
+import superrf2.RF2;
 import superrf2.model.RF2Release;
-import superrf2.model.RF2Spec;
 import superrf2.naming.release.RF2Product;
 import superrf2.naming.release.RF2ReleaseDate;
 import superrf2.naming.release.RF2ReleaseInitial;
@@ -45,7 +45,7 @@ public final class RF2ReleaseName extends RF2FileNameBase {
 	 * - none of the required name elements were found in the current file
 	 * - the extension is not equal to {@link Constants#ZIP zip} 
 	 * 
-	 * @return whether this {@link RF2Release} name is unrecognizable based on the current {@link RF2Spec#VERSION RF2 version}. 
+	 * @return whether this {@link RF2Release} name is unrecognizable based on the current {@link RF2#RF2_VERSION RF2 version}. 
 	 */
 	@Override
 	public boolean isUnrecognized() {

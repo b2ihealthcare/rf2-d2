@@ -22,15 +22,17 @@ import superrf2.naming.RF2FileName;
 /**
  * @since 0.1
  */
+@RF2Header({
+	RF2Columns.ID,
+	RF2Columns.EFFECTIVE_TIME,
+	RF2Columns.ACTIVE,
+	RF2Columns.MODULE_ID,
+	RF2Columns.DEFINITION_STATUS_ID
+})
 public final class RF2ConceptFile extends RF2ContentFile {
 
 	public RF2ConceptFile(Path path, RF2FileName fileName) {
 		super(path, fileName);
 	}
 	
-	@Override
-	public String[] getHeader() {
-		return RF2Headers.CONCEPT_FILE;
-	}
-
 }

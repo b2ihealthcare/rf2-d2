@@ -22,7 +22,6 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
 import picocli.CommandLine.IVersionProvider;
 import picocli.CommandLine.Option;
-import superrf2.model.RF2Spec;
 
 /**
  * @since 0.1
@@ -37,6 +36,8 @@ import superrf2.model.RF2Spec;
 )
 public class RF2 implements Runnable {
 
+	public static final String RF2_VERSION = "20190131";
+	
 	@Option(names = {"-v", "--version"}, versionHelp = true, description = "Print version information and exit.")
 	boolean versionInfoRequested;
 
@@ -60,7 +61,7 @@ public class RF2 implements Runnable {
 			properties.load(getClass().getResourceAsStream("/cli.properties"));
 			return new String[] {
 				"Super-RF2 v" + properties.getProperty("version"),
-				"Supported RF2 Version: " + RF2Spec.VERSION
+				"Supported RF2 Version: " + RF2_VERSION
 			};
 		}
 		

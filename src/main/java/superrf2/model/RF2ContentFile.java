@@ -18,6 +18,8 @@ package superrf2.model;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 import superrf2.Console;
 import superrf2.Constants;
@@ -33,14 +35,36 @@ public abstract class RF2ContentFile extends RF2File {
 	}
 	
 	/**
-	 * @return the RF2 header row for this kind of RF2 files.
+	 * @return the current RF2 header by reading the first line of the file or if this is a non-existing file returns the header from the spec for kind of RF2 files
+	 * @throws IOException 
 	 */
-	public abstract String[] getHeader();
+	public final String[] getHeader() throws IOException {
+		if (Files.exists(getPath())) {
+			return Files.lines(getPath()).findFirst().orElse("N/A").split(Constants.TAB);
+		} else {
+			final RF2Header rf2Header = getClass().getAnnotation(RF2Header.class);
+			if (rf2Header == null) {
+				throw new IllegalStateException("Missing RF2 Header specification on type: " + getClass().getName());
+			}
+			return rf2Header.value();
+		}
+	}
+	
+	/**
+	 * @return
+	 * @throws IOException
+	 */
+	public final Stream<String[]> rows() throws IOException {
+		return Files.lines(getPath())
+				.skip(1)
+				.map(line -> line.split(Constants.TAB));
+	}
 
 	@Override
 	public void printInfo(Console console) throws IOException {
 		super.printInfo(console);
-		console.log("Number of lines: %d", Files.lines(getPath(), Constants.UTF8).count());
+		console.log("Header: ", Arrays.toString(getHeader()));
+		console.log("Number of lines: %d", rows().count());
 	}
 	
 }

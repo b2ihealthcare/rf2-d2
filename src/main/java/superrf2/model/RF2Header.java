@@ -15,17 +15,21 @@
  */
 package superrf2.model;
 
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
 /**
  * @since 0.1
  */
-public final class RF2Headers {
+@Documented
+@Retention(RUNTIME)
+@Target(TYPE)
+public @interface RF2Header {
 
-	public static final String[] CONCEPT_FILE = new String[] {
-		RF2Columns.ID,
-		RF2Columns.EFFECTIVE_TIME,
-		RF2Columns.ACTIVE,
-		RF2Columns.MODULE_ID,
-		RF2Columns.DEFINITION_STATUS_ID
-	};
+	String[] value();
 	
 }
