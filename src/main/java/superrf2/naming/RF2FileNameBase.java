@@ -38,7 +38,6 @@ public abstract class RF2FileNameBase {
 	private final String fileName;
 	private final String extension;
 	private final List<RF2NameElement> elements;
-	private final List<String> unrecognizedElements;
 	private final List<Class<?>> missingElements;
 	
 	public RF2FileNameBase(String fileName, Class<?>...expectedRF2NameElements) {
@@ -54,13 +53,11 @@ public abstract class RF2FileNameBase {
 		
 		if (expectedRF2NameElements.length == 1 && expectedRF2NameElements[0] == RF2NameElement.AcceptAll.class) {
 			this.elements = new ArrayList<>(expectedRF2NameElements.length);
-			this.unrecognizedElements = Collections.emptyList();
 			this.missingElements = Collections.emptyList();
 			
 			actualElements = Arrays.asList(actualFileName).iterator();
 		} else {
 			this.elements = new ArrayList<>(expectedRF2NameElements.length);
-			this.unrecognizedElements = new ArrayList<>(expectedRF2NameElements.length);
 			this.missingElements = new ArrayList<>(expectedRF2NameElements.length);
 
 			actualElements = Arrays.asList(actualFileName.split(ELEMENT_SEPARATOR)).iterator();
@@ -75,7 +72,7 @@ public abstract class RF2FileNameBase {
 
 		// if at this point we still have actualElements, report them as unrecognized
 		while (actualElements.hasNext()) {
-			unrecognizedElements.add(actualElements.next());
+			elements.add(RF2NameElement.unrecognized(actualElements.next()));
 		}
 		
 		// if at this point we still have expectedElements, report them as missing
@@ -97,7 +94,7 @@ public abstract class RF2FileNameBase {
 				throw new RuntimeException(e);
 			}
 		} else {
-			unrecognizedElements.add(actualElement);
+			elements.add(RF2NameElement.unrecognized(actualElement));
 			missingElements.add(expectedElement);
 		}
 	}
@@ -126,8 +123,11 @@ public abstract class RF2FileNameBase {
 				.findFirst();
 	}
 	
-	public final List<String> getUnrecognizedElements() {
-		return Collections.unmodifiableList(unrecognizedElements);
+	public final List<RF2NameElement.Unrecognized> getUnrecognizedElements() {
+		return getElements().stream()
+				.filter(RF2NameElement.Unrecognized.class::isInstance)
+				.map(RF2NameElement.Unrecognized.class::cast)
+				.collect(Collectors.toUnmodifiableList());
 	}
 	
 	public final List<Class<?>> getMissingElements() {
@@ -138,7 +138,7 @@ public abstract class RF2FileNameBase {
 	 * @return whether this RF2 File Name has any unrecognized parts in the given {@link #getFileName() fileName}.
 	 */
 	public final boolean hasUnrecognizedElement() {
-		return !unrecognizedElements.isEmpty();
+		return !getUnrecognizedElements().isEmpty();
 	}
 	
 	/**

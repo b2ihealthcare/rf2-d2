@@ -16,7 +16,8 @@
 package superrf2.naming;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -35,8 +36,8 @@ public class RF2FileNameTest {
 	public void unrecognized() throws Exception {
 		RF2FileName rf2FileName = new RF2FileName("unrecognized");
 		assertTrue(rf2FileName.getExtension().isEmpty());
-		assertThat(rf2FileName.getElements()).isEmpty();
-		assertTrue(rf2FileName.hasUnrecognizedElement());
+		assertThat(rf2FileName.getElements())
+			.contains(RF2NameElement.unrecognized("unrecognized"));
 	}
 	
 	@Test
@@ -87,8 +88,8 @@ public class RF2FileNameTest {
 	@Test
 	public void fileType_Unrecognized() throws Exception {
 		RF2FileName rf2FileName = new RF2FileName("adoc");
-		assertThat(rf2FileName.getElements()).isEmpty();
-		assertTrue(rf2FileName.hasUnrecognizedElement());
+		assertThat(rf2FileName.getElements())
+			.contains(RF2NameElement.unrecognized("adoc"));
 	}
 	
 	@Test
@@ -254,9 +255,9 @@ public class RF2FileNameTest {
 			.containsOnly(
 				RF2FileType.DER2,
 				new RF2ContentType("cRefSet"),
-				new RF2ContentSubType("Language", "Delta", "en-sg")
+				new RF2ContentSubType("Language", "Delta", "en-sg"),
+				RF2NameElement.unrecognized("10001")
 			);
-		assertThat(rf2FileName.getUnrecognizedElements()).containsOnly("10001");
 		assertThat(rf2FileName.getMissingElements()).contains(RF2CountryNamespace.class);
 	}
 	
@@ -281,9 +282,9 @@ public class RF2FileNameTest {
 				RF2FileType.DER2,
 				new RF2ContentType("cRefSet"),
 				new RF2ContentSubType("Language", "Delta", "en"),
-				RF2CountryNamespace.INT
+				RF2CountryNamespace.INT,
+				RF2NameElement.unrecognized("0131")
 			);
-		assertThat(rf2FileName.getUnrecognizedElements()).containsOnly("0131");
 		assertThat(rf2FileName.getMissingElements()).contains(RF2VersionDate.class);
 	}
 	

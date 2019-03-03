@@ -65,7 +65,7 @@ public class RF2Check extends RF2Command {
 	private void checkRF2File(RF2File file, boolean isPathArgument) throws IOException {
 		int indentation = isPathArgument ? 0 : file.getPath().getNameCount();
 		final Console console = this.console.indent(indentation);
-		console.log("%s", file.getFileName());
+		console.log(file.getFileName().toString());
 		
 		final Console detailConsole = this.console.indent(indentation + 1);
 		detailConsole.log("Type: %s", file.getType());

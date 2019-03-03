@@ -70,4 +70,40 @@ public interface RF2NameElement {
 		
 	}
 	
+	/**
+	 * @since 0.1
+	 */
+	class Unrecognized implements RF2NameElement {
+		
+		private final String name;
+
+		public Unrecognized(String name) {
+			this.name = name;
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(name);
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			Unrecognized other = (Unrecognized) obj;
+			return Objects.equals(name, other.name);
+		}
+		
+		@Override
+		public String toString() {
+			return name;
+		}
+		
+	}
+
+	static RF2NameElement unrecognized(String name) {
+		return new Unrecognized(name);
+	}
+	
 }

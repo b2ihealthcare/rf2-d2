@@ -39,8 +39,8 @@ public class RF2ReleaseNameTest {
 	public void releaseInitial_Unrecognized() throws Exception {
 		RF2ReleaseName rf2ReleaseName = new RF2ReleaseName("SnomedCTSomething");
 		assertThat(rf2ReleaseName.getElements())
+			.contains(RF2NameElement.unrecognized("SnomedCTSomething"))
 			.doesNotContain(new RF2ReleaseInitial());
-		assertThat(rf2ReleaseName.getUnrecognizedElements()).contains("SnomedCTSomething");
 	}
 	
 	@Test
@@ -134,9 +134,9 @@ public class RF2ReleaseNameTest {
 		RF2ReleaseName rf2ReleaseName = new RF2ReleaseName("SnomedCT_InternationalRF2_MEMBER");
 		assertThat(rf2ReleaseName.getElements()).contains(
 			new RF2ReleaseInitial(),
-			new RF2Product("International", "", "RF2")
+			new RF2Product("International", "", "RF2"),
+			RF2NameElement.unrecognized("MEMBER")
 		);
-		assertThat(rf2ReleaseName.getUnrecognizedElements()).contains("MEMBER");
 		assertThat(rf2ReleaseName.getMissingElements()).contains(RF2ReleaseStatus.class);
 	}
 	
@@ -157,9 +157,9 @@ public class RF2ReleaseNameTest {
 		assertThat(rf2ReleaseName.getElements()).contains(
 			new RF2ReleaseInitial(),
 			new RF2Product("International", "", "RF2"),
-			new RF2ReleaseStatus("PRODUCTION")
+			new RF2ReleaseStatus("PRODUCTION"),
+			RF2NameElement.unrecognized("20190131T120000")
 		);
-		assertThat(rf2ReleaseName.getUnrecognizedElements()).contains("20190131T120000");
 		assertThat(rf2ReleaseName.getMissingElements()).contains(RF2ReleaseDate.class);
 	}
 	
