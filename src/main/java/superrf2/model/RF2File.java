@@ -22,6 +22,7 @@ import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import superrf2.check.RF2IssueAcceptor;
 import superrf2.naming.RF2DirectoryName;
 import superrf2.naming.RF2FileName;
 import superrf2.naming.RF2FileNameBase;
@@ -77,6 +78,20 @@ public abstract class RF2File {
 	 */
 	public abstract void visit(Consumer<RF2File> visitor) throws IOException;
 
+	/**
+	 * Check that this RF2File conforms to the RF2 specification and reports warning and errors if not.
+	 * @param acceptor
+	 */
+	public void check(RF2IssueAcceptor acceptor) {
+		// check name first
+		getFileName().getUnrecognizedElements().forEach(unrecognized -> {
+			acceptor.error("Unrecognized name part: %s", unrecognized);
+		});
+		getFileName().getMissingElements().forEach(missing -> {
+			acceptor.error("Missing name part: %s", missing.getSimpleName().replaceAll("RF2", ""));
+		});
+	}
+	
 	/**
 	 * @return the type (or category) of this {@link RF2File}.
 	 */

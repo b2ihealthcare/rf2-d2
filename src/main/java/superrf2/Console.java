@@ -29,27 +29,38 @@ public final class Console {
 	public static final PrintStream ERR = System.err;
 
 	private final int indentation;
+	private final String linePrefix;
 
 	public Console() {
-		this(DEFAULT_INDENTATION);
+		this(DEFAULT_INDENTATION, "");
 	}
 	
-	public Console(int indentation) {
+	public Console(int indentation, String linePrefix) {
 		this.indentation = indentation;
+		this.linePrefix = linePrefix;
+	}
+	
+	public final void warn(String message, Object...args) {
+		String tab = Constants.SPACE.repeat(indentation * TAB_SIZE);
+		ERR.println(String.format("%s%sWARN: %s", tab, linePrefix, String.format(message, args)));
 	}
 	
 	public final void error(String message, Object...args) {
 		String tab = Constants.SPACE.repeat(indentation * TAB_SIZE);
-		ERR.println(String.format("%sERROR: %s", tab, String.format(message, args)));
+		ERR.println(String.format("%s%sERROR: %s", tab, linePrefix, String.format(message, args)));
 	}
 	
 	public final void log(String message, Object...args) {
 		String tab = Constants.SPACE.repeat(indentation * TAB_SIZE);
-		OUT.println(String.format("%s%s", tab, String.format(message, args)));
+		OUT.println(String.format("%s%s%s", tab, linePrefix, String.format(message, args)));
 	}
 	
-	public Console indent(int indent) {
-		return DEFAULT_INDENTATION == indent ? this : new Console(indent);
+	public Console withIndentation(int indentation) {
+		return new Console(indentation, linePrefix);
+	}
+	
+	public Console withPrefix(String linePrefix) {
+		return new Console(indentation, linePrefix);
 	}
 	
 }

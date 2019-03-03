@@ -23,6 +23,7 @@ import java.util.List;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
+import superrf2.check.RF2IssueAcceptor;
 import superrf2.model.RF2ContentFile;
 import superrf2.model.RF2File;
 
@@ -64,16 +65,29 @@ public class RF2Check extends RF2Command {
 	
 	private void checkRF2File(RF2File file, boolean isPathArgument) throws IOException {
 		int indentation = isPathArgument ? 0 : file.getPath().getNameCount();
-		final Console console = this.console.indent(indentation);
+		final Console console = this.console.withIndentation(indentation);
 		console.log(file.getFileName().toString());
 		
-		final Console detailConsole = this.console.indent(indentation + 1);
-		detailConsole.log("Type: %s", file.getType());
+		final Console detailConsole = this.console.withIndentation(indentation + 1).withPrefix("-");
+		detailConsole.log("type: %s", file.getType());
 		if (file instanceof RF2ContentFile) {
 			RF2ContentFile rf2ContentFile = (RF2ContentFile) file;
-			detailConsole.log("Header: %s", Arrays.toString(rf2ContentFile.getHeader()));
-			detailConsole.log("Number of lines: %d", rf2ContentFile.rows().count());
+			detailConsole.log("header: %s", Arrays.toString(rf2ContentFile.getHeader()));
+			detailConsole.log("lines: %d", rf2ContentFile.rows().count());
 		}
+
+		// check all RF2 files
+		final RF2IssueAcceptor issueAcceptor = new RF2IssueAcceptor();
+		file.check(issueAcceptor);
+		
+		final Console issueConsole = detailConsole.withIndentation(indentation + 2);
+		
+		if (issueAcceptor.hasIssues()) {
+			detailConsole.log("issues:");
+			issueAcceptor.getErrors().forEach(issueConsole::error);
+			issueAcceptor.getWarns().forEach(issueConsole::warn);
+		}
+		
 	}
 	
 }
