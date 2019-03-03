@@ -81,8 +81,9 @@ public abstract class RF2File {
 	/**
 	 * Check that this RF2File conforms to the RF2 specification and reports warning and errors if not.
 	 * @param acceptor
+	 * @throws IOException 
 	 */
-	public void check(RF2IssueAcceptor acceptor) {
+	public void check(RF2IssueAcceptor acceptor) throws IOException {
 		// check name first
 		getFileName().getUnrecognizedElements().forEach(unrecognized -> {
 			acceptor.error("Unrecognized name part: %s", unrecognized);

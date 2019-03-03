@@ -18,10 +18,12 @@ package superrf2.model;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import superrf2.Constants;
+import superrf2.check.RF2IssueAcceptor;
 import superrf2.naming.RF2FileName;
 import superrf2.naming.file.RF2ContentType;
 
@@ -50,6 +52,19 @@ public abstract class RF2ContentFile extends RF2File {
 		visitor.accept(this);
 	}
 	
+	@Override
+	public void check(RF2IssueAcceptor acceptor) throws IOException {
+		super.check(acceptor);
+		// check RF2 header
+		final String[] rf2HeaderSpec = getRF2HeaderSpec();
+		final String[] actualHeader = getHeader();
+		if (!Arrays.equals(rf2HeaderSpec, actualHeader)) {
+			// TODO report incorrect header columns
+			acceptor.error("Header does not conform to specification");
+		}
+		
+	}
+	
 	/**
 	 * @return the current RF2 header by reading the first line of the file or if this is a non-existing file returns the header from the spec for kind of RF2 files
 	 * @throws IOException 
@@ -59,14 +74,18 @@ public abstract class RF2ContentFile extends RF2File {
 			if (Files.exists(getPath())) {
 				header = Files.lines(getPath()).findFirst().orElse("N/A").split(Constants.TAB);
 			} else {
-				final RF2Header rf2Header = getClass().getAnnotation(RF2Header.class);
-				if (rf2Header == null) {
-					throw new IllegalStateException("Missing RF2 Header specification on type: " + getClass().getName());
-				}
-				header = rf2Header.value();
+				header = getRF2HeaderSpec();
 			}
 		}
 		return header;
+	}
+
+	private String[] getRF2HeaderSpec() {
+		final RF2Header rf2Header = getClass().getAnnotation(RF2Header.class);
+		if (rf2Header == null) {
+			throw new IllegalStateException("Missing RF2 Header specification on type: " + getClass().getName());
+		}
+		return rf2Header.value();
 	}
 	
 	/**
