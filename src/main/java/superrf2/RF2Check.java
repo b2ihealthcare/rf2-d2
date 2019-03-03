@@ -16,13 +16,14 @@
 package superrf2;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
+import superrf2.model.RF2ContentFile;
 import superrf2.model.RF2File;
 
 /**
@@ -45,18 +46,33 @@ public class RF2Check extends RF2Command {
 			try {
 				check(Paths.get(path));
 			} catch (Exception e) {
-				System.err.println("Failed to read path: " + path);
+				console.error(e.getMessage());
 				e.printStackTrace();
 			}
 		}
 	}
 	
 	private void check(final Path path) throws IOException {
-		if (Files.isDirectory(path)) {
-			console.log("Directories are not supported yet! Path: %s", path);
-		} else {
-			RF2File rf2File = RF2File.detect(path);
-			rf2File.printInfo(console);
+		RF2File.detect(path).visit(file -> {
+			try {
+				checkRF2File(file, file.getPath().equals(path));
+			} catch (IOException e) {
+				console.error("Couldn't check RF2File at %s", file.getFileName());
+			}
+		});
+	}
+	
+	private void checkRF2File(RF2File file, boolean isPathArgument) throws IOException {
+		int indentation = isPathArgument ? 0 : file.getPath().getNameCount();
+		final Console console = this.console.indent(indentation);
+		console.log("%s", file.getFileName());
+		
+		final Console detailConsole = this.console.indent(indentation + 1);
+		detailConsole.log("Type: %s", file.getType());
+		if (file instanceof RF2ContentFile) {
+			RF2ContentFile rf2ContentFile = (RF2ContentFile) file;
+			detailConsole.log("Header: %s", Arrays.toString(rf2ContentFile.getHeader()));
+			detailConsole.log("Number of lines: %d", rf2ContentFile.rows().count());
 		}
 	}
 	

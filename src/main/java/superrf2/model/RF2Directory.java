@@ -16,47 +16,40 @@
 package superrf2.model;
 
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
 import java.util.function.Consumer;
 
-import superrf2.naming.RF2ReleaseName;
+import superrf2.naming.RF2FileNameBase;
 
 /**
- * @since 0.1 
+ * @since 0.1
  */
-public final class RF2Release extends RF2File {
+public final class RF2Directory extends RF2File {
 
-	public RF2Release(Path parent, RF2ReleaseName fileName) {
+	public static final String ROOT_PATH = "/";
+
+	public RF2Directory(Path parent, RF2FileNameBase fileName) {
 		super(parent, fileName);
 	}
 
 	@Override
 	public void visit(Consumer<RF2File> visitor) throws IOException {
 		visitor.accept(this);
-		
-		try (FileSystem zipfs = FileSystems.newFileSystem(URI.create("jar:" + getPath().toUri()), Map.of("create", !Files.exists(getPath())))) {
-			for (Path root : zipfs.getRootDirectories()) {
-				Files.walk(root, 1).forEach(path -> {
-					if (!RF2Directory.ROOT_PATH.equals(path.toString())) {
-						try {
-							RF2File.detect(path).visit(visitor);
-						} catch (IOException e) {
-							throw new RuntimeException("Couldn't visit path: " + path, e);
-						}
-					}
-				});
+		Files.walk(getPath(), 1).forEach(path -> {
+			if (!path.equals(getPath())) {
+				try {
+					RF2File.detect(path).visit(visitor);
+				} catch (IOException e) {
+					throw new RuntimeException("Couldn't visit path: " + path);
+				}
 			}
-		}
+		});
 	}
-	
+
 	@Override
 	public String getType() {
-		return "Release";
+		return "Directory";
 	}
-	
+
 }

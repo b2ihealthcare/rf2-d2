@@ -15,7 +15,7 @@
  */
 package superrf2;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
@@ -28,7 +28,7 @@ public class RF2CheckTest {
 
 	@Test
 	public void check_ConceptFile() throws Exception {
-		var file = "sct2_Concept_Delta_INT_20190131.txt";
+		var file = "/sct2_Concept_Delta_INT_20190131.txt";
 		var conceptFile = RF2File.detect(file);
 		assertFalse(conceptFile.isUnrecognized());
 	}

@@ -13,22 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package superrf2;
+package superrf2.naming;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 
 /**
  * @since 0.1
  */
-public final class Constants {
+public class RF2DirectoryNameTest {
 
-	public static final Charset UTF8 = StandardCharsets.UTF_8;
-	public static final String TXT = "txt";
-	public static final String ZIP = "zip";
-	public static final String ACCEPTED_FILES = String.join(",", TXT, ZIP);
-	public static final String TAB = "\t";
-	public static final String COMMA = ",";
-	public static final String SPACE = " ";
+	@Test
+	public void acceptAll() throws Exception {
+		RF2DirectoryName rf2FileName = new RF2DirectoryName("acceptAllDirectoryNames");
+		assertTrue(rf2FileName.getExtension().isEmpty());
+		assertThat(rf2FileName.getElements())
+			.contains(new RF2NameElement.AcceptAll("acceptAllDirectoryNames"));
+		assertFalse(rf2FileName.hasUnrecognizedElement());
+	}
 	
 }

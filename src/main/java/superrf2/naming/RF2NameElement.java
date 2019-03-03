@@ -15,6 +15,7 @@
  */
 package superrf2.naming;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
@@ -34,6 +35,39 @@ public interface RF2NameElement {
 			throw new IllegalArgumentException("The type " + type.getName() + " must have an " + RF2NamePattern.class.getName() + " annotation present to get the naming pattern.");
 		}
 		return Pattern.compile(type.getAnnotation(RF2NamePattern.class).value());
+	}
+	
+	/**
+	 * @since 0.1
+	 */
+	@RF2NamePattern("(.+)")
+	class AcceptAll implements RF2NameElement {
+		
+		private final String name;
+
+		public AcceptAll(String name) {
+			this.name = name;
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(name);
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			AcceptAll other = (AcceptAll) obj;
+			return Objects.equals(name, other.name);
+		}
+		
+		@Override
+		public String toString() {
+			return name;
+		}
+		
 	}
 	
 }

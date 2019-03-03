@@ -16,11 +16,13 @@
 package superrf2.model;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.function.Consumer;
 
-import superrf2.Console;
+import superrf2.naming.RF2DirectoryName;
 import superrf2.naming.RF2FileName;
 import superrf2.naming.RF2FileNameBase;
 import superrf2.naming.RF2ReleaseName;
@@ -44,7 +46,7 @@ public abstract class RF2File {
 	public final Path getPath() {
 		return parent.resolve(getFileName().toString());
 	}
-	
+
 	/**
 	 * @return the parent path of this RF2 file
 	 */
@@ -60,36 +62,59 @@ public abstract class RF2File {
 	}
 
 	/**
-	 * @return <code>true</code> if this RF2 file cannot be recognized as a valid RF2 file up to the currently supported {@link RF2Spec#RF2_VERSION RF2 version}.
+	 * @return <code>true</code> if this RF2 file cannot be recognized as a valid RF2 file up to the currently supported {@link RF2Spec#RF2_VERSION
+	 *         RF2 version}.
 	 */
 	public final boolean isUnrecognized() {
 		return this instanceof RF2UnrecognizedFile || getFileName().isUnrecognized();
 	}
 
 	/**
-	 * Prints statistic information about this {@link RF2File} to the given {@link Console} object.
-	 * <i>NOTE: overriding methods must invoke super</i>
+	 * Visit this {@link RF2File} with the given visitor.
 	 * 
-	 * @param console
-	 * @throws IOException
+	 * @param visitor
+	 * @throws IOException 
 	 */
-	public void printInfo(Console console) throws IOException {
-		console.log("File: %s", getFileName());
-	}
-	
+	public abstract void visit(Consumer<RF2File> visitor) throws IOException;
+
+	/**
+	 * @return the type (or category) of this {@link RF2File}.
+	 */
+	public abstract String getType();
+
+	/**
+	 * Detects an {@link RF2File} from the given file path.
+	 * 
+	 * @param path
+	 *            - the file path to recognize
+	 * @return an {@link RF2File} instance
+	 */
 	public static <T extends RF2File> T detect(final String path) {
 		return detect(Paths.get(path));
 	}
 
+	/**
+	 * Detects an {@link RF2File} from the given file path.
+	 * 
+	 * @param path
+	 *            - the file path to recognize
+	 * @return an {@link RF2File} instance
+	 */
 	public static <T extends RF2File> T detect(final Path path) {
 		String fileName = path.getFileName().toString();
-		// first try to parse the fileName path as RF2Release
-		RF2FileNameBase rf2Release = new RF2ReleaseName(fileName);
-		if (rf2Release.isUnrecognized()) {
-			// otherwise fall back and treat it as an RF2 File (in general any file can be part of a release)
-			rf2Release = new RF2FileName(fileName);
+		RF2FileNameBase rf2Release;
+		// directories are always recognized and accepted
+		if (Files.isDirectory(path)) {
+			rf2Release = new RF2DirectoryName(fileName);
+		} else {
+			// if it is not a directory then try to parse the fileName as an RF2Release first
+			rf2Release = new RF2ReleaseName(fileName);
+			if (rf2Release.isUnrecognized()) {
+				// if it is not a release package fall back and treat it as an RF2 File (in general any file can be part of a release)
+				rf2Release = new RF2FileName(fileName);
+			}
 		}
-		return (T) rf2Release.createRF2File(path);
+		return (T) rf2Release.createRF2File(path.getParent());
 	}
-	
+
 }

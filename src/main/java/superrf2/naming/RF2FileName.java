@@ -16,7 +16,6 @@
 package superrf2.naming;
 
 import java.nio.file.Path;
-import java.util.List;
 
 import superrf2.model.RF2ConceptFile;
 import superrf2.model.RF2File;
@@ -33,13 +32,13 @@ import superrf2.naming.file.RF2VersionDate;
 public final class RF2FileName extends RF2FileNameBase {
 
 	public RF2FileName(String fileName) {
-		super(fileName, List.of(
+		super(fileName, 
 			RF2FileType.class,
 			RF2ContentType.class,
 			RF2ContentSubType.class,
 			RF2CountryNamespace.class,
 			RF2VersionDate.class
-		));
+		);
 	}
 
 	@Override

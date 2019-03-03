@@ -41,44 +41,36 @@ public abstract class RF2FileNameBase {
 	private final List<String> unrecognizedElements;
 	private final List<Class<?>> missingElements;
 	
-	public RF2FileNameBase(String fileName, List<Class<?>> expectedRF2NameElements) {
+	public RF2FileNameBase(String fileName, Class<?>...expectedRF2NameElements) {
 		if (fileName == null || fileName.isBlank()) {
 			throw new IllegalArgumentException("FileName argument cannot be null or empty");
 		}
 		
 		this.fileName = fileName;
 		this.extension = fileName.contains(FILE_EXT_SEPARATOR) ? fileName.substring(fileName.lastIndexOf(FILE_EXT_SEPARATOR) + 1) : "";
-		
-		this.elements = new ArrayList<>(expectedRF2NameElements.size());
-		this.unrecognizedElements = new ArrayList<>(expectedRF2NameElements.size());
-		this.missingElements = new ArrayList<>(expectedRF2NameElements.size());
-		
 		String actualFileName = fileName.split("\\"+FILE_EXT_SEPARATOR)[0];
 		
-		// detect existing element
-		Iterator<String> actualElements = Arrays.asList(actualFileName.split(ELEMENT_SEPARATOR)).iterator();
-		Iterator<Class<?>> expectedElements = expectedRF2NameElements.iterator();
+		final Iterator<String> actualElements;
+		
+		if (expectedRF2NameElements.length == 1 && expectedRF2NameElements[0] == RF2NameElement.AcceptAll.class) {
+			this.elements = new ArrayList<>(expectedRF2NameElements.length);
+			this.unrecognizedElements = Collections.emptyList();
+			this.missingElements = Collections.emptyList();
+			
+			actualElements = Arrays.asList(actualFileName).iterator();
+		} else {
+			this.elements = new ArrayList<>(expectedRF2NameElements.length);
+			this.unrecognizedElements = new ArrayList<>(expectedRF2NameElements.length);
+			this.missingElements = new ArrayList<>(expectedRF2NameElements.length);
+
+			actualElements = Arrays.asList(actualFileName.split(ELEMENT_SEPARATOR)).iterator();
+		}
+		
+		final Iterator<Class<?>> expectedElements = Arrays.asList(expectedRF2NameElements).iterator();
 		
 		// consume both iterators in order, since an RF2 file has a strict specification
 		while (actualElements.hasNext() && expectedElements.hasNext()) {
-			String actualElement = actualElements.next();
-			Class<?> expectedElement = expectedElements.next();
-			
-			Matcher matcher = RF2NameElement.getNamingPattern(expectedElement).matcher(actualElement);
-			if (matcher.matches()) {
-				Object[] args = new String[matcher.groupCount()];
-				for (int i = 0; i < matcher.groupCount(); i++) {
-					args[i] = matcher.group(i + 1);
-				}
-				try {
-					elements.add((RF2NameElement) expectedElement.getConstructors()[0].newInstance(args));
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
-			} else {
-				unrecognizedElements.add(actualElement);
-				missingElements.add(expectedElement);
-			}
+			parse(actualElements.next(), expectedElements.next());
 		}
 
 		// if at this point we still have actualElements, report them as unrecognized
@@ -89,6 +81,24 @@ public abstract class RF2FileNameBase {
 		// if at this point we still have expectedElements, report them as missing
 		while (expectedElements.hasNext()) {
 			missingElements.add(expectedElements.next());
+		}
+	}
+
+	private void parse(String actualElement, Class<?> expectedElement) {
+		Matcher matcher = RF2NameElement.getNamingPattern(expectedElement).matcher(actualElement);
+		if (matcher.matches()) {
+			Object[] args = new String[matcher.groupCount()];
+			for (int i = 0; i < matcher.groupCount(); i++) {
+				args[i] = matcher.group(i + 1);
+			}
+			try {
+				elements.add((RF2NameElement) expectedElement.getConstructors()[0].newInstance(args));
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			unrecognizedElements.add(actualElement);
+			missingElements.add(expectedElement);
 		}
 	}
 
@@ -148,7 +158,7 @@ public abstract class RF2FileNameBase {
 	
 	@Override
 	public final String toString() {
-		return String.format("%s%s%s", elements.stream().map(Object::toString).collect(Collectors.joining(ELEMENT_SEPARATOR)), FILE_EXT_SEPARATOR, extension);
+		return String.format("%s%s%s", elements.stream().map(Object::toString).collect(Collectors.joining(ELEMENT_SEPARATOR)), extension.isEmpty() ? "" : FILE_EXT_SEPARATOR, extension);
 	}
 	
 }

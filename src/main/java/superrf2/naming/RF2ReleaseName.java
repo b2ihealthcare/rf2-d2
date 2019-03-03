@@ -16,7 +16,6 @@
 package superrf2.naming;
 
 import java.nio.file.Path;
-import java.util.List;
 
 import superrf2.Constants;
 import superrf2.RF2;
@@ -32,12 +31,12 @@ import superrf2.naming.release.RF2ReleaseStatus;
 public final class RF2ReleaseName extends RF2FileNameBase {
 
 	public RF2ReleaseName(String fileName) {
-		super(fileName, List.of(
+		super(fileName, 
 			RF2ReleaseInitial.class,
 			RF2Product.class,
 			RF2ReleaseStatus.class,
 			RF2ReleaseDate.class
-		));
+		);
 	}
 	
 	/**
@@ -49,7 +48,7 @@ public final class RF2ReleaseName extends RF2FileNameBase {
 	 */
 	@Override
 	public boolean isUnrecognized() {
-		return !getElements().isEmpty() || !Constants.ZIP.equals(getExtension());
+		return getElements().isEmpty() || !Constants.ZIP.equals(getExtension());
 	}
 	
 	@Override

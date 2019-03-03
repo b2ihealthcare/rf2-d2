@@ -66,7 +66,7 @@ public final class RF2ContentSubType implements RF2NameElement {
 	
 	@Override
 	public String toString() {
-		return String.join("", summary, releaseType, languageCode);
+		return String.join("", summary, releaseType, languageCode.isEmpty() ? "" : "-".concat(languageCode));
 	}
 	
 }

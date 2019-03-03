@@ -15,10 +15,9 @@
  */
 package superrf2.model;
 
-import java.io.IOException;
 import java.nio.file.Path;
+import java.util.function.Consumer;
 
-import superrf2.Console;
 import superrf2.naming.RF2FileNameBase;
 
 /**
@@ -31,9 +30,13 @@ public final class RF2UnrecognizedFile extends RF2File {
 	}
 	
 	@Override
-	public void printInfo(Console console) throws IOException {
-		console.log("File: %s", getFileName());
-		console.log("Type: %s", "Unrecognized");
+	public void visit(Consumer<RF2File> visitor) {
+		visitor.accept(this);
 	}
-
+	
+	@Override
+	public String getType() {
+		return "Unrecognized";
+	}
+	
 }

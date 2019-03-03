@@ -22,15 +22,34 @@ import java.io.PrintStream;
  */
 public final class Console {
 
+	private static final int DEFAULT_INDENTATION = 0;
+	private static final int TAB_SIZE = 2;
+	
 	public static final PrintStream OUT = System.out;
 	public static final PrintStream ERR = System.err;
+
+	private final int indentation;
+
+	public Console() {
+		this(DEFAULT_INDENTATION);
+	}
+	
+	public Console(int indentation) {
+		this.indentation = indentation;
+	}
 	
 	public final void error(String message, Object...args) {
-		ERR.println(String.format("ERROR: " + message, args));
+		String tab = Constants.SPACE.repeat(indentation * TAB_SIZE);
+		ERR.println(String.format("%sERROR: %s", tab, String.format(message, args)));
 	}
 	
 	public final void log(String message, Object...args) {
-		OUT.println(String.format(message, args));
+		String tab = Constants.SPACE.repeat(indentation * TAB_SIZE);
+		OUT.println(String.format("%s%s", tab, String.format(message, args)));
+	}
+	
+	public Console indent(int indent) {
+		return DEFAULT_INDENTATION == indent ? this : new Console(indent);
 	}
 	
 }
