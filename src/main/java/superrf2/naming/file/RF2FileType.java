@@ -38,9 +38,9 @@ public final class RF2FileType implements RF2NameElement {
 		String status,
 		String type,
 		String format) {
-		this.status = status;
-		this.type = type;
-		this.format = format;
+		this.status = Objects.toString(status, "");
+		this.type = Objects.requireNonNull(type);
+		this.format = Objects.toString(format, "");
 	}
 	
 	public String getStatus() {

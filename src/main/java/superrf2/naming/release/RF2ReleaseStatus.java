@@ -29,7 +29,7 @@ public final class RF2ReleaseStatus implements RF2NameElement {
 	private final String releaseStatus;
 
 	public RF2ReleaseStatus(String releaseStatus) {
-		this.releaseStatus = releaseStatus;
+		this.releaseStatus = Objects.requireNonNull(releaseStatus);
 	}
 	
 	public String getReleaseStatus() {

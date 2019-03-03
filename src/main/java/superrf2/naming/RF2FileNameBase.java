@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
@@ -67,9 +66,9 @@ public abstract class RF2FileNameBase {
 			
 			Matcher matcher = RF2NameElement.getNamingPattern(expectedElement).matcher(actualElement);
 			if (matcher.matches()) {
-				String[] args = new String[matcher.groupCount()];
+				Object[] args = new String[matcher.groupCount()];
 				for (int i = 0; i < matcher.groupCount(); i++) {
-					args[i] = Objects.toString(matcher.group(i + 1), "");
+					args[i] = matcher.group(i + 1);
 				}
 				try {
 					elements.add((RF2NameElement) expectedElement.getConstructors()[0].newInstance(args));

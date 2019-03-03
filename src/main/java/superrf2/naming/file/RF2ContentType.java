@@ -36,7 +36,7 @@ public final class RF2ContentType implements RF2NameElement {
 	private final String contentType;
 
 	public RF2ContentType(String contentType) {
-		this.contentType = contentType;
+		this.contentType = Objects.requireNonNull(contentType);
 	}
 
 	public String getContentType() {

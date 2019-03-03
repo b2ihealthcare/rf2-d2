@@ -32,8 +32,8 @@ public final class RF2CountryNamespace implements RF2NameElement {
 	private final String namespaceId;
 
 	public RF2CountryNamespace(String countryCode, String namespaceId) {
-		this.countryCode = countryCode;
-		this.namespaceId = namespaceId;
+		this.countryCode = Objects.toString(countryCode, "");
+		this.namespaceId = Objects.toString(namespaceId, "");
 	}
 	
 	public String getCountryCode() {

@@ -30,8 +30,8 @@ public final class RF2ReleaseDate implements RF2NameElement {
 	private final String releaseTime;
 	
 	public RF2ReleaseDate(String releaseDate, String releaseTime) {
-		this.releaseDate = releaseDate;
-		this.releaseTime = releaseTime;
+		this.releaseDate = Objects.requireNonNull(releaseDate);
+		this.releaseTime = Objects.requireNonNull(releaseTime);
 	}
 	
 	public String getReleaseDate() {

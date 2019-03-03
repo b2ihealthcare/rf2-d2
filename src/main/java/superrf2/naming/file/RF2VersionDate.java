@@ -29,7 +29,7 @@ public final class RF2VersionDate implements RF2NameElement {
 	private final String versionDate;
 
 	public RF2VersionDate(String versionDate) {
-		this.versionDate = versionDate;
+		this.versionDate = Objects.requireNonNull(versionDate);
 	}
 	
 	public String getVersionDate() {
