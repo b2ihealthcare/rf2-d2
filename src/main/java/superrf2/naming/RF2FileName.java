@@ -18,7 +18,10 @@ package superrf2.naming;
 import java.nio.file.Path;
 
 import superrf2.model.RF2ConceptFile;
+import superrf2.model.RF2DescriptionFile;
 import superrf2.model.RF2File;
+import superrf2.model.RF2RefsetFile;
+import superrf2.model.RF2RelationshipFile;
 import superrf2.model.RF2UnrecognizedFile;
 import superrf2.naming.file.RF2ContentSubType;
 import superrf2.naming.file.RF2ContentType;
@@ -64,9 +67,19 @@ public final class RF2FileName extends RF2FileNameBase {
 	}
 	
 	private RF2File createRF2File(Path parent, RF2ContentType contentType) {
-		switch (contentType.getContentType()) {
+		final String type = contentType.getContentType();
+		if (type.endsWith("Refset")) {
+			return new RF2RefsetFile(parent, this);
+		}
+		switch (type) {
 		case "Concept": 
 			return new RF2ConceptFile(parent, this);
+		case "Description":
+		case "TextDefinition":
+			return new RF2DescriptionFile(parent, this);
+		case "Relationship":
+		case "StatedRelationship":
+			return new RF2RelationshipFile(parent, this);
 		default: 
 			return new RF2UnrecognizedFile(parent, this);
 		}

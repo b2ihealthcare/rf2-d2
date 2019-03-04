@@ -62,7 +62,6 @@ public abstract class RF2ContentFile extends RF2File {
 			// TODO report incorrect header columns
 			acceptor.error("Header does not conform to specification");
 		}
-		
 	}
 	
 	/**
@@ -80,13 +79,10 @@ public abstract class RF2ContentFile extends RF2File {
 		return header;
 	}
 
-	private String[] getRF2HeaderSpec() {
-		final RF2Header rf2Header = getClass().getAnnotation(RF2Header.class);
-		if (rf2Header == null) {
-			throw new IllegalStateException("Missing RF2 Header specification on type: " + getClass().getName());
-		}
-		return rf2Header.value();
-	}
+	/**
+	 * @return the RF2 specification header from the {@link RF2Header} l
+	 */
+	protected abstract String[] getRF2HeaderSpec();
 	
 	/**
 	 * @return the actual raw data from this RF2 content file without header and each line converted into String[] objects

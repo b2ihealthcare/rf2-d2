@@ -22,9 +22,9 @@ import superrf2.naming.RF2FileName;
 /**
  * @since 0.1
  */
-public final class RF2ConceptFile extends RF2ContentFile {
+public final class RF2DescriptionFile extends RF2ContentFile {
 
-	public RF2ConceptFile(Path path, RF2FileName fileName) {
+	public RF2DescriptionFile(Path path, RF2FileName fileName) {
 		super(path, fileName);
 	}
 	
@@ -35,8 +35,12 @@ public final class RF2ConceptFile extends RF2ContentFile {
 			RF2Columns.EFFECTIVE_TIME,
 			RF2Columns.ACTIVE,
 			RF2Columns.MODULE_ID,
-			RF2Columns.DEFINITION_STATUS_ID
+			RF2Columns.CONCEPT_ID,
+			RF2Columns.LANGUAGE_CODE,
+			RF2Columns.TYPE_ID,
+			RF2Columns.TERM,
+			RF2Columns.CASE_SIGNIFICANCE_ID
 		};
 	}
-	
+
 }

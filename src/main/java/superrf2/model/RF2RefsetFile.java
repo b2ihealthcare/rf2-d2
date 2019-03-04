@@ -15,21 +15,29 @@
  */
 package superrf2.model;
 
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import java.nio.file.Path;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+import superrf2.naming.RF2FileName;
 
 /**
  * @since 0.1
  */
-@Documented
-@Retention(RUNTIME)
-@Target(TYPE)
-public @interface RF2Header {
+public final class RF2RefsetFile extends RF2ContentFile {
 
-	String[] value();
+	public RF2RefsetFile(Path path, RF2FileName fileName) {
+		super(path, fileName);
+	}
+	
+	@Override
+	protected String[] getRF2HeaderSpec() {
+		return new String[] {
+			RF2Columns.ID,
+			RF2Columns.EFFECTIVE_TIME,
+			RF2Columns.ACTIVE,
+			RF2Columns.MODULE_ID,
+			RF2Columns.REFSET_ID,
+			RF2Columns.REFERENCED_COMPONENT_ID
+		};
+	}
 	
 }

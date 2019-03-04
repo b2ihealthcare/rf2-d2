@@ -20,11 +20,32 @@ package superrf2.model;
  */
 public abstract class RF2Columns {
 
+	// Common fields
 	public static final String ID = "id";
 	public static final String EFFECTIVE_TIME = "effectiveTime";
 	public static final String ACTIVE = "active";
 	public static final String MODULE_ID = "moduleId";
+	
+	// Concept fields
 	public static final String DEFINITION_STATUS_ID = "definitionStatusId";
+	
+	// Description fields
+	public static final String CONCEPT_ID = "conceptId";
+	public static final String LANGUAGE_CODE = "languageCode";
+	public static final String TYPE_ID = "typeId";
+	public static final String TERM = "term";
+	public static final String CASE_SIGNIFICANCE_ID = "caseSignificanceId";
+	
+	// Relationship fields
+	public static final String SOURCE_ID = "sourceId";
+	public static final String DESTINATION_ID = "destinationId";
+	public static final String RELATIONSHIP_GROUP = "relationshipGroup";
+	public static final String CHARACTERISTIC_TYPE_ID = "characteristicTypeId";
+	public static final String MODIFIER_ID = "modifierId";
+	
+	// Refset fields
+	public static final String REFSET_ID = "refsetId";
+	public static final String REFERENCED_COMPONENT_ID = "referencedComponentId";
 	
 	private RF2Columns() {}
 	
