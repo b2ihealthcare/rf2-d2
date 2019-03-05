@@ -53,7 +53,7 @@ public final class RF2FileName extends RF2FileNameBase {
 	public RF2File createRF2File(Path parent) {
 		// first try to detect the actual RF2 file type by its name 
 		RF2File file = createByName(parent);
-		if (file.isUnrecognized()) {
+		if (file.isUnrecognized()) {	
 			// then by the content type aka header by reading the file
 			file = createByContent(parent);
 		}
@@ -62,15 +62,12 @@ public final class RF2FileName extends RF2FileNameBase {
 
 	private RF2File createByName(Path parent) {
 		return getElement(RF2ContentType.class)
-				.map(contentType -> createRF2File(parent, contentType))
+				.map(contentType -> createTerminologyRF2File(parent, contentType))
 				.orElse(new RF2UnrecognizedFile(parent, this));
 	}
 	
-	private RF2File createRF2File(Path parent, RF2ContentType contentType) {
+	private RF2File createTerminologyRF2File(Path parent, RF2ContentType contentType) {
 		final String type = contentType.getContentType();
-		if (type.endsWith("Refset")) {
-			return new RF2RefsetFile(parent, this);
-		}
 		switch (type) {
 		case "Concept": 
 			return new RF2ConceptFile(parent, this);
@@ -86,7 +83,8 @@ public final class RF2FileName extends RF2FileNameBase {
 	}
 	
 	private RF2File createByContent(Path parent) {
-		return new RF2UnrecognizedFile(parent, this);
+		// refset files are currently cannot be detected 100% by purely using the file name so we are falling back to content type aka header
+		return RF2RefsetFile.detect(parent, this);
 	}
 	
 }

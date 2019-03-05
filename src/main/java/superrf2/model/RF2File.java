@@ -116,6 +116,7 @@ public abstract class RF2File {
 	 *            - the file path to recognize
 	 * @return an {@link RF2File} instance
 	 */
+	@SuppressWarnings("unchecked")
 	public static <T extends RF2File> T detect(final Path path) {
 		String fileName = path.getFileName().toString();
 		RF2FileNameBase rf2Release;
