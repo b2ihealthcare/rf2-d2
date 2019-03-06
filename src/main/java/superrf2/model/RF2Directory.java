@@ -20,6 +20,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
+import superrf2.RF2CreateContext;
+import superrf2.naming.RF2DirectoryName;
 import superrf2.naming.RF2FileNameBase;
 
 /**
@@ -50,6 +52,15 @@ public final class RF2Directory extends RF2File {
 	@Override
 	public String getType() {
 		return "Directory";
+	}
+	
+	@Override
+	public void create(RF2CreateContext context) throws IOException {
+		Files.createDirectories(getPath());
+	}
+
+	public static RF2Directory create(Path parent, String directoryName) {
+		return new RF2Directory(parent, new RF2DirectoryName(directoryName));
 	}
 
 }

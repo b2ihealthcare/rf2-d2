@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import superrf2.Constants;
 import superrf2.naming.RF2FileName;
 import superrf2.naming.file.RF2ContentType;
 
@@ -47,7 +46,7 @@ public final class RF2RefsetFile extends RF2ContentFile {
 			.map(contentType -> {
 				if (contentType.getContentType().endsWith("Refset")) {
 					try {
-						String[] header = Files.lines(parent.resolve(fileName.toString())).findFirst().orElse("N/A").split(Constants.TAB);
+						String[] header = Files.lines(parent.resolve(fileName.toString())).findFirst().orElse("N/A").split(TAB);
 						if (KNOWN_REFSET_HEADERS.stream().anyMatch(knownHeader -> Arrays.deepEquals(knownHeader, header))) {
 							return new RF2RefsetFile(parent, fileName, header);
 						}					

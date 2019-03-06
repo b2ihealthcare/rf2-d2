@@ -17,6 +17,7 @@ package superrf2.model;
 
 import java.nio.file.Path;
 
+import superrf2.RF2CreateContext;
 import superrf2.naming.RF2FileName;
 
 /**
@@ -24,8 +25,8 @@ import superrf2.naming.RF2FileName;
  */
 public final class RF2ConceptFile extends RF2ContentFile {
 
-	public RF2ConceptFile(Path path, RF2FileName fileName) {
-		super(path, fileName);
+	public RF2ConceptFile(Path parent, RF2FileName fileName) {
+		super(parent, fileName);
 	}
 	
 	@Override
@@ -37,6 +38,11 @@ public final class RF2ConceptFile extends RF2ContentFile {
 			RF2Columns.MODULE_ID,
 			RF2Columns.DEFINITION_STATUS_ID
 		};
+	}
+	
+	public static RF2ConceptFile create(Path parent, String contentType, RF2CreateContext context) {
+		final String fileName = String.format("sct2_Concept_%s_%s%s_%s.%s", contentType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
+		return new RF2ConceptFile(parent, new RF2FileName(fileName));
 	}
 	
 }

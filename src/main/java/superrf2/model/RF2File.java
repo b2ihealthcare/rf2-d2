@@ -22,6 +22,7 @@ import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import superrf2.RF2CreateContext;
 import superrf2.check.RF2IssueAcceptor;
 import superrf2.naming.RF2DirectoryName;
 import superrf2.naming.RF2FileName;
@@ -33,6 +34,10 @@ import superrf2.naming.RF2ReleaseName;
  */
 public abstract class RF2File {
 
+	public static final String TXT = "txt";
+	public static final String TAB = "\t";
+	public static final String CRLF = "\r\n";
+	
 	private final Path parent;
 	private final RF2FileNameBase fileName;
 
@@ -79,7 +84,7 @@ public abstract class RF2File {
 	public abstract void visit(Consumer<RF2File> visitor) throws IOException;
 
 	/**
-	 * Check that this RF2File conforms to the RF2 specification and reports warning and errors if not.
+	 * Check that this RF2File conforms to the RF2 specification and reports warnings and errors if not.
 	 * @param acceptor
 	 * @throws IOException 
 	 */
@@ -92,6 +97,13 @@ public abstract class RF2File {
 			acceptor.error("Missing name part: %s", missing.getSimpleName().replaceAll("RF2", ""));
 		});
 	}
+	
+	/**
+	 * Creates the RF2 file at the specified location and file name.
+	 * @param context
+	 * @throws IOException
+	 */
+	public abstract void create(RF2CreateContext context) throws IOException;
 	
 	/**
 	 * @return the type (or category) of this {@link RF2File}.

@@ -45,9 +45,14 @@ public abstract class RF2FileNameBase {
 			throw new IllegalArgumentException("FileName argument cannot be null or empty");
 		}
 		
-		this.fileName = fileName;
-		this.extension = fileName.contains(FILE_EXT_SEPARATOR) ? fileName.substring(fileName.lastIndexOf(FILE_EXT_SEPARATOR) + 1) : "";
-		String actualFileName = fileName.split("\\"+FILE_EXT_SEPARATOR)[0];
+		final int lastExtSeparatorIndex = fileName.lastIndexOf(FILE_EXT_SEPARATOR);
+		if (lastExtSeparatorIndex == -1) {
+			this.extension = "";
+			this.fileName = fileName;
+		} else {
+			this.extension = fileName.substring(lastExtSeparatorIndex + 1);
+			this.fileName = fileName.substring(0, lastExtSeparatorIndex);
+		}
 		
 		final Iterator<String> actualElements;
 		
@@ -55,12 +60,12 @@ public abstract class RF2FileNameBase {
 			this.elements = new ArrayList<>(expectedRF2NameElements.length);
 			this.missingElements = Collections.emptyList();
 			
-			actualElements = Arrays.asList(actualFileName).iterator();
+			actualElements = Arrays.asList(this.fileName).iterator();
 		} else {
 			this.elements = new ArrayList<>(expectedRF2NameElements.length);
 			this.missingElements = new ArrayList<>(expectedRF2NameElements.length);
 
-			actualElements = Arrays.asList(actualFileName.split(ELEMENT_SEPARATOR)).iterator();
+			actualElements = Arrays.asList(this.fileName.split(ELEMENT_SEPARATOR)).iterator();
 		}
 		
 		final Iterator<Class<?>> expectedElements = Arrays.asList(expectedRF2NameElements).iterator();

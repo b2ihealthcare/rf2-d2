@@ -18,11 +18,12 @@ package superrf2.model;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import superrf2.Constants;
+import superrf2.RF2CreateContext;
 import superrf2.check.RF2IssueAcceptor;
 import superrf2.naming.RF2FileName;
 import superrf2.naming.file.RF2ContentType;
@@ -34,8 +35,8 @@ public abstract class RF2ContentFile extends RF2File {
 
 	private String[] header;
 	
-	public RF2ContentFile(Path path, RF2FileName fileName) {
-		super(path, fileName);
+	public RF2ContentFile(Path parent, RF2FileName fileName) {
+		super(parent, fileName);
 	}
 	
 	@Override
@@ -64,6 +65,15 @@ public abstract class RF2ContentFile extends RF2File {
 		}
 	}
 	
+	@Override
+	public void create(RF2CreateContext context) throws IOException {
+		Files.writeString(getPath(), newLine(getHeader()), StandardOpenOption.CREATE_NEW);
+	}
+	
+	protected final String newLine(String[] values) {
+		return String.format("%s%s", String.join(TAB, values), CRLF);
+	}
+
 	/**
 	 * @return the current RF2 header by reading the first line of the file or if this is a non-existing file returns the header from the spec for kind of RF2 files
 	 * @throws IOException 
@@ -71,7 +81,7 @@ public abstract class RF2ContentFile extends RF2File {
 	public final String[] getHeader() throws IOException {
 		if (header == null) {
 			if (Files.exists(getPath())) {
-				header = Files.lines(getPath()).findFirst().orElse("N/A").split(Constants.TAB);
+				header = Files.lines(getPath()).findFirst().orElse("N/A").split(TAB);
 			} else {
 				header = getRF2HeaderSpec();
 			}
@@ -91,7 +101,7 @@ public abstract class RF2ContentFile extends RF2File {
 	public final Stream<String[]> rows() throws IOException {
 		return Files.lines(getPath())
 				.skip(1)
-				.map(line -> line.split(Constants.TAB));
+				.map(line -> line.split(TAB));
 	}
 
 }

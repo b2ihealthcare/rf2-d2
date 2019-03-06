@@ -30,6 +30,7 @@ import picocli.CommandLine.Option;
 	name = "rf2", 
 	subcommands = {
 		RF2Check.class,
+		RF2Create.class,
 		HelpCommand.class
 	},
 	versionProvider = RF2.VersionProvider.class

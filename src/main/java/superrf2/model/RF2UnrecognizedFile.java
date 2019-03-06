@@ -15,9 +15,11 @@
  */
 package superrf2.model;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
+import superrf2.RF2CreateContext;
 import superrf2.naming.RF2FileNameBase;
 
 /**
@@ -32,6 +34,11 @@ public final class RF2UnrecognizedFile extends RF2File {
 	@Override
 	public void visit(Consumer<RF2File> visitor) {
 		visitor.accept(this);
+	}
+	
+	@Override
+	public void create(RF2CreateContext context) throws IOException {
+		throw new UnsupportedOperationException("Unrecognized files are not supported yet.");
 	}
 	
 	@Override

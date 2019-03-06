@@ -34,11 +34,11 @@ import superrf2.model.RF2File;
 	name = "check",
 	description = "Checks a set of RF2 files and/or archives against the current RF2 specification"
 )
-public class RF2Check extends RF2Command {
+public final class RF2Check extends RF2Command {
 
-	private static final String PATH_DESCRIPTION = "RF2 source files to check. Accepted file types: *.txt,*.zip.";
+	private static final String PATH_DESCRIPTION = "RF2 source files to check.";
 	
-	@Parameters(arity = "1..*", description = RF2Check.PATH_DESCRIPTION, paramLabel = "PATH")
+	@Parameters(arity = "1..*", description = PATH_DESCRIPTION, paramLabel = "PATH")
 	List<String> paths;
 	
 	@Override

@@ -17,6 +17,7 @@ package superrf2.model;
 
 import java.nio.file.Path;
 
+import superrf2.RF2CreateContext;
 import superrf2.naming.RF2FileName;
 
 /**
@@ -43,4 +44,9 @@ public final class RF2DescriptionFile extends RF2ContentFile {
 		};
 	}
 
+	public static RF2DescriptionFile create(Path parent, String contentSubType, RF2CreateContext context) {
+		final String fileName = String.format("sct2_Description_%s-en-GB_%s%s_%s.%s", contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
+		return new RF2DescriptionFile(parent, new RF2FileName(fileName));
+	}
+	
 }

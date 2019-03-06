@@ -2,6 +2,7 @@ package superrf2.model;
 
 import java.nio.file.Path;
 
+import superrf2.RF2CreateContext;
 import superrf2.naming.RF2FileName;
 
 /**
@@ -27,6 +28,11 @@ public final class RF2RelationshipFile extends RF2ContentFile {
 			RF2Columns.CHARACTERISTIC_TYPE_ID,
 			RF2Columns.MODIFIER_ID,
 		};
+	}
+
+	public static RF2RelationshipFile create(Path parent, String contentSubType, RF2CreateContext context) {
+		final String fileName = String.format("sct2_Relationship_%s_%s%s_%s.%s", contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
+		return new RF2RelationshipFile(parent, new RF2FileName(fileName));
 	}
 
 }

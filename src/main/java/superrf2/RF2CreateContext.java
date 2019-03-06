@@ -15,22 +15,33 @@
  */
 package superrf2;
 
-import picocli.CommandLine.Command;
+import java.util.Objects;
 
 /**
  * @since 0.1
  */
-@Command(
-	usageHelpWidth = 120,
-	description = "TODO",
-	headerHeading = "Usage:%n%n",
-    synopsisHeading = "",
-    descriptionHeading = "%nDescription:%n%n",
-    parameterListHeading = "%nParameters:%n",
-    optionListHeading = "%nOptions:%n"
-)
-public abstract class RF2Command implements Runnable {
+public final class RF2CreateContext {
 
-	protected final Console console = new Console();
+	private final String releaseDate;
+	private final String country;
+	private final String namespace;
+	
+	public RF2CreateContext(String releaseDate, String country, String namespace) {
+		this.releaseDate = Objects.requireNonNull(releaseDate);
+		this.country = Objects.requireNonNull(country);
+		this.namespace = Objects.requireNonNull(namespace);
+	}
+	
+	public String getCountry() {
+		return country;
+	}
+	
+	public String getNamespace() {
+		return namespace;
+	}
+	
+	public String getReleaseDate() {
+		return releaseDate;
+	}
 	
 }
