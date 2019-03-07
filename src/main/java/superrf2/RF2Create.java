@@ -15,18 +15,20 @@
  */
 package superrf2;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import superrf2.model.RF2File;
 import superrf2.model.RF2Release;
 
 /**
@@ -80,12 +82,21 @@ public final class RF2Create extends RF2Command {
 			console.log("Output directory '%s' does not exist or is not a directory.", outDir);
 			return;
 		}
+
+		final List<RF2File> sources;
+		if (paths != null) {
+			sources = paths.stream().map(path -> RF2File.<RF2File>detect(path)).collect(Collectors.toList());
+		} else {
+			sources = Collections.emptyList();
+		}
 		
 		RF2Release release = RF2Release.create(parent, product, releaseStatus, releaseDate, releaseTime);
-		console.log("Creating %s...", release.getPath());
+		console.log("Creating RF2 release at %s...", release.getPath());
+		
 		try {
-			release.create(new RF2CreateContext(releaseDate, country, namespace));
-		} catch (IOException e) {
+			release.create(new RF2CreateContext(releaseDate, country, namespace, sources));
+			console.log("Created RF2 release at %s", release.getPath());
+		} catch (Exception e) {
 			console.log(e.getMessage());
 		}
 	}

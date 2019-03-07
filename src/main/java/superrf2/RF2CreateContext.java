@@ -15,7 +15,11 @@
  */
 package superrf2;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+
+import superrf2.model.RF2File;
 
 /**
  * @since 0.1
@@ -25,11 +29,13 @@ public final class RF2CreateContext {
 	private final String releaseDate;
 	private final String country;
 	private final String namespace;
+	private final List<RF2File> sources;
 	
-	public RF2CreateContext(String releaseDate, String country, String namespace) {
+	public RF2CreateContext(String releaseDate, String country, String namespace, List<RF2File> sources) {
 		this.releaseDate = Objects.requireNonNull(releaseDate);
 		this.country = Objects.requireNonNull(country);
 		this.namespace = Objects.requireNonNull(namespace);
+		this.sources = sources == null ? Collections.emptyList() : sources;
 	}
 	
 	public String getCountry() {
@@ -44,4 +50,8 @@ public final class RF2CreateContext {
 		return releaseDate;
 	}
 	
+	public List<RF2File> getSources() {
+		return sources;
+	}
+
 }

@@ -45,7 +45,7 @@ public final class RF2Release extends RF2File {
 		}
 		
 		visitor.accept(this);
-		try (FileSystem zipfs = FileSystems.newFileSystem(URI.create("jar:" + getPath().toUri()), Map.of("create", "false"))) {
+		try (FileSystem zipfs = openZipfs(false)) {
 			for (Path root : zipfs.getRootDirectories()) {
 				Files.walk(root, 1).forEach(path -> {
 					if (!RF2Directory.ROOT_PATH.equals(path.toString())) {
@@ -76,7 +76,7 @@ public final class RF2Release extends RF2File {
 			throw new IllegalStateException("Cannot overwrite and create RF2 Release at path: " + getPath());
 		}
 		
-		try (FileSystem zipfs = FileSystems.newFileSystem(URI.create("jar:" + getPath().toUri()), Map.of("create", "true"))) {
+		try (FileSystem zipfs = openZipfs(false)) {
 			// root folder with same name
 			RF2Directory rootDir = RF2Directory.create(zipfs.getPath("/"), getFileName().getFileName());
 			rootDir.create(context);
@@ -107,4 +107,8 @@ public final class RF2Release extends RF2File {
 		}
 	}
 	
+	private FileSystem openZipfs(boolean create) throws IOException {
+		return FileSystems.newFileSystem(URI.create("jar:" + getPath().toUri()), Map.of("create", String.valueOf(create)));
+	}
+
 }
