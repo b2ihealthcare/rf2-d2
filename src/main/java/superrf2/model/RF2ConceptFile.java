@@ -16,15 +16,20 @@
 package superrf2.model;
 
 import java.nio.file.Path;
+import java.util.stream.Stream;
 
 import superrf2.RF2CreateContext;
+import superrf2.check.RF2IssueAcceptor;
 import superrf2.naming.RF2FileName;
+import superrf2.validation.Rf2IdentifierValidator;
 
 /**
  * @since 0.1
  */
 public final class RF2ConceptFile extends RF2ContentFile {
-
+	
+	public static final String COMPONENT_TYPE = "Concept";
+	
 	public RF2ConceptFile(Path parent, RF2FileName fileName) {
 		super(parent, fileName);
 	}
@@ -40,9 +45,19 @@ public final class RF2ConceptFile extends RF2ContentFile {
 		};
 	}
 	
+	@Override
+	protected void validateRows(RF2IssueAcceptor acceptor, Stream<String[]> rows) {
+		rows.forEach(row -> {
+			var conceptId = row[0];
+			if (!Rf2IdentifierValidator.isValid(conceptId, acceptor, COMPONENT_TYPE)) {
+				acceptor.error("Concept id is not a valid identifier: %s", conceptId);
+			}
+		});
+	}
+	
 	public static RF2ConceptFile create(Path parent, String contentType, RF2CreateContext context) {
 		final String fileName = String.format("sct2_Concept_%s_%s%s_%s.%s", contentType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
 		return new RF2ConceptFile(parent, new RF2FileName(fileName));
 	}
-	
+
 }
