@@ -1,5 +1,6 @@
 # Build folders
 .gradle/
+.idea/
 build/
 bin/
 

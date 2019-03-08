@@ -15,18 +15,17 @@
  */
 package com.b2international.rf2;
 
+import com.b2international.rf2.check.RF2IssueAcceptor;
+import com.b2international.rf2.model.RF2ContentFile;
+import com.b2international.rf2.model.RF2File;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Parameters;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
-
-import com.b2international.rf2.check.RF2IssueAcceptor;
-import com.b2international.rf2.model.RF2ContentFile;
-import com.b2international.rf2.model.RF2File;
-
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Parameters;
 
 /**
  * @since 0.1
