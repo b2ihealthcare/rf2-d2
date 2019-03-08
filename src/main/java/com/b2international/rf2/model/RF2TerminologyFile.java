@@ -22,6 +22,7 @@ import java.util.Optional;
 import com.b2international.rf2.check.RF2IssueAcceptor;
 import com.b2international.rf2.naming.RF2FileName;
 import com.b2international.rf2.naming.file.RF2ContentType;
+import com.b2international.rf2.validation.RF2EffectiveTimeValidator;
 import com.b2international.rf2.validation.RF2IdentifierValidator;
 
 /**
@@ -42,6 +43,11 @@ public abstract class RF2TerminologyFile extends RF2ContentFile {
 				final String contentType = rf2ContentType.get().getContentType();
 				if (!RF2IdentifierValidator.isValid(componentId, contentType, acceptor)) {
 					acceptor.error("%s id is not a valid identifier: %s", contentType, componentId);
+				}
+				
+				var effectiveTime = row[1];
+				if (!RF2EffectiveTimeValidator.isValid(effectiveTime, acceptor)) {
+					acceptor.error("%s is not a valid effective time", effectiveTime);
 				}
 			});	
 		}
