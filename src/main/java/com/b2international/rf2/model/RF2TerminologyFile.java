@@ -23,6 +23,7 @@ import com.b2international.rf2.check.RF2IssueAcceptor;
 import com.b2international.rf2.naming.RF2FileName;
 import com.b2international.rf2.naming.file.RF2ContentType;
 import com.b2international.rf2.validation.RF2IdentifierValidator;
+import com.b2international.rf2.validation.RF2StatusValidator;
 
 /**
  * @since 0.1
@@ -43,6 +44,9 @@ public abstract class RF2TerminologyFile extends RF2ContentFile {
 				if (!RF2IdentifierValidator.isValid(componentId, contentType, acceptor)) {
 					acceptor.error("%s id is not a valid identifier: %s", contentType, componentId);
 				}
+				
+				var componentStatus = row[2];
+				RF2StatusValidator.validate(componentStatus, acceptor);
 			});	
 		}
 	}
