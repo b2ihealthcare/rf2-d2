@@ -1,2 +1,2 @@
-# super-rf2
-SNOMED CT RF2
+# RF2-D2  
+SNOMED CT Release tool
