@@ -28,7 +28,7 @@ processResources {
 }
 
 application {
-    mainClassName = 'superrf2.RF2'
+    mainClassName = 'com.b2international.rf2.RF2'
     applicationName = 'rf2'
 }
 

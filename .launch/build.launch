@@ -15,5 +15,5 @@
         <listEntry value="jar"/>
         <listEntry value="runtimeZip"/>
     </listAttribute>
-    <stringAttribute key="working_dir" value="${workspace_loc:/super-rf2}"/>
+    <stringAttribute key="working_dir" value="${workspace_loc:/rf2-d2}"/>
 </launchConfiguration>
