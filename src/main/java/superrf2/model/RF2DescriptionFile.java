@@ -16,20 +16,15 @@
 package superrf2.model;
 
 import java.nio.file.Path;
-import java.util.stream.Stream;
 
 import superrf2.RF2CreateContext;
-import superrf2.check.RF2IssueAcceptor;
 import superrf2.naming.RF2FileName;
-import superrf2.validation.Rf2IdentifierValidator;
 
 /**
  * @since 0.1
  */
-public final class RF2DescriptionFile extends RF2ContentFile {
+public final class RF2DescriptionFile extends RF2TerminologyFile {
 	
-	public static final String COMPONENT_TYPE = "Description";
-
 	public RF2DescriptionFile(Path path, RF2FileName fileName) {
 		super(path, fileName);
 	}
@@ -47,16 +42,6 @@ public final class RF2DescriptionFile extends RF2ContentFile {
 			RF2Columns.TERM,
 			RF2Columns.CASE_SIGNIFICANCE_ID
 		};
-	}
-	
-	@Override
-	protected void validateRows(RF2IssueAcceptor acceptor, Stream<String[]> rows) {
-		rows.forEach(row -> {
-			var descriptionId = row[0];
-			if (!Rf2IdentifierValidator.isValid(descriptionId, acceptor, COMPONENT_TYPE)) {
-				acceptor.error("Description id is not a valid identifier: %s", descriptionId);
-			}
-		});
 	}
 	
 	public static RF2DescriptionFile create(Path parent, String contentSubType, RF2CreateContext context) {

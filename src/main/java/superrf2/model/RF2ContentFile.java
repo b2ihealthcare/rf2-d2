@@ -63,10 +63,11 @@ public abstract class RF2ContentFile extends RF2File {
 			// TODO report incorrect header columns
 			acceptor.error("Header does not conform to specification");
 		}
-		validateRows(acceptor, rows());
+		
+		checkContent(acceptor);
 	}
 	
-	protected abstract void validateRows(RF2IssueAcceptor acceptor, Stream<String[]> stream);
+	protected abstract void checkContent(RF2IssueAcceptor acceptor) throws IOException;
 
 	@Override
 	public void create(RF2CreateContext context) throws IOException {

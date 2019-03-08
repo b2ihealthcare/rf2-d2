@@ -15,13 +15,13 @@
  */
 package superrf2.model;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import superrf2.check.RF2IssueAcceptor;
 import superrf2.naming.RF2FileName;
@@ -47,13 +47,13 @@ public final class RF2RefsetFile extends RF2ContentFile {
 	}
 	
 	@Override
-	protected void validateRows(RF2IssueAcceptor acceptor, Stream<String[]> rows) {
-		rows.forEach(row -> {
+	protected void checkContent(RF2IssueAcceptor acceptor) throws IOException {
+		rows().forEach(row -> {
 			var id = row[0];
 			try {
 				UUID.fromString(id);
 			} catch (IllegalArgumentException e) {
-				acceptor.error("Member id is not a valid uuid: %s", id);
+				acceptor.error("Member id is not a valid UUID: %s", id);
 			}
 		});
 	}

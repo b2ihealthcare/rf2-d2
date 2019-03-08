@@ -20,7 +20,7 @@ package superrf2.sctIds;
  *
  * @since 0.1
  */
-public class Rf2VerhoeffCheck {
+public class RF2VerhoeffCheck {
 	
 	/**
 	 * Represents the multiplication table.
@@ -55,19 +55,6 @@ public class Rf2VerhoeffCheck {
 	 */
 	private static final char[] INV_TABLE = new char[] { 0, 4, 3, 2, 1, 5, 6, 7, 8, 9 };
 
-	/**
-	 * Verifies that the specified code has the right checksum digit at the end.
-	 * 
-	 * @param code the code to validate
-	 * @return true if the checksum is correct, false otherwise
-	 */
-	public static boolean validateLastChecksumDigit(final CharSequence code) {
-		final CharSequence idHead = code.subSequence(0, code.length() - 1);
-		final char originalChecksum = code.charAt(code.length() - 1);
-		final char checksum = calculateChecksum(idHead, false);
-		return (originalChecksum == checksum);
-	}
-	
 	/**
 	 * Calculates the checksum. Calls <tt>calculateChecksum(code, 0, code.length(), includeCheckDigit)</tt>.
 	 * @param code the readable sequence of characters to be checked.
