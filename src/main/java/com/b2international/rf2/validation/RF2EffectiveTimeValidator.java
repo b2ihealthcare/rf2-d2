@@ -28,23 +28,21 @@ public final class RF2EffectiveTimeValidator {
 	
 	private RF2EffectiveTimeValidator() {}
 	
+	private final static SimpleDateFormat format = new SimpleDateFormat("YYYYMMDD");
+	
 	/**
 	 * @param effectiveTime - effective time to check
 	 * @param acceptor - to report issues
 	 * @return <code>true</code> if the given effective time is a valid (YYYYMMDD) effective time, <code>false</code> otherwise.
 	 */
-	public static boolean isValid(String effectiveTime, RF2IssueAcceptor acceptor) {
-		var format = new SimpleDateFormat("YYYYMMDD");
+	public static void validate(String effectiveTime, RF2IssueAcceptor acceptor) {
 		try {
 			if (!effectiveTime.isEmpty()) {
 				format.parse(effectiveTime);
 			}
 		} catch (ParseException e) {
 			acceptor.error("Effective time '%s' is not in the YYYYMMDD format.", effectiveTime);
-			return false;
 		}
-		
-		return true;
 	}
 	
 }

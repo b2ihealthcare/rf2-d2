@@ -41,14 +41,10 @@ public abstract class RF2TerminologyFile extends RF2ContentFile {
 			rows().forEach(row -> {
 				var componentId = row[0];
 				final String contentType = rf2ContentType.get().getContentType();
-				if (!RF2IdentifierValidator.isValid(componentId, contentType, acceptor)) {
-					acceptor.error("%s id is not a valid identifier: %s", contentType, componentId);
-				}
+				RF2IdentifierValidator.validate(componentId, contentType, acceptor);
 				
 				var effectiveTime = row[1];
-				if (!RF2EffectiveTimeValidator.isValid(effectiveTime, acceptor)) {
-					acceptor.error("%s is not a valid effective time", effectiveTime);
-				}
+				RF2EffectiveTimeValidator.validate(effectiveTime, acceptor);
 			});	
 		}
 	}
