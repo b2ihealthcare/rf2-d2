@@ -15,12 +15,15 @@
  */
 package superrf2.model;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
+import superrf2.check.RF2IssueAcceptor;
 import superrf2.naming.RF2FileName;
 import superrf2.naming.file.RF2ContentType;
 
@@ -29,6 +32,8 @@ import superrf2.naming.file.RF2ContentType;
  */
 public final class RF2RefsetFile extends RF2ContentFile {
 
+	public static final String COMPONENT_TYPE = "Refset";
+	
 	private final String[] rf2HeaderSpec;
 	
 	public RF2RefsetFile(Path path, RF2FileName fileName, String[] rf2HeaderSpec) {
@@ -40,7 +45,19 @@ public final class RF2RefsetFile extends RF2ContentFile {
 	protected String[] getRF2HeaderSpec() {
 		return rf2HeaderSpec;
 	}
-
+	
+	@Override
+	protected void checkContent(RF2IssueAcceptor acceptor) throws IOException {
+		rows().forEach(row -> {
+			var id = row[0];
+			try {
+				UUID.fromString(id);
+			} catch (IllegalArgumentException e) {
+				acceptor.error("Member id is not a valid UUID: %s", id);
+			}
+		});
+	}
+	
 	public static RF2File detect(Path parent, RF2FileName fileName) {
 		return fileName.getElement(RF2ContentType.class)
 			.map(contentType -> {
@@ -58,7 +75,6 @@ public final class RF2RefsetFile extends RF2ContentFile {
 			})
 			.orElse(new RF2UnrecognizedFile(parent, fileName));
 	}
-	
 	
 	// KNOWN RF2 RefSet Headers
 	
@@ -316,5 +332,5 @@ public final class RF2RefsetFile extends RF2ContentFile {
 		MRCM_MODULE_SCOPE_REFSET_HEADER,
 		OWL_EXPRESSION_REFSET_HEADER
 	);
-	
+
 }

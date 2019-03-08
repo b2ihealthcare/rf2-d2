@@ -23,8 +23,8 @@ import superrf2.naming.RF2FileName;
 /**
  * @since 0.1
  */
-public final class RF2ConceptFile extends RF2ContentFile {
-
+public final class RF2ConceptFile extends RF2TerminologyFile {
+	
 	public RF2ConceptFile(Path parent, RF2FileName fileName) {
 		super(parent, fileName);
 	}
@@ -44,5 +44,5 @@ public final class RF2ConceptFile extends RF2ContentFile {
 		final String fileName = String.format("sct2_Concept_%s_%s%s_%s.%s", contentType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
 		return new RF2ConceptFile(parent, new RF2FileName(fileName));
 	}
-	
+
 }

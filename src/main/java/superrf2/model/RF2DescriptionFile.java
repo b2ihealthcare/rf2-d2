@@ -23,8 +23,8 @@ import superrf2.naming.RF2FileName;
 /**
  * @since 0.1
  */
-public final class RF2DescriptionFile extends RF2ContentFile {
-
+public final class RF2DescriptionFile extends RF2TerminologyFile {
+	
 	public RF2DescriptionFile(Path path, RF2FileName fileName) {
 		super(path, fileName);
 	}
@@ -43,10 +43,10 @@ public final class RF2DescriptionFile extends RF2ContentFile {
 			RF2Columns.CASE_SIGNIFICANCE_ID
 		};
 	}
-
+	
 	public static RF2DescriptionFile create(Path parent, String contentSubType, RF2CreateContext context) {
 		final String fileName = String.format("sct2_Description_%s-en-GB_%s%s_%s.%s", contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
 		return new RF2DescriptionFile(parent, new RF2FileName(fileName));
 	}
-	
+
 }
