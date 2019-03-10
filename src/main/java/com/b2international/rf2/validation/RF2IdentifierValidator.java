@@ -43,10 +43,9 @@ public final class RF2IdentifierValidator {
 	 * @param acceptor - to report issues
 	 * @return <code>true</code> if the given componentId is a valid SNOMED CT core component identifier, <code>false</code> otherwise.
 	 */
-	public static boolean isValid(String componentId, String expectedComponentType, RF2IssueAcceptor acceptor) {
+	public static void validate(String componentId, String expectedComponentType, RF2IssueAcceptor acceptor) {
 		if (componentId == null || componentId.isBlank()) {
 			acceptor.error("SCTID '%s' is empty or contains only white space characters.", componentId);
-			return false;
 		}
 		
 		// validate that it is a number
@@ -54,19 +53,16 @@ public final class RF2IdentifierValidator {
 			Long.parseLong(componentId);
 		} catch (final NumberFormatException e) {
 			acceptor.error("SCTID '%s' should be a number.", componentId);
-			return false;
 		}
 		
 		// validate leading zero
 		if (componentId.startsWith("0")) {
 			acceptor.error("SCTID '%s' can't start with leading zero.", componentId);
-			return false;
 		}
 		
 		// validate number of digits between 6-18
 		if (componentId.length() < 6 || componentId.length() > 18) {
 			acceptor.error("SCTID '%s' length must be between 6-18 characters.", componentId);
-			return false;
 		}
 
 		// validate component identifier in partition identifier
@@ -75,7 +71,6 @@ public final class RF2IdentifierValidator {
 		
 		if (actualComponentIdentifier != expectedComponentIdentifier) {
 			acceptor.error("SCTID '%s' has unsatisfying componentIdentifier. Expected '%s' but was '%s'.", componentId, expectedComponentIdentifier, actualComponentIdentifier);
-			return false;
 		}
 		
 		// validate Verhoeff check digit
@@ -84,10 +79,7 @@ public final class RF2IdentifierValidator {
 		var actualChecksum = componentId.charAt(componentId.length() - 1);
 		if (actualChecksum != expectedChecksum) {
 			acceptor.error("%s has incorrect Verhoeff check-digit. Expected '%s' but was '%s'.", componentId, expectedChecksum, actualChecksum);
-			return false;
 		}
-		
-		return true;
 	}
 	
 	private static int getComponentIdentifier(final String componentId, RF2IssueAcceptor acceptor) {
