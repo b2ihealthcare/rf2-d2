@@ -24,6 +24,7 @@ import com.b2international.rf2.naming.RF2FileName;
 import com.b2international.rf2.naming.file.RF2ContentType;
 import com.b2international.rf2.validation.RF2EffectiveTimeValidator;
 import com.b2international.rf2.validation.RF2IdentifierValidator;
+import com.b2international.rf2.validation.RF2StatusValidator;
 
 /**
  * @since 0.1
@@ -42,9 +43,12 @@ public abstract class RF2TerminologyFile extends RF2ContentFile {
 				var componentId = row[0];
 				final String contentType = rf2ContentType.get().getContentType();
 				RF2IdentifierValidator.validate(componentId, contentType, acceptor);
-				
+        
 				var effectiveTime = row[1];
 				RF2EffectiveTimeValidator.validate(effectiveTime, acceptor);
+
+				var componentStatus = row[2];
+				RF2StatusValidator.validate(componentStatus, acceptor);
 			});	
 		}
 	}
