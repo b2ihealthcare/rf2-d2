@@ -74,7 +74,7 @@ public final class RF2Check extends RF2Command {
 		if (file instanceof RF2ContentFile) {
 			RF2ContentFile rf2ContentFile = (RF2ContentFile) file;
 			detailConsole.log("header: %s", Arrays.toString(rf2ContentFile.getHeader()));
-			detailConsole.log("lines: %d", rf2ContentFile.rows().count());
+			detailConsole.log("lines: %d", rf2ContentFile.rowsParallel().count());
 		}
 
 		// check all RF2 files

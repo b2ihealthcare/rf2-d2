@@ -47,8 +47,9 @@ public final class RF2Create extends RF2Command {
 	private static final String RELEASE_STATUS_DESCRIPTION = "Configure the [ReleaseStatus] value in the name of the created RF2 Release. Default value is 'PRODUCTION'.";
 	private static final String RELEASE_DATE_DESCRIPTION = "Configure the [ReleaseDate] value in the name of the created RF2 Release. Default value is today's date.";
 	private static final String RELEASE_TIME_DESCRIPTION = "Configure the [ReleaseTime] value in the name of the created RF2 Release. Default value is the current time.";
-	private static final String COUNTRY_DESCRIPTION = "Configure the country value in the [CountryNamespace] part of RF2 release files. Default value is 'INT'.";
-	private static final String NAMESPACE_DESCRIPTION = "Configure the namespace value in the [CountryNamespace] part of RF2 release files. Default value is empty.";
+	private static final String COUNTRY_DESCRIPTION = "Configure the country value in the [CountryNamespace] part of RF2 Release files. Default value is 'INT'.";
+	private static final String NAMESPACE_DESCRIPTION = "Configure the namespace value in the [CountryNamespace] part of RF2 Release files. Default value is empty.";
+	private static final String CONTENT_SUB_TYPES_DESCRIPTION = "Configure the content sub types to be created in the RF2 Release. Default is ['Delta', 'Snapshot', 'Full'].";
 	
 	private final LocalDateTime now = LocalDateTime.now(ZoneId.of("UTC"));
 	
@@ -76,6 +77,9 @@ public final class RF2Create extends RF2Command {
 	@Option(required = false, names = {"-n", "--namespace"}, description = NAMESPACE_DESCRIPTION)
 	String namespace = "";
 	
+	@Option(required = false, names = {"-C", "--contentsubtype"}, description = CONTENT_SUB_TYPES_DESCRIPTION)
+	String[] contentSubTypes = new String[] {"Delta", "Snapshot", "Full"};
+	
 	@Override
 	public void run() {
 		final Path parent = Paths.get(outDir);
@@ -92,10 +96,8 @@ public final class RF2Create extends RF2Command {
 		}
 		
 		RF2Release release = RF2Release.create(parent, product, releaseStatus, releaseDate, releaseTime);
-		console.log("Creating RF2 release at %s...", release.getPath());
-		
 		try {
-			release.create(new RF2CreateContext(releaseDate, country, namespace, sources));
+			release.create(new RF2CreateContext(contentSubTypes, releaseDate, country, namespace, sources, console));
 			console.log("Created RF2 release at %s", release.getPath());
 		} catch (Exception e) {
 			console.log(e.getMessage());

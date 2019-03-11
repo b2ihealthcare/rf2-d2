@@ -15,6 +15,7 @@
  */
 package com.b2international.rf2.model;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,6 +29,7 @@ import java.util.stream.Stream;
 import com.b2international.rf2.RF2CreateContext;
 import com.b2international.rf2.check.RF2IssueAcceptor;
 import com.b2international.rf2.naming.RF2FileName;
+import com.b2international.rf2.naming.file.RF2ContentSubType;
 import com.b2international.rf2.naming.file.RF2ContentType;
 import com.b2international.rf2.validation.RF2ColumnValidator;
 
@@ -83,7 +85,7 @@ public abstract class RF2ContentFile extends RF2File {
 		}
 		
 		// validate each row in RF2 content file
-		rows().forEach(row -> {
+		rowsParallel().forEach(row -> {
 			for (int i = 0; i < row.length; i++) {
 				validatorsByIndex.get(i).check(this, header[i], row[i], acceptor);
 			}
@@ -92,7 +94,37 @@ public abstract class RF2ContentFile extends RF2File {
 	
 	@Override
 	public void create(RF2CreateContext context) throws IOException {
-		Files.writeString(getPath(), newLine(getHeader()), StandardOpenOption.CREATE_NEW);
+		context.log().log("Creating '%s'...", getPath());
+		try (BufferedWriter writer = Files.newBufferedWriter(getPath(), StandardOpenOption.CREATE_NEW)) {
+			writer.write(newLine(getHeader()));
+			
+			// copy content from all other applicable sources
+			for (RF2File source : context.getSources()) {
+				source.visit(file -> {
+					final String actualContentSubType = file.getFileName().getElement(RF2ContentSubType.class).map(RF2ContentSubType::getReleaseType).orElse("N/A");
+					final String currentContentSubType = getFileName().getElement(RF2ContentSubType.class).get().getReleaseType();
+					if (!actualContentSubType.equals(currentContentSubType)) {
+						return;
+					}
+					
+					final String actualContentType = file.getFileName().getElement(RF2ContentType.class).map(RF2ContentType::getContentType).orElse("N/A");
+					final String currentContentType = getFileName().getElement(RF2ContentType.class).get().getContentType();
+					if (!actualContentType.equals(currentContentType)) {
+						return;
+					}
+					
+					if (file instanceof RF2ContentFile){
+						try {
+							for (String line : (Iterable<String>) ((RF2ContentFile) file).rows().map(this::newLine)::iterator) {
+								writer.write(line);
+							}
+						} catch (Exception e) {
+								throw new RuntimeException(e);
+						}
+					}
+				});
+			}
+		}
 	}
 	
 	protected final String newLine(String[] values) {
@@ -120,10 +152,20 @@ public abstract class RF2ContentFile extends RF2File {
 	protected abstract String[] getRF2HeaderSpec();
 	
 	/**
-	 * @return the actual raw data from this RF2 content file without header and each line converted into String[] objects
+	 * @return the actual raw data from this RF2 content file without header and each line converted into String[] objects in a sequential stream.
 	 * @throws IOException
 	 */
 	public final Stream<String[]> rows() throws IOException {
+		return Files.lines(getPath())
+				.skip(1)
+				.map(line -> line.split(TAB));
+	}
+	
+	/**
+	 * @return the actual raw data from this RF2 content file without header and each line converted into String[] objects in a parallel stream.
+	 * @throws IOException
+	 */
+	public final Stream<String[]> rowsParallel() throws IOException {
 		return Files.lines(getPath())
 				.skip(1)
 				.parallel()

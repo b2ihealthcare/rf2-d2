@@ -26,16 +26,30 @@ import com.b2international.rf2.model.RF2File;
  */
 public final class RF2CreateContext {
 
+	private final String[] contentSubTypes;
 	private final String releaseDate;
 	private final String country;
 	private final String namespace;
 	private final List<RF2File> sources;
+	private final Console log;
 	
-	public RF2CreateContext(String releaseDate, String country, String namespace, List<RF2File> sources) {
+	public RF2CreateContext(
+			String[] contentSubTypes, 
+			String releaseDate, 
+			String country, 
+			String namespace, 
+			List<RF2File> sources, 
+			Console log) {
+		this.contentSubTypes = contentSubTypes;
+		this.log = log;
 		this.releaseDate = Objects.requireNonNull(releaseDate);
 		this.country = Objects.requireNonNull(country);
 		this.namespace = Objects.requireNonNull(namespace);
 		this.sources = sources == null ? Collections.emptyList() : sources;
+	}
+	
+	public String[] getContentSubTypes() {
+		return contentSubTypes;
 	}
 	
 	public String getCountry() {
@@ -52,6 +66,10 @@ public final class RF2CreateContext {
 	
 	public List<RF2File> getSources() {
 		return sources;
+	}
+	
+	public Console log() {
+		return log;
 	}
 
 }
