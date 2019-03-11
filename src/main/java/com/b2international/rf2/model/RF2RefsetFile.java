@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import com.b2international.rf2.RF2CreateContext;
 import com.b2international.rf2.naming.RF2FileName;
 import com.b2international.rf2.naming.file.RF2ContentType;
 
@@ -33,8 +34,8 @@ public final class RF2RefsetFile extends RF2ContentFile {
 	
 	private final String[] rf2HeaderSpec;
 	
-	public RF2RefsetFile(Path path, RF2FileName fileName, String[] rf2HeaderSpec) {
-		super(path, fileName);
+	public RF2RefsetFile(Path parent, RF2FileName fileName, String[] rf2HeaderSpec) {
+		super(parent, fileName);
 		this.rf2HeaderSpec = Objects.requireNonNull(rf2HeaderSpec);
 	}
 	
@@ -59,6 +60,50 @@ public final class RF2RefsetFile extends RF2ContentFile {
 				return new RF2UnrecognizedFile(parent, fileName);
 			})
 			.orElse(new RF2UnrecognizedFile(parent, fileName));
+	}
+	
+	// Terminology folder
+	public static RF2RefsetFile createOwlExpressionRefset(Path parent, String contentSubType, RF2CreateContext context) {
+		final String fileName = String.format("sct2_sRefset_OwlExpression%s_%s%s_%s.%s", contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
+		return new RF2RefsetFile(parent, new RF2FileName(fileName), OWL_EXPRESSION_REFSET_HEADER);
+	}
+	
+	// Content folder
+	public static RF2RefsetFile createSimpleRefset(Path parent, String contentSubType, RF2CreateContext context) {
+		final String fileName = String.format("der2_Refset_Simple%s_%s%s_%s.%s", contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
+		return new RF2RefsetFile(parent, new RF2FileName(fileName), SIMPLE_REFSET_HEADER);
+	}
+	
+	public static RF2RefsetFile createAssociationRefset(Path parent, String contentSubType, RF2CreateContext context) {
+		final String fileName = String.format("der2_cRefset_Association%s_%s%s_%s.%s", contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
+		return new RF2RefsetFile(parent, new RF2FileName(fileName), ASSOCIATION_REFSET_HEADER);
+	}
+	
+	public static RF2RefsetFile createAttributeValueRefset(Path parent, String contentSubType, RF2CreateContext context) {
+		final String fileName = String.format("der2_cRefset_AttributeValue%s_%s%s_%s.%s", contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
+		return new RF2RefsetFile(parent, new RF2FileName(fileName), ATTRIBUTE_VALUE_REFSET_HEADER);
+	}
+	
+	// Language folder
+	public static RF2RefsetFile createLanguageRefset(Path parent, String contentSubType, RF2CreateContext context) {
+		final String fileName = String.format("der2_cRefset_Language%s-en_%s%s_%s.%s", contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
+		return new RF2RefsetFile(parent, new RF2FileName(fileName), LANGUAGE_REFSET_HEADER);
+	}
+	
+	// Map folder
+	public static RF2RefsetFile createSimpleMapRefset(Path parent, String contentSubType, RF2CreateContext context) {
+		final String fileName = String.format("der2_sRefset_SimpleMap%s_%s%s_%s.%s", contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
+		return new RF2RefsetFile(parent, new RF2FileName(fileName), SIMPLE_MAP_REFSET_HEADER);
+	}
+	
+	public static RF2RefsetFile createExtendedMapRefset(Path parent, String contentSubType, RF2CreateContext context) {
+		final String fileName = String.format("der2_iisssccRefset_ExtendedMap%s_%s%s_%s.%s", contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
+		return new RF2RefsetFile(parent, new RF2FileName(fileName), EXTENDED_MAP_REFSET_HEADER);
+	}
+	
+	public static RF2RefsetFile createComplexMapRefset(Path parent, String contentSubType, RF2CreateContext context) {
+		final String fileName = String.format("der2_iissscRefset_ComplexMap%s_%s%s_%s.%s", contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
+		return new RF2RefsetFile(parent, new RF2FileName(fileName), COMPLEX_MAP_REFSET_HEADER);
 	}
 	
 	// KNOWN RF2 RefSet Headers

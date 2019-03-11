@@ -109,12 +109,44 @@ public final class RF2Release extends RF2File {
 		
 		RF2RelationshipFile statedRelationshipFile = RF2RelationshipFile.createStated(terminologyDir.getPath(), contentSubType, context);
 		statedRelationshipFile.create(context);
+		
+		RF2RefsetFile owlExpressionRefsetFile = RF2RefsetFile.createOwlExpressionRefset(terminologyDir.getPath(), contentSubType, context);
+		owlExpressionRefsetFile.create(context);
 	}
 	
 	private void createRefsetContent(RF2CreateContext context, String contentSubType, RF2Directory contentSubTypeDir) throws IOException {
 		// create Refset directory
 		RF2Directory refSetDir = RF2Directory.create(contentSubTypeDir.getPath(), "Refset");
 		refSetDir.create(context);
+		
+		// create Content directory
+		RF2Directory contentDir = RF2Directory.create(refSetDir.getPath(), "Content");
+		contentDir.create(context);
+
+		RF2RefsetFile simpleRefsetFile = RF2RefsetFile.createSimpleRefset(contentDir.getPath(), contentSubType, context);
+		simpleRefsetFile.create(context);
+		
+		RF2RefsetFile associationRefsetFile = RF2RefsetFile.createAssociationRefset(contentDir.getPath(), contentSubType, context);
+		associationRefsetFile.create(context);
+		
+		RF2RefsetFile attributeValueRefsetFile = RF2RefsetFile.createAttributeValueRefset(contentDir.getPath(), contentSubType, context);
+		attributeValueRefsetFile.create(context);
+		
+		// Language
+		RF2RefsetFile languageRefsetFile = RF2RefsetFile.createLanguageRefset(contentDir.getPath(), contentSubType, context);
+		languageRefsetFile.create(context);
+		
+		// Map
+		RF2RefsetFile simpleMapRefsetFile = RF2RefsetFile.createSimpleMapRefset(contentDir.getPath(), contentSubType, context);
+		simpleMapRefsetFile.create(context);
+		
+		RF2RefsetFile complexMapRefsetFile = RF2RefsetFile.createComplexMapRefset(contentDir.getPath(), contentSubType, context);
+		complexMapRefsetFile.create(context);
+		
+		RF2RefsetFile extendedMapRefsetFile = RF2RefsetFile.createExtendedMapRefset(contentDir.getPath(), contentSubType, context);
+		extendedMapRefsetFile.create(context);
+		
+		// TODO Metadata
 	}
 	
 	public static RF2Release create(Path parent, String product, String releaseStatus, String releaseDate, String releaseTime) {

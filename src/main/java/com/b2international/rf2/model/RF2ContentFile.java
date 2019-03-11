@@ -113,13 +113,18 @@ public abstract class RF2ContentFile extends RF2File {
 						return;
 					}
 					
-					if (file instanceof RF2ContentFile){
+					if (file instanceof RF2ContentFile) {
 						try {
+							// check actual content type as well, to copy content from the right files
+							if (!Arrays.equals(((RF2ContentFile) file).getHeader(), getHeader())) {
+								return;
+							}
+							
 							for (String line : (Iterable<String>) ((RF2ContentFile) file).rows().map(this::newLine)::iterator) {
 								writer.write(line);
 							}
 						} catch (Exception e) {
-								throw new RuntimeException(e);
+							throw new RuntimeException(e);
 						}
 					}
 				});
