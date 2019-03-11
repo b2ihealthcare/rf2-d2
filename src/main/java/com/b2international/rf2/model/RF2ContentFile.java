@@ -126,6 +126,7 @@ public abstract class RF2ContentFile extends RF2File {
 	public final Stream<String[]> rows() throws IOException {
 		return Files.lines(getPath())
 				.skip(1)
+				.parallel()
 				.map(line -> line.split(TAB));
 	}
 
