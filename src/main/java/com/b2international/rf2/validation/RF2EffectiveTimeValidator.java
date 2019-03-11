@@ -15,33 +15,38 @@
  */
 package com.b2international.rf2.validation;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Set;
 
 import com.b2international.rf2.check.RF2IssueAcceptor;
+import com.b2international.rf2.model.RF2Columns;
+import com.b2international.rf2.model.RF2ContentFile;
 
 
 /**
  * @since 0.1
  */
-public final class RF2EffectiveTimeValidator {
+public final class RF2EffectiveTimeValidator implements RF2ColumnValidator {
 	
-	private RF2EffectiveTimeValidator() {}
-	
-	private final static SimpleDateFormat format = new SimpleDateFormat("YYYYMMDD");
+	@Override
+	public Set<String> getColumns() {
+		return Set.of(RF2Columns.EFFECTIVE_TIME);
+	}
 	
 	/**
 	 * @param effectiveTime - effective time to check
 	 * @param acceptor - to report issues
 	 * @return <code>true</code> if the given effective time is a valid (YYYYMMDD) effective time, <code>false</code> otherwise.
 	 */
-	public static void validate(String effectiveTime, RF2IssueAcceptor acceptor) {
-		try {
-			if (!effectiveTime.isEmpty()) {
-				format.parse(effectiveTime);
+	@Override
+	public void check(RF2ContentFile file, String columnValue, RF2IssueAcceptor acceptor) {
+		if (!columnValue.isEmpty()) {
+			try {
+				DateTimeFormatter.BASIC_ISO_DATE.parse(columnValue);
+			} catch (DateTimeParseException e) {
+				acceptor.error("Effective time '%s' is not in ISO date format (YYYYMMMDD).", columnValue);
 			}
-		} catch (ParseException e) {
-			acceptor.error("Effective time '%s' is not in the YYYYMMDD format.", effectiveTime);
 		}
 	}
 	

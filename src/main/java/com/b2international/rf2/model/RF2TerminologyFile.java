@@ -17,14 +17,12 @@ package com.b2international.rf2.model;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.b2international.rf2.check.RF2IssueAcceptor;
 import com.b2international.rf2.naming.RF2FileName;
-import com.b2international.rf2.naming.file.RF2ContentType;
-import com.b2international.rf2.validation.RF2EffectiveTimeValidator;
-import com.b2international.rf2.validation.RF2IdentifierValidator;
-import com.b2international.rf2.validation.RF2StatusValidator;
+import com.b2international.rf2.validation.RF2ColumnValidator;
 
 /**
  * @since 0.1
@@ -37,20 +35,25 @@ public abstract class RF2TerminologyFile extends RF2ContentFile {
 
 	@Override
 	protected void checkContent(RF2IssueAcceptor acceptor) throws IOException {
-		Optional<RF2ContentType> rf2ContentType = getFileName().getElement(RF2ContentType.class);
-		if (rf2ContentType.isPresent()) {
-			rows().forEach(row -> {
-				var componentId = row[0];
-				final String contentType = rf2ContentType.get().getContentType();
-				RF2IdentifierValidator.validate(componentId, contentType, acceptor);
-        
-				var effectiveTime = row[1];
-				RF2EffectiveTimeValidator.validate(effectiveTime, acceptor);
-
-				var componentStatus = row[2];
-				RF2StatusValidator.validate(componentStatus, acceptor);
-			});	
+		// assign validators to RF2 columns
+		final String[] header = getHeader();
+		final Map<Integer, RF2ColumnValidator> validatorsByIndex = new HashMap<>(header.length);
+		for (int i = 0; i < header.length; i++) {
+			final String columnHeader = header[i];
+			final RF2ColumnValidator validator = RF2ColumnValidator.VALIDATORS.get(columnHeader);
+			if (validator != null) {
+				validatorsByIndex.put(i, validator);
+			} else {
+				validatorsByIndex.put(i, RF2ColumnValidator.NOOP);
+				acceptor.warn("No validator is registered for column header '%s'.", columnHeader);
+			}
 		}
+		
+		rows().forEach(row -> {
+			for (int i = 0; i < row.length; i++) {
+				validatorsByIndex.get(i).check(this, row[i], acceptor);
+			}
+		});
 	}
 	
 }

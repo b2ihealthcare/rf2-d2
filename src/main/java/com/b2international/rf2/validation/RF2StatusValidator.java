@@ -15,27 +15,31 @@
  */
 package com.b2international.rf2.validation;
 
+import java.util.Set;
+
 import com.b2international.rf2.check.RF2IssueAcceptor;
+import com.b2international.rf2.model.RF2Columns;
+import com.b2international.rf2.model.RF2ContentFile;
 
 /**
  * @since 0.1
  */
-public final class RF2StatusValidator {
+public final class RF2StatusValidator implements RF2ColumnValidator {
 	
-	private RF2StatusValidator() {}
+	private static final String ACTIVE = "1";
+	private static final String INACTIVE = "0";
+
+	@Override
+	public Set<String> getColumns() {
+		return Set.of(RF2Columns.ACTIVE);
+	}
 	
-	/**
-	 * @param componentStatus - the component status
-	 * @param acceptor - to report issues
-	 * @return <code>true</code> if the given component status is a valid (0 or 1), <code>false</code> otherwise.
-	 */
-	public static void validate(String componentStatus, RF2IssueAcceptor acceptor) {
-		if (componentStatus.isEmpty()) {
-			acceptor.error("Status cannot be empty");
-		}
-		
-		if (!componentStatus.equals("0") && !componentStatus.equals("1")) {
-			acceptor.error("'%s' is not a valid component status.", componentStatus);
+	@Override
+	public void check(RF2ContentFile file, String columnValue, RF2IssueAcceptor acceptor) {
+		if (columnValue == null || columnValue.isBlank()) {
+			acceptor.error("Status cannot be null or empty");
+		} else if (!ACTIVE.equals(columnValue) && !INACTIVE.equals(columnValue)) {
+			acceptor.error("'%s' is not a valid component status. Expected '0 or 1'.", columnValue);
 		}
 	}
 	

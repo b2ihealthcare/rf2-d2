@@ -67,6 +67,11 @@ public abstract class RF2ContentFile extends RF2File {
 		checkContent(acceptor);
 	}
 	
+	/**
+	 * Verify that the content of the RF2 file conforms to the RF2 specification.
+	 * @param acceptor
+	 * @throws IOException
+	 */
 	protected abstract void checkContent(RF2IssueAcceptor acceptor) throws IOException;
 
 	@Override
