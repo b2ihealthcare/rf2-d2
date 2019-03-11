@@ -24,8 +24,8 @@ import java.util.List;
  */
 public final class RF2IssueAcceptor {
 
-	private List<String> errors = new ArrayList<>();
-	private List<String> warns = new ArrayList<>();
+	private List<String> errors = Collections.synchronizedList(new ArrayList<>());
+	private List<String> warns = Collections.synchronizedList(new ArrayList<>());
 	
 	public void warn(String message, Object...args) {
 		warns.add(String.format(message, args));
