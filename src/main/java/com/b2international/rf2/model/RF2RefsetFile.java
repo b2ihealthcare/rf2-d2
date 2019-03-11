@@ -15,15 +15,12 @@
  */
 package com.b2international.rf2.model;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
-import com.b2international.rf2.check.RF2IssueAcceptor;
 import com.b2international.rf2.naming.RF2FileName;
 import com.b2international.rf2.naming.file.RF2ContentType;
 
@@ -44,18 +41,6 @@ public final class RF2RefsetFile extends RF2ContentFile {
 	@Override
 	protected String[] getRF2HeaderSpec() {
 		return rf2HeaderSpec;
-	}
-	
-	@Override
-	protected void checkContent(RF2IssueAcceptor acceptor) throws IOException {
-		rows().forEach(row -> {
-			var id = row[0];
-			try {
-				UUID.fromString(id);
-			} catch (IllegalArgumentException e) {
-				acceptor.error("Member id is not a valid UUID: %s", id);
-			}
-		});
 	}
 	
 	public static RF2File detect(Path parent, RF2FileName fileName) {

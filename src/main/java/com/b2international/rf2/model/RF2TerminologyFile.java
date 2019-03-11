@@ -15,14 +15,9 @@
  */
 package com.b2international.rf2.model;
 
-import java.io.IOException;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
 
-import com.b2international.rf2.check.RF2IssueAcceptor;
 import com.b2international.rf2.naming.RF2FileName;
-import com.b2international.rf2.validation.RF2ColumnValidator;
 
 /**
  * @since 0.1
@@ -33,27 +28,4 @@ public abstract class RF2TerminologyFile extends RF2ContentFile {
 		super(parent, fileName);
 	}
 
-	@Override
-	protected void checkContent(RF2IssueAcceptor acceptor) throws IOException {
-		// assign validators to RF2 columns
-		final String[] header = getHeader();
-		final Map<Integer, RF2ColumnValidator> validatorsByIndex = new HashMap<>(header.length);
-		for (int i = 0; i < header.length; i++) {
-			final String columnHeader = header[i];
-			final RF2ColumnValidator validator = RF2ColumnValidator.VALIDATORS.get(columnHeader);
-			if (validator != null) {
-				validatorsByIndex.put(i, validator);
-			} else {
-				validatorsByIndex.put(i, RF2ColumnValidator.NOOP);
-				acceptor.warn("No validator is registered for column header '%s'.", columnHeader);
-			}
-		}
-		
-		rows().forEach(row -> {
-			for (int i = 0; i < row.length; i++) {
-				validatorsByIndex.get(i).check(this, row[i], acceptor);
-			}
-		});
-	}
-	
 }

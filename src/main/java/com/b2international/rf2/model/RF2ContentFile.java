@@ -20,6 +20,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -27,6 +29,7 @@ import com.b2international.rf2.RF2CreateContext;
 import com.b2international.rf2.check.RF2IssueAcceptor;
 import com.b2international.rf2.naming.RF2FileName;
 import com.b2international.rf2.naming.file.RF2ContentType;
+import com.b2international.rf2.validation.RF2ColumnValidator;
 
 /**
  * @since 0.1
@@ -62,18 +65,31 @@ public abstract class RF2ContentFile extends RF2File {
 		if (!Arrays.equals(rf2HeaderSpec, actualHeader)) {
 			// TODO report incorrect header columns
 			acceptor.error("Header does not conform to specification");
+			return;
+		}
+
+		// assign validators to RF2 columns
+		final String[] header = getHeader();
+		final Map<Integer, RF2ColumnValidator> validatorsByIndex = new HashMap<>(header.length);
+		for (int i = 0; i < header.length; i++) {
+			final String columnHeader = header[i];
+			final RF2ColumnValidator validator = RF2ColumnValidator.VALIDATORS.get(columnHeader);
+			if (validator != null) {
+				validatorsByIndex.put(i, validator);
+			} else {
+				acceptor.warn("No validator is registered for column header '%s'.", columnHeader);
+				validatorsByIndex.put(i, RF2ColumnValidator.NOOP);
+			}
 		}
 		
-		checkContent(acceptor);
+		// validate each row in RF2 content file
+		rows().forEach(row -> {
+			for (int i = 0; i < row.length; i++) {
+				validatorsByIndex.get(i).check(this, header[i], row[i], acceptor);
+			}
+		});
 	}
 	
-	/**
-	 * Verify that the content of the RF2 file conforms to the RF2 specification.
-	 * @param acceptor
-	 * @throws IOException
-	 */
-	protected abstract void checkContent(RF2IssueAcceptor acceptor) throws IOException;
-
 	@Override
 	public void create(RF2CreateContext context) throws IOException {
 		Files.writeString(getPath(), newLine(getHeader()), StandardOpenOption.CREATE_NEW);

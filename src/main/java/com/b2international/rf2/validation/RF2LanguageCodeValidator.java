@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sggetComponentCategory
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.rf2.validation;
 
+import java.util.Locale;
 import java.util.Set;
 
 import com.b2international.rf2.check.RF2IssueAcceptor;
@@ -24,23 +25,20 @@ import com.b2international.rf2.model.RF2ContentFile;
 /**
  * @since 0.1
  */
-public final class RF2StatusValidator implements RF2ColumnValidator {
-	
-	private static final String ACTIVE = "1";
-	private static final String INACTIVE = "0";
+public final class RF2LanguageCodeValidator implements RF2ColumnValidator {
 
+	private static final Set<String> LANG_CODES = Set.of(Locale.getISOLanguages());
+	
 	@Override
 	public Set<String> getColumns() {
-		return Set.of(RF2Columns.ACTIVE);
+		return Set.of(RF2Columns.LANGUAGE_CODE);
 	}
-	
+
 	@Override
-	public void check(RF2ContentFile file, String columnValue, RF2IssueAcceptor acceptor) {
-		if (columnValue == null || columnValue.isBlank()) {
-			acceptor.error("Status cannot be null or empty");
-		} else if (!ACTIVE.equals(columnValue) && !INACTIVE.equals(columnValue)) {
-			acceptor.error("'%s' is not a valid component status. Expected '0 or 1'.", columnValue);
+	public void check(RF2ContentFile file, String columnHeader, String columnValue, RF2IssueAcceptor acceptor) {
+		if (!LANG_CODES.contains(columnValue)) {
+			acceptor.error("LanguageCode '%s' is not a valid ISO 639 language code.", columnValue);
 		}
 	}
-	
+
 }

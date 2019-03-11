@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sggetComponentCategory
+ * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,33 +15,35 @@
  */
 package com.b2international.rf2.validation;
 
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Set;
 
 import com.b2international.rf2.check.RF2IssueAcceptor;
 import com.b2international.rf2.model.RF2Columns;
 import com.b2international.rf2.model.RF2ContentFile;
 
-
 /**
  * @since 0.1
  */
-public final class RF2EffectiveTimeValidator implements RF2ColumnValidator {
-	
+public final class RF2IntegerValidator implements RF2ColumnValidator {
+
 	@Override
 	public Set<String> getColumns() {
-		return Set.of(RF2Columns.EFFECTIVE_TIME, RF2Columns.SOURCE_EFFECTIVE_TIME, RF2Columns.TARGET_EFFECTIVE_TIME);
+		return Set.of(
+			RF2Columns.RELATIONSHIP_GROUP, 
+			RF2Columns.DESCRIPTION_LENGTH, 
+			RF2Columns.ATTRIBUTE_ORDER, 
+			RF2Columns.ORDER,
+			RF2Columns.MAP_GROUP,
+			RF2Columns.MAP_PRIORITY
+		);
 	}
-	
+
 	@Override
 	public void check(RF2ContentFile file, String columnHeader, String columnValue, RF2IssueAcceptor acceptor) {
-		if (!columnValue.isEmpty()) {
-			try {
-				DateTimeFormatter.BASIC_ISO_DATE.parse(columnValue);
-			} catch (DateTimeParseException e) {
-				acceptor.error("Effective time '%s' is not in ISO date format (YYYYMMMDD).", columnValue);
-			}
+		try {
+			Integer.parseUnsignedInt(columnValue);
+		} catch (NumberFormatException e) {
+			acceptor.error("'%s' '%s' is not an unsigned integer.", columnHeader, columnValue);
 		}
 	}
 	
