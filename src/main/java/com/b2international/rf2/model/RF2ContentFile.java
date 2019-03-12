@@ -17,12 +17,14 @@ package com.b2international.rf2.model;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -32,6 +34,8 @@ import com.b2international.rf2.naming.RF2FileName;
 import com.b2international.rf2.naming.file.RF2ContentSubType;
 import com.b2international.rf2.naming.file.RF2ContentType;
 import com.b2international.rf2.validation.RF2ColumnValidator;
+import com.google.common.collect.Iterables;
+import com.google.common.hash.Hashing;
 
 /**
  * @since 0.1
@@ -56,6 +60,12 @@ public abstract class RF2ContentFile extends RF2File {
 	@Override
 	public void visit(Consumer<RF2File> visitor) {
 		visitor.accept(this);
+	}
+	
+	public RF2ContentSubType getReleaseType() {
+		return getFileName()
+				.getElement(RF2ContentSubType.class)
+				.orElse(null);
 	}
 	
 	@Override
@@ -95,37 +105,72 @@ public abstract class RF2ContentFile extends RF2File {
 	@Override
 	public void create(RF2CreateContext context) throws IOException {
 		context.log().log("Creating '%s'...", getPath());
+		
+		final RF2ContentSubType releaseType = getReleaseType();
 		try (BufferedWriter writer = Files.newBufferedWriter(getPath(), StandardOpenOption.CREATE_NEW)) {
 			writer.write(newLine(getHeader()));
 			
-			// copy content from all other applicable sources
-			for (RF2File source : context.getSources()) {
-				source.visit(file -> {
-					final String actualContentSubType = file.getFileName().getElement(RF2ContentSubType.class).map(RF2ContentSubType::getReleaseType).orElse("N/A");
-					final String currentContentSubType = getFileName().getElement(RF2ContentSubType.class).get().getReleaseType();
-					if (!actualContentSubType.equals(currentContentSubType)) {
-						return;
-					}
+			final Map<String, Map<String, String>> componentsByIdEffectiveTime = new HashMap<>(); 
+
+			context.visitSourceRows(getType(), getHeader(), /* parallel if */ releaseType.isSnapshot(), line -> {
+				try {
+					String id = line[0];
+					String effectiveTime = line[1];
+					String rawLine = newLine(line);
+					String lineHash = Hashing.sha256().hashString(rawLine, StandardCharsets.UTF_8).toString();
 					
-					final String actualContentType = file.getFileName().getElement(RF2ContentType.class).map(RF2ContentType::getContentType).orElse("N/A");
-					final String currentContentType = getFileName().getElement(RF2ContentType.class).get().getContentType();
-					if (!actualContentType.equals(currentContentType)) {
-						return;
-					}
-					
-					if (file instanceof RF2ContentFile) {
-						try {
-							// check actual content type as well, to copy content from the right files
-							if (!Arrays.equals(((RF2ContentFile) file).getHeader(), getHeader())) {
-								return;
-							}
-							
-							for (String line : (Iterable<String>) ((RF2ContentFile) file).rows().map(this::newLine)::iterator) {
-								writer.write(line);
-							}
-						} catch (Exception e) {
-							throw new RuntimeException(e);
+					if (componentsByIdEffectiveTime.containsKey(id) && componentsByIdEffectiveTime.get(id).containsKey(effectiveTime)) {
+						// log a warning about inconsistent ID-EffectiveTime content, keep the first occurrence of the line and skip the others
+						if (!lineHash.equals(componentsByIdEffectiveTime.get(id).get(effectiveTime))) {
+							context.log().warn("Skipping duplicate RF2 line found with same '%s' ID in '%s' effectiveTime but with different column values.", id, effectiveTime);
 						}
+						return;
+					}
+					
+					if (releaseType.isFull()) {
+						// in case of Full we can immediately write it out
+						if (!componentsByIdEffectiveTime.containsKey(id)) {
+							componentsByIdEffectiveTime.put(id, new HashMap<>());
+						}
+						componentsByIdEffectiveTime.get(id).put(effectiveTime, lineHash);
+						writer.write(rawLine);
+					} else if (releaseType.isSnapshot()) {
+						// in case of Snapshot we check that the current effective time is greater than the currently registered and replace if yes
+						if (componentsByIdEffectiveTime.containsKey(id)) {
+							Entry<String, String> effectiveTimeHash = Iterables.getOnlyElement(componentsByIdEffectiveTime.get(id).entrySet());
+							if (effectiveTime.isEmpty() || effectiveTime.compareTo(effectiveTimeHash.getKey()) > 0) {
+								componentsByIdEffectiveTime.put(id, Map.of(effectiveTime, lineHash));
+							}
+						} else {
+							componentsByIdEffectiveTime.put(id, Map.of(effectiveTime, lineHash));	
+						}
+					} else if (releaseType.isDelta()) {
+						// in case of Delta we will only add the lines with the releaseDate effective time
+						// TODO support closest to specified releaseDate!!!
+						if (context.getReleaseDate().equals(effectiveTime)) {
+							componentsByIdEffectiveTime.put(id, Map.of(effectiveTime, lineHash));
+							writer.write(rawLine);
+						}
+					}
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			});
+			
+			// Snapshot needs a second run, since we just extracted the applicable rows from all source files, and we need to actually write them into the output
+			if (releaseType.isSnapshot()) {
+				context.visitSourceRows(getType(), getHeader(), false, line -> {
+					try {
+						String id = line[0];
+						String effectiveTime = line[1];
+						String rawLine = newLine(line);
+						if (componentsByIdEffectiveTime.containsKey(id) && componentsByIdEffectiveTime.get(id).containsKey(effectiveTime)) {
+							// remove the item from the id effective time map to indicate that we wrote it out
+							componentsByIdEffectiveTime.remove(id);
+							writer.write(rawLine);
+						}
+					} catch (IOException e) {
+						throw new RuntimeException(e);
 					}
 				});
 			}

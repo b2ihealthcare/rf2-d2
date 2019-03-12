@@ -15,10 +15,15 @@
  */
 package com.b2international.rf2;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
+import com.b2international.rf2.model.RF2ContentFile;
 import com.b2international.rf2.model.RF2File;
 
 /**
@@ -70,6 +75,33 @@ public final class RF2CreateContext {
 	
 	public Console log() {
 		return log;
+	}
+	
+	public void visitSourceRows(String expectedContentType, String[] expectedHeader, boolean parallel, Consumer<String[]> visitor) throws IOException {
+		for (RF2File source : getSources()) {
+			source.visit(file -> {
+				final String actualContentType = file.getType();
+				if (!actualContentType.equals(expectedContentType)) {
+					return;
+				}
+				
+				if (file instanceof RF2ContentFile) {
+					try {
+						// check actual content type as well, to copy content from the right files
+						if (!Arrays.equals(((RF2ContentFile) file).getHeader(), expectedHeader)) {
+							return;
+						}
+						// read lines
+						Stream<String[]> rows = parallel ? ((RF2ContentFile) file).rowsParallel() : ((RF2ContentFile) file).rows();
+						for (String[] line : (Iterable<String[]>) rows::iterator) {
+							visitor.accept(line);
+						}
+					} catch (Exception e) {
+						throw new RuntimeException(e);
+					}
+				}
+			});
+		}
 	}
 
 }

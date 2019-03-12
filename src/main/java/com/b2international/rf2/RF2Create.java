@@ -78,7 +78,7 @@ public final class RF2Create extends RF2Command {
 	String namespace = "";
 	
 	@Option(required = false, names = {"-C", "--contentsubtype"}, description = CONTENT_SUB_TYPES_DESCRIPTION)
-	String[] contentSubTypes = new String[] {"Delta", "Snapshot", "Full"};
+	String[] contentSubTypes = new String[] {"Full", "Snapshot", "Delta"};
 	
 	@Override
 	public void run() {

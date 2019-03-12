@@ -26,6 +26,10 @@ import com.b2international.rf2.naming.RF2NamePattern;
 @RF2NamePattern("(.*)(Full|Snapshot|Delta|Current|Draft|Review)(?:-([a-z]{2}(?:-[A-Za-z]{2})?)?)?")
 public final class RF2ContentSubType implements RF2NameElement {
 
+	public static final RF2ContentSubType FULL = new RF2ContentSubType("", "Full", "");
+	public static final RF2ContentSubType SNAPSHOT = new RF2ContentSubType("", "Snapshot", "");
+	public static final RF2ContentSubType DELTA = new RF2ContentSubType("", "Delta", "");
+	
 	private final String summary;
 	private final String releaseType;
 	private final String languageCode;
@@ -67,6 +71,18 @@ public final class RF2ContentSubType implements RF2NameElement {
 	@Override
 	public String toString() {
 		return String.join("", summary, releaseType, languageCode.isEmpty() ? "" : "-".concat(languageCode));
+	}
+	
+	public boolean isFull() {
+		return "Full".equals(releaseType);
+	}
+	
+	public boolean isSnapshot() {
+		return "Snapshot".equals(releaseType);
+	}
+	
+	public boolean isDelta() {
+		return "Delta".equals(releaseType);
 	}
 	
 }
