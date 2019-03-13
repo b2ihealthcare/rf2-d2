@@ -136,11 +136,16 @@ public abstract class RF2File {
 		if (Files.isDirectory(path)) {
 			rf2Release = new RF2DirectoryName(fileName);
 		} else {
-			// if it is not a directory then try to parse the fileName as an RF2Release first
-			rf2Release = new RF2ReleaseName(fileName);
-			if (rf2Release.isUnrecognized()) {
-				// if it is not a release package fall back and treat it as an RF2 File (in general any file can be part of a release)
+			// if we are not in the OS file system, then in case of zip files we treat them as regular files
+			if (path.toUri().getScheme().equals("jar")) {
 				rf2Release = new RF2FileName(fileName);
+			} else {
+				// if it is not a directory and we are in the OS file system then try to parse the fileName as an RF2Release
+				rf2Release = new RF2ReleaseName(fileName);
+				if (rf2Release.isUnrecognized()) {
+					// if it is not a release package fall back and treat it as an RF2 File (in general any file can be part of a release)
+					rf2Release = new RF2FileName(fileName);
+				}
 			}
 		}
 		return (T) rf2Release.createRF2File(path.getParent());

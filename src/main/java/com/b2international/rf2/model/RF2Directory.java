@@ -43,7 +43,7 @@ public final class RF2Directory extends RF2File {
 				try {
 					RF2File.detect(path).visit(visitor);
 				} catch (IOException e) {
-					throw new RuntimeException("Couldn't visit path: " + path);
+					throw new RuntimeException("Couldn't visit path: " + path, e);
 				}
 			}
 		});
