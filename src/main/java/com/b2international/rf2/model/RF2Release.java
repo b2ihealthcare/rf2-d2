@@ -133,20 +133,49 @@ public final class RF2Release extends RF2File {
 		attributeValueRefsetFile.create(context);
 		
 		// Language
-		RF2RefsetFile languageRefsetFile = RF2RefsetFile.createLanguageRefset(contentDir.getPath(), contentSubType, context);
+		RF2Directory languageDir = RF2Directory.create(refSetDir.getPath(), "Language");
+		languageDir.create(context);
+		
+		RF2RefsetFile languageRefsetFile = RF2RefsetFile.createLanguageRefset(languageDir.getPath(), contentSubType, context);
 		languageRefsetFile.create(context);
 		
 		// Map
-		RF2RefsetFile simpleMapRefsetFile = RF2RefsetFile.createSimpleMapRefset(contentDir.getPath(), contentSubType, context);
+		RF2Directory mapDir = RF2Directory.create(refSetDir.getPath(), "Map");
+		mapDir.create(context);
+		
+		RF2RefsetFile simpleMapRefsetFile = RF2RefsetFile.createSimpleMapRefset(mapDir.getPath(), contentSubType, context);
 		simpleMapRefsetFile.create(context);
 		
-		RF2RefsetFile complexMapRefsetFile = RF2RefsetFile.createComplexMapRefset(contentDir.getPath(), contentSubType, context);
+		RF2RefsetFile complexMapRefsetFile = RF2RefsetFile.createComplexMapRefset(mapDir.getPath(), contentSubType, context);
 		complexMapRefsetFile.create(context);
 		
-		RF2RefsetFile extendedMapRefsetFile = RF2RefsetFile.createExtendedMapRefset(contentDir.getPath(), contentSubType, context);
+		RF2RefsetFile extendedMapRefsetFile = RF2RefsetFile.createExtendedMapRefset(mapDir.getPath(), contentSubType, context);
 		extendedMapRefsetFile.create(context);
 		
-		// TODO Metadata
+		// Metadata
+		RF2Directory metadataDir = RF2Directory.create(refSetDir.getPath(), "Map");
+		metadataDir.create(context);
+		
+		RF2RefsetFile refsetDescriptorRefsetFile = RF2RefsetFile.createRefsetDescriptorRefset(mapDir.getPath(), contentSubType, context);
+		refsetDescriptorRefsetFile.create(context);
+		
+		RF2RefsetFile descriptionTypeRefsetFile = RF2RefsetFile.createDescriptionTypeRefset(mapDir.getPath(), contentSubType, context);
+		descriptionTypeRefsetFile.create(context);
+		
+		RF2RefsetFile mrcmAttributeDomainRefsetFile = RF2RefsetFile.createMRCMAttributeDomainRefset(mapDir.getPath(), contentSubType, context);
+		mrcmAttributeDomainRefsetFile.create(context);
+		
+		RF2RefsetFile mrcmModuleScopeRefsetFile = RF2RefsetFile.createMRCMModuleScopeRefset(mapDir.getPath(), contentSubType, context);
+		mrcmModuleScopeRefsetFile.create(context);
+		
+		RF2RefsetFile mrcmAttributeRangeRefsetFile = RF2RefsetFile.createMRCMAttributeRangeRefset(mapDir.getPath(), contentSubType, context);
+		mrcmAttributeRangeRefsetFile.create(context);
+		
+		RF2RefsetFile mrcmDomainRefsetFile = RF2RefsetFile.createMRCMDomainRefset(mapDir.getPath(), contentSubType, context);
+		mrcmDomainRefsetFile.create(context);
+		
+		RF2RefsetFile moduleDependencyRefsetFile = RF2RefsetFile.createModuleDependencyRefset(mapDir.getPath(), contentSubType, context);
+		moduleDependencyRefsetFile.create(context);
 	}
 	
 	public static RF2Release create(Path parent, String product, String releaseStatus, String releaseDate, String releaseTime) {

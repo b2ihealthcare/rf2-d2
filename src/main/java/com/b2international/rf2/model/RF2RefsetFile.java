@@ -106,6 +106,42 @@ public final class RF2RefsetFile extends RF2ContentFile {
 		return new RF2RefsetFile(parent, new RF2FileName(fileName), COMPLEX_MAP_REFSET_HEADER);
 	}
 	
+	// Metadata folder
+	public static RF2RefsetFile createRefsetDescriptorRefset(Path parent, String contentSubType, RF2CreateContext context) {
+		final String fileName = String.format("der2_cciRefset_RefsetDescriptor%s_%s%s_%s.%s", contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
+		return new RF2RefsetFile(parent, new RF2FileName(fileName), REFSET_DESCRIPTOR_REFSET_HEADER);
+	}
+	
+	public static RF2RefsetFile createDescriptionTypeRefset(Path parent, String contentSubType, RF2CreateContext context) {
+		final String fileName = String.format("der2_ciRefset_DescriptionType%s_%s%s_%s.%s", contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
+		return new RF2RefsetFile(parent, new RF2FileName(fileName), DESCRIPTION_TYPE_REFSET_HEADER);
+	}
+	
+	public static RF2RefsetFile createMRCMAttributeDomainRefset(Path parent, String contentSubType, RF2CreateContext context) {
+		final String fileName = String.format("der2_cissccRefset_MRCMAttributeDomain%s_%s%s_%s.%s", contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
+		return new RF2RefsetFile(parent, new RF2FileName(fileName), MRCM_ATTRIBUTE_DOMAIN_REFSET_HEADER);
+	}
+	
+	public static RF2RefsetFile createMRCMModuleScopeRefset(Path parent, String contentSubType, RF2CreateContext context) {
+		final String fileName = String.format("der2_cRefset_MRCMModuleScope%s_%s%s_%s.%s", contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
+		return new RF2RefsetFile(parent, new RF2FileName(fileName), MRCM_MODULE_SCOPE_REFSET_HEADER);
+	}
+	
+	public static RF2RefsetFile createMRCMAttributeRangeRefset(Path parent, String contentSubType, RF2CreateContext context) {
+		final String fileName = String.format("der2_ssccRefset_MRCMAttributeRange%s_%s%s_%s.%s", contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
+		return new RF2RefsetFile(parent, new RF2FileName(fileName), MRCM_ATTRIBUTE_RANGE_REFSET_HEADER);
+	}
+	
+	public static RF2RefsetFile createMRCMDomainRefset(Path parent, String contentSubType, RF2CreateContext context) {
+		final String fileName = String.format("der2_sssssssRefset_MRCMDomain%s_%s%s_%s.%s", contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
+		return new RF2RefsetFile(parent, new RF2FileName(fileName), MRCM_DOMAIN_REFSET_HEADER);
+	}
+	
+	public static RF2RefsetFile createModuleDependencyRefset(Path parent, String contentSubType, RF2CreateContext context) {
+		final String fileName = String.format("der2_ssRefset_ModuleDependency%s_%s%s_%s.%s", contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
+		return new RF2RefsetFile(parent, new RF2FileName(fileName), MODULE_DEPENDENCY_REFSET_HEADER);
+	}
+	
 	// KNOWN RF2 RefSet Headers
 	
 	public static final String[] SIMPLE_REFSET_HEADER = new String[] {
@@ -252,7 +288,7 @@ public final class RF2RefsetFile extends RF2ContentFile {
 		RF2Columns.TARGET_EFFECTIVE_TIME
 	};
 	
-	public static final String[] DESCRIPTION_FORMAT_REFSET_HEADER = new String[] {
+	public static final String[] DESCRIPTION_TYPE_REFSET_HEADER = new String[] {
 		RF2Columns.ID,
 		RF2Columns.EFFECTIVE_TIME,
 		RF2Columns.ACTIVE,
@@ -354,7 +390,7 @@ public final class RF2RefsetFile extends RF2ContentFile {
 		EXTENDED_MAP_REFSET_HEADER,
 		REFSET_DESCRIPTOR_REFSET_HEADER,
 		MODULE_DEPENDENCY_REFSET_HEADER,
-		DESCRIPTION_FORMAT_REFSET_HEADER,
+		DESCRIPTION_TYPE_REFSET_HEADER,
 		MAP_CORRELATION_ORIGIN_REFSET_HEADER,
 		MRCM_DOMAIN_REFSET_HEADER,
 		MRCM_ATTRIBUTE_DOMAIN_REFSET_HEADER,

@@ -9,14 +9,18 @@ RF2-D2 is an open source SNOMED CT release tool, which allows you to check, crea
 
 Feature include:
 * Packaging
-    * Packages a single RF2 Release from one or more RF2 files and other sources (WIP) 
+    * Packages a single RF2 Release from one or more RF2 files and other sources 
+    * Configure and customize the name of the RF2 Release and RF2 files
+    * Configure release structure and add additional content like custom files, documentation and resources (WIP) 
 * Validation and verification
 	* Verifies existing RF2 Release file names and structure
     * Validates SNOMED CT content using a number of validation rules (WIP)
+* Diffing
+    * Diff RF2 text files and releases (WIP)
 * Filtering
     * Exclude certain parts from existing RF2 files (for example exclude all content from a module, etc.) (WIP)
 * Replacements
-    * Replaces values in RF2 files using conditions,simple statements and even external scripts (WIP)
+    * Replaces values in RF2 files using conditions, simple statements and even external scripts (WIP)
 
 # Download (soon!)
 
