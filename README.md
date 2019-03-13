@@ -24,6 +24,29 @@ Feature include:
 
 # Download (soon!)
 
+# First steps
+
+After successfully downloading the RF2-D2 release package, run:
+
+    unzip rf2-d2-0.1.0.zip
+    cd rf2-d2-<version>
+    bin/rf2 -v
+
+It will return with the version of RF2-D2 and the supported RF2 version:
+
+    RF2-D2 v0.1.0 @Copyright 2019 B2i Healthcare
+    Supported RF2 Version: 20190131
+
+Run the following command to get the supported list of subcommands and their descriptions:
+
+    bin/rf2 -h
+
+Run the following command to get help about a specific command:
+
+    bin/rf2 help check
+
+If you have questions or feedback, feel free to create an issue [here](https://github.com/b2ihealthcare/rf2-d2/issues/new) or [contact us](mailto:info@b2i.sg).
+    
 # Building from source
 
 RF2-D2 uses Gradle for its build system. In order to create a distribution, simply run the following command in the cloned directory. 
