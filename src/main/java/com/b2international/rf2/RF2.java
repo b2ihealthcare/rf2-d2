@@ -27,7 +27,8 @@ import picocli.CommandLine.Option;
  * @since 0.1
  */
 @Command(
-	name = "rf2", 
+	name = "rf2",
+	description = "RF2-D2, a SNOMED CT release tool.",
 	subcommands = {
 		RF2Check.class,
 		RF2Create.class,
@@ -35,7 +36,7 @@ import picocli.CommandLine.Option;
 	},
 	versionProvider = RF2.VersionProvider.class
 )
-public class RF2 implements Runnable {
+public class RF2 extends RF2Command {
 
 	public static final String RF2_VERSION = "20190131";
 	
