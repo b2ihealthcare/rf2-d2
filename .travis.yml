@@ -17,7 +17,10 @@ before_cache:
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 
 before_deploy:
+  - git config --local user.name "b2i-ci"
+  - git config --local user.email "ci@b2international.com"
   - export TRAVIS_TAG=v$(cut -d'=' -f2 <<<"$(cat gradle.properties)")
+  - git tag -f $TRAVIS_TAG
 
 deploy:
   provider: releases
