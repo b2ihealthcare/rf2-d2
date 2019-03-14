@@ -9,8 +9,8 @@ install:
   - mv jdk-11.0.2 jdk-11.0.2-win
   - export JDK11_WIN=${TRAVIS_BUILD_DIR}/jdk-11.0.2-win
   - wget https://download.java.net/java/GA/jdk11/9/GPL/openjdk-11.0.2_osx-x64_bin.tar.gz
-  - mv jdk-11.0.2.jdk jdk-11.0.2.jdk-osx
   - gunzip -c openjdk-11.0.2_osx-x64_bin.tar.gz | tar xopf -
+  - mv jdk-11.0.2.jdk jdk-11.0.2.jdk-osx
   - export JDK11_OSX=${TRAVIS_BUILD_DIR}/jdk-11.0.2.jdk-osx/Contents/Home
   - export JDK11_LINUX=${JAVA_HOME}
   - ls -lat
