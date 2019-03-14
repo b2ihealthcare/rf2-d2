@@ -1,3 +1,4 @@
+if: tag IS blank
 language: java
 sudo: false
 jdk:
@@ -28,7 +29,6 @@ before_cache:
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 
 after_success:
-  - export DRAFT=$([ -z $TRAVIS_TAG ] && echo "true" || echo "false")
   - git config --local user.name "b2i-ci"
   - git config --local user.email "ci@b2international.com"
   - export TRAVIS_TAG=${TRAVIS_TAG:-v$(cut -d'=' -f2 <<<"$(cat gradle.properties)")}
@@ -46,7 +46,7 @@ Rfx/IUpyf9L8N0="
   file_glob: true
   file: build/rf2-d2-*.zip
   skip_cleanup: true
-  draft: $DRAFT
+  draft: true
   name: "$TRAVIS_TAG"
   on:
     branch: master
