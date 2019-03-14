@@ -5,13 +5,15 @@ jdk:
 
 install:
   - wget https://download.java.net/java/GA/jdk11/9/GPL/openjdk-11.0.2_windows-x64_bin.zip
-  - wget https://download.java.net/java/GA/jdk11/9/GPL/openjdk-11.0.2_osx-x64_bin.tar.gz
-  - echo ${TRAVIS_BUILD_DIR}
   - unzip openjdk-11.0.2_windows-x64_bin.zip
-  - export JDK11_WIN=${TRAVIS_BUILD_DIR}/jdk-11.0.2.jdk
+  - mv jdk-11.0.2.jdk jdk-11.0.2.jdk-win
+  - export JDK11_WIN=${TRAVIS_BUILD_DIR}/jdk-11.0.2.jdk-win
+  - wget https://download.java.net/java/GA/jdk11/9/GPL/openjdk-11.0.2_osx-x64_bin.tar.gz
+  - mv jdk-11.0.2.jdk jdk-11.0.2.jdk-osx
   - gunzip -c openjdk-11.0.2_osx-x64_bin.tar.gz | tar xopf -
-  - export JDK11_OSX=${TRAVIS_BUILD_DIR}/jdk-11.0.2.jdk/Contents/Home
+  - export JDK11_OSX=${TRAVIS_BUILD_DIR}/jdk-11.0.2.jdk-osx/Contents/Home
   - export JDK11_LINUX=${JAVA_HOME}
+  - ls -lat
 
 script:
   - ./gradlew build runtimeZip

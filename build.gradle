@@ -36,14 +36,14 @@ application {
 if (System.getenv("TRAVIS") != null) {
 	// in case of TRAVIS-CI build, build for all platforms
 	runtime {
+		targetPlatform('linux-x64', System.getenv("JDK11_LINUX"))
+		targetPlatform('osx-x64', System.getenv("JDK11_OSX"))
+		targetPlatform('win-x64', System.getenv("JDK11_WIN"))
+		
 		options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
 		modules = ['java.base']
 		imageDir = file("$buildDir/${rootProject.name}-${version}")
 		imageZip = file("$buildDir/${rootProject.name}-${version}.zip")
-		
-		targetPlatform('linux-x64', '$JDK11_LINUX')
-		targetPlatform('osx-x64', '$JDK11_OSX')
-		targetPlatform('win-x64', '$JDK11_WIN')
 	}	
 } else {
 	// otherwise just for the running platform
