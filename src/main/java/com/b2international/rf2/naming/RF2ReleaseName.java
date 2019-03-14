@@ -48,7 +48,7 @@ public final class RF2ReleaseName extends RF2FileNameBase {
 	 */
 	@Override
 	public boolean isUnrecognized() {
-		return getElements().isEmpty() || !Constants.ZIP.equals(getExtension());
+		return !Constants.ZIP.equals(getExtension()) || getElements().stream().allMatch(RF2NameElement.Unrecognized.class::isInstance);
 	}
 	
 	@Override
