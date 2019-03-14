@@ -16,6 +16,9 @@ before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 
+before_deploy:
+  - export TRAVIS_TAG=v$(cut -d'=' -f2 <<<"$(cat gradle.properties)")
+
 deploy:
   provider: releases
   api_key:
@@ -29,7 +32,7 @@ Rfx/IUpyf9L8N0="
   file: build/rf2-d2-*.zip
   skip_cleanup: true
   draft: true
-  name: "RF2-D2 TODO version"
+  name: "RF2-D2 $TRAVIS_TAG"
   on:
     branch: master
-    tags: false
+    tags: true
