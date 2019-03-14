@@ -25,6 +25,7 @@ dwekDxZdq090th7bTJQNG8UzBoc6MCvfD8RgFBzaV0KtnDx3u8Mq1UrHvsmKDs/hsU4Ba/28bIU37LNv
 e4Omd+bQqyaMIBoM/hIvdcb+TePgm7LdeB9ywW0R/gpSoYxO1BH4+QeCweQwTaUrpllkxZbePRLopAVjaNMvlpUTjIb9Uiob33twdMG2fLjq3Hga5VGHOQKfUPDeGWDaj5lM9O7rnlLhnOJ4Z3JNnzdY1ygYFrwr2nIukZRu/M
 Rfx/IUpyf9L8N0="
   overwrite: true
+  file_glob: true
   file: build/rf2-d2-*.zip
   skip_cleanup: true
   draft: true
