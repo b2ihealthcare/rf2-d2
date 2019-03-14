@@ -29,5 +29,5 @@ Rfx/IUpyf9L8N0="
   skip_cleanup: true
   draft: true
   on:
-  	branch: master
+    branch: master
     tags: false
