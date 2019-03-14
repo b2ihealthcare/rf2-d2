@@ -19,8 +19,8 @@ before_cache:
 before_deploy:
   - git config --local user.name "b2i-ci"
   - git config --local user.email "ci@b2international.com"
-  - export TRAVIS_TAG=v$(cut -d'=' -f2 <<<"$(cat gradle.properties)")
-  - git tag -f $TRAVIS_TAG
+  - export TRAVIS_TAG=${TRAVIS_TAG:-$(cut -d'=' -f2 <<<"$(cat gradle.properties)")}
+  - git tag -f v$TRAVIS_TAG
 
 deploy:
   provider: releases
@@ -35,7 +35,7 @@ Rfx/IUpyf9L8N0="
   file: build/rf2-d2-*.zip
   skip_cleanup: true
   draft: true
-  name: "RF2-D2 $TRAVIS_TAG"
+  name: "RF2-D2 v$TRAVIS_TAG"
   on:
     branch: master
     tags: true
