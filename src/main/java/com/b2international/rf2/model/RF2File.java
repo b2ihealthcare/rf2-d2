@@ -18,7 +18,6 @@ package com.b2international.rf2.model;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -109,17 +108,6 @@ public abstract class RF2File {
 	 * @return the type (or category) of this {@link RF2File}.
 	 */
 	public abstract String getType();
-
-	/**
-	 * Detects an {@link RF2File} from the given file path.
-	 * 
-	 * @param path
-	 *            - the file path to recognize
-	 * @return an {@link RF2File} instance
-	 */
-	public static <T extends RF2File> T detect(final String path) {
-		return detect(Paths.get(path));
-	}
 
 	/**
 	 * Detects an {@link RF2File} from the given file path.

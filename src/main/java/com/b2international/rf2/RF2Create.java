@@ -90,7 +90,7 @@ public final class RF2Create extends RF2Command {
 
 		final List<RF2File> sources;
 		if (paths != null) {
-			sources = paths.stream().map(path -> RF2File.<RF2File>detect(path)).collect(Collectors.toList());
+			sources = paths.stream().map(path -> RF2File.<RF2File>detect(Paths.get(path))).collect(Collectors.toList());
 		} else {
 			sources = Collections.emptyList();
 		}
