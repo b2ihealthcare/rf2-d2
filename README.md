@@ -1,6 +1,8 @@
 # RF2-D2  
 
 [![build status](https://img.shields.io/travis/b2ihealthcare/rf2-d2/master.svg?style=flat-square)](https://travis-ci.org/b2ihealthcare/rf2-d2)
+[![latest release](https://img.shields.io/github/tag/b2ihealthcare/rf2-d2.svg?style=flat-square)](https://github.com/b2ihealthcare/rf2-d2/releases/tag/v0.1.0)
+[![downloads](https://img.shields.io/github/downloads/b2ihealthcare/rf2-d2/total.svg?style=flat-square)](https://github.com/b2ihealthcare/rf2-d2/releases/)
 [![GitHub](https://img.shields.io/github/license/b2ihealthcare/rf2-d2.svg?style=flat-square)](https://github.com/b2ihealthcare/rf2-d2/blob/master/LICENSE)
 
 # Introduction
@@ -23,6 +25,10 @@ Feature include:
     * Replaces values in RF2 files using conditions, simple statements and even external scripts (WIP)
 
 # Download (soon!)
+
+* [WINDOWS](https://github.com/b2ihealthcare/rf2-d2/releases/download/v0.1.0/rf2-d2-0.1.0-win-x64.zip)
+* [LINUX](https://github.com/b2ihealthcare/rf2-d2/releases/download/v0.1.0/rf2-d2-0.1.0-linux-x64.zip)
+* [MACOS](https://github.com/b2ihealthcare/rf2-d2/releases/download/v0.1.0/rf2-d2-0.1.0-osx-x64.zip)
 
 # First steps
 
@@ -78,7 +84,7 @@ Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 # Versioning
 
-Our [releases](https://github.com/b2ihealthcare/snow-owl/releases) use [semantic versioning](http://semver.org). You can find a chronologically ordered list of notable changes in [CHANGELOG.md](CHANGELOG.md).
+Our [releases](https://github.com/b2ihealthcare/rf2-d2/releases) use [semantic versioning](http://semver.org). You can find a chronologically ordered list of notable changes in [CHANGELOG.md](CHANGELOG.md).
 
 # License
 
