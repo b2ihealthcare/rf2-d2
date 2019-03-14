@@ -15,3 +15,19 @@ cache:
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+
+deploy:
+  provider: releases
+  api_key:
+    secure: "FcA5D+ug+EBUXFVeKvPSmPHIZYGrfO3/cvGeblCJYO1TZhufwmCWype5GbuQoJOhphRdn6TN2VmQSvVxGZ8R1iwplMk4qjTKBdTbSUuidDUsoej8cReqZHbO7yhAvIxVx2p23j4PVnqcD/e4rdNt8bIZffcJICe
+b0kaV85vdCZ2Xqt3QsG9vtEJ/7AjqR91pNk/fORoqeJFEFb8eQ2C4BZZFZaxhjkj4jmF/2I/Krph95l3QJkIiCQumWqspo+h5YTyzOnUTK0TmU7ycpAk34cK9UIjN1/9seQlokI9a8hSmYLJe4rIMduyUoqLRARKtYEYwVx15o
+dwekDxZdq090th7bTJQNG8UzBoc6MCvfD8RgFBzaV0KtnDx3u8Mq1UrHvsmKDs/hsU4Ba/28bIU37LNvwnp7FlIoIzhrU6t4ZW0DfhzUDCS/cf8G4Y+5Rp9ofVbw3RcxA0kEWXUjfjhsC6wCTwaKVk+nyA0PxySlHr1mxfK6Vn
+e4Omd+bQqyaMIBoM/hIvdcb+TePgm7LdeB9ywW0R/gpSoYxO1BH4+QeCweQwTaUrpllkxZbePRLopAVjaNMvlpUTjIb9Uiob33twdMG2fLjq3Hga5VGHOQKfUPDeGWDaj5lM9O7rnlLhnOJ4Z3JNnzdY1ygYFrwr2nIukZRu/M
+Rfx/IUpyf9L8N0="
+  overwrite: true
+  file: build/rf2-d2-*.zip
+  skip_cleanup: true
+  draft: true
+  on:
+  	branch: master
+    tags: false
