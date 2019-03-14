@@ -16,7 +16,7 @@ before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
 
-before_deploy:
+after_success:
   - git config --local user.name "b2i-ci"
   - git config --local user.email "ci@b2international.com"
   - export TRAVIS_TAG=${TRAVIS_TAG:-$(cut -d'=' -f2 <<<"$(cat gradle.properties)")}
