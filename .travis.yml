@@ -6,8 +6,7 @@ jdk:
 install:
   - wget https://download.java.net/java/GA/jdk11/9/GPL/openjdk-11.0.2_windows-x64_bin.zip
   - wget https://download.java.net/java/GA/jdk11/9/GPL/openjdk-11.0.2_osx-x64_bin.tar.gz
-  - pwd
-  - ls -al
+  - echo ${TRAVIS_BUILD_DIR}
   - unzip openjdk-11.0.2_windows-x64_bin.zip
   - export JDK11_WIN=${TRAVIS_BUILD_DIR}/jdk-11.0.2.jdk
   - gunzip -c openjdk-11.0.2_osx-x64_bin.tar.gz | tar xopf -
