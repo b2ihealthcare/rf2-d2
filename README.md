@@ -26,11 +26,11 @@ Feature include:
 
 # First steps
 
-After successfully downloading the RF2-D2 release package, run:
+After successfully downloading the appropriate RF2-D2 release package for your operating system, run:
 
-    unzip rf2-d2-0.1.0.zip
-    cd rf2-d2-<version>
-    bin/rf2 -v
+    unzip rf2-d2-0.1.0-linux-64.zip
+    cd rf2-d2-linux-64/bin
+    ./rf2 -v
 
 It will return with the version of RF2-D2 and the supported RF2 version:
 
@@ -39,13 +39,30 @@ It will return with the version of RF2-D2 and the supported RF2 version:
 
 Run the following command to get the supported list of subcommands and their descriptions:
 
-    bin/rf2 -h
+    ./rf2 -h
 
 Run the following command to get help about a specific command:
 
-    bin/rf2 help check
+    ./rf2 help check
 
+You can add the `rf2-d2-<version>/bin` folder to your PATH, so it will be available globally and can be invoked with command `rf2`. 
 If you have questions or feedback, feel free to create an issue [here](https://github.com/b2ihealthcare/rf2-d2/issues/new) or [contact us](mailto:info@b2i.sg).
+
+# Examples
+
+Generate empty RF2 Release with official SNOMED International file structure and naming:
+
+    ./rf2 create OUTDIR
+
+Generate a new RF2 Release based on the previous RF2 Release and a new Delta (or Snapshot):
+
+    ./rf2 create -d 20190131 OUTDIR_PATH SnomedCT_PreviousRF2_PRODUCTION_20180731T120000Z.zip SnomedCT_NewDeltaRF2_PRODUCTION_20190131T120000Z.zip
+
+_NOTE: the `-d 20190131` defines the `releaseDate` of the RF2 Release and it is also being used to select the content for the resulting Delta RF2 files._
+
+Generate an RF2 Delta Release from an RF2 Full Release:
+
+    ./rf2 create -d 20190131 OUTDIR_PATH SnomedCT_RF2_PRODUCTION_20190131T120000Z.zip
     
 # Building from source
 
@@ -54,6 +71,14 @@ RF2-D2 uses Gradle for its build system. In order to create a distribution, simp
     ./gradlew build runtimeZip
 
 The distribution package can be found in the `build/rf2-d2-<version>.zip` folder, when the build is complete.
+
+# Contributing
+
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+
+# Versioning
+
+Our [releases](https://github.com/b2ihealthcare/snow-owl/releases) use [semantic versioning](http://semver.org). You can find a chronologically ordered list of notable changes in [CHANGELOG.md](CHANGELOG.md).
 
 # License
 
