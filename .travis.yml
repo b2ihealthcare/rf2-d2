@@ -29,6 +29,7 @@ Rfx/IUpyf9L8N0="
   file: build/rf2-d2-*.zip
   skip_cleanup: true
   draft: true
+  name: "RF2-D2 TODO version"
   on:
     branch: master
     tags: false
