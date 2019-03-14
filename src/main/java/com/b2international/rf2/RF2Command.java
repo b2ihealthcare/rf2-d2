@@ -15,6 +15,11 @@
  */
 package com.b2international.rf2;
 
+import java.io.IOException;
+import java.util.Properties;
+
+import com.google.common.base.Strings;
+
 import picocli.CommandLine.Command;
 
 /**
@@ -31,6 +36,59 @@ import picocli.CommandLine.Command;
 )
 public abstract class RF2Command implements Runnable {
 
-	protected final Console console = new Console();
+	private static final String VERSION_PROPERTY = "version";
+	private static final String DEV_VERSION = "@version@";
 	
+	protected final Console console = new Console();
+
+	@Override
+	public final void run() {
+		try {
+			doRun();
+		} catch (Exception e) {
+			if (Strings.isNullOrEmpty(e.getMessage())) {
+				console.error("Failed to run command. Unexpected error:");
+				e.printStackTrace();
+			} else {
+				console.log(e.getMessage());
+				if (isDevVersion()) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	/**
+	 * Actual command implementation.
+	 * @throws Exception
+	 */
+	protected abstract void doRun() throws Exception;
+	
+	/**
+	 * @return the cli.properties file content as {@link Properties}
+	 */
+	public static final Properties getProperties() {
+		try {
+			var properties = new Properties();
+			properties.load(RF2.class.getResourceAsStream("/cli.properties"));
+			return properties;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * @return the CLI version from the {@link #getProperties() properties}.
+	 */
+	public static String getVersion() {
+		return getProperties().getProperty(VERSION_PROPERTY);
+	}
+	
+	/**
+	 * @return <code>true</code> if the CLI is currently running in development mode, or <code>false</code> if in production mode.
+	 */
+	public static final boolean isDevVersion() {
+		return DEV_VERSION.equals(getVersion());
+	}
+
 }

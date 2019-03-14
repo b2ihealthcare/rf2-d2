@@ -130,6 +130,10 @@ public abstract class RF2File {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T extends RF2File> T detect(final Path path) {
+		if (!Files.exists(path)) {
+			throw new IllegalArgumentException(String.format("'%s' path argument does not exist.", path));
+		}
+		
 		String fileName = path.getFileName().toString();
 		RF2FileNameBase rf2Release;
 		// directories are always recognized and accepted

@@ -43,14 +43,9 @@ public final class RF2Check extends RF2Command {
 	List<String> paths;
 	
 	@Override
-	public void run() {
+	public void doRun() throws Exception {
 		for (String path : paths) {
-			try {
-				check(Paths.get(path));
-			} catch (Exception e) {
-				console.error(e.getMessage());
-				e.printStackTrace();
-			}
+			check(Paths.get(path));
 		}
 	}
 	

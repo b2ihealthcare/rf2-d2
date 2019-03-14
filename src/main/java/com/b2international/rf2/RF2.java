@@ -15,8 +15,6 @@
  */
 package com.b2international.rf2;
 
-import java.util.Properties;
-
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
@@ -36,7 +34,7 @@ import picocli.CommandLine.Option;
 	},
 	versionProvider = RF2.VersionProvider.class
 )
-public class RF2 extends RF2Command {
+public final class RF2 extends RF2Command {
 
 	public static final String RF2_VERSION = "20190131";
 	
@@ -47,7 +45,7 @@ public class RF2 extends RF2Command {
 	boolean usageHelpRequested;
 
 	@Override
-	public void run() {
+	public void doRun() throws Exception {
 		CommandLine.usage(this, System.out, CommandLine.Help.Ansi.AUTO);
 	}
 	
@@ -55,14 +53,15 @@ public class RF2 extends RF2Command {
 		CommandLine.run(new RF2(), args);
 	}
 	
+	/**
+	 * @since 0.1
+	 */
 	public static final class VersionProvider implements IVersionProvider {
-		
+
 		@Override
 		public String[] getVersion() throws Exception {
-			var properties = new Properties();
-			properties.load(getClass().getResourceAsStream("/cli.properties"));
 			return new String[] {
-				"RF2-D2 v" + properties.getProperty("version") + " @Copyright 2019 B2i Healthcare",
+				"RF2-D2 v" + getVersion() + " @Copyright 2019 B2i Healthcare",
 				"Supported RF2 Version: " + RF2_VERSION
 			};
 		}

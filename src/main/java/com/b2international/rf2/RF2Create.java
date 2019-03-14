@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 import com.b2international.rf2.model.RF2File;
 import com.b2international.rf2.model.RF2Release;
-import com.google.common.base.Strings;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -82,7 +81,7 @@ public final class RF2Create extends RF2Command {
 	String[] contentSubTypes = new String[] {"Full", "Snapshot", "Delta"};
 	
 	@Override
-	public void run() {
+	public void doRun() throws Exception {
 		final Path parent = Paths.get(outDir);
 		if (!Files.isDirectory(parent)) {
 			console.log("Output directory '%s' does not exist or is not a directory.", outDir);
@@ -97,18 +96,8 @@ public final class RF2Create extends RF2Command {
 		}
 		
 		RF2Release release = RF2Release.create(parent, product, releaseStatus, releaseDate, releaseTime);
-		try {
-			release.create(new RF2CreateContext(contentSubTypes, releaseDate, country, namespace, sources, console));
-			console.log("Created RF2 release at %s", release.getPath());
-		} catch (Exception e) {
-			e.printStackTrace();
-			if (Strings.isNullOrEmpty(e.getMessage())) {
-				console.log("Failed to create RF2 release at %s", release.getPath());
-			} else {
-				console.log("Failed to create RF2 release at %s", release.getPath());
-				console.error(e.getMessage());
-			}
-		}
+		release.create(new RF2CreateContext(contentSubTypes, releaseDate, country, namespace, sources, console));
+		console.log("Created RF2 release at %s", release.getPath());
 	}
 
 }
