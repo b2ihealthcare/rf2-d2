@@ -24,7 +24,7 @@ Feature include:
 * Replacements
     * Replaces values in RF2 files using conditions, simple statements and even external scripts (WIP)
 
-# Download (soon!)
+# Download
 
 * [WINDOWS](https://github.com/b2ihealthcare/rf2-d2/releases/download/v0.1.0/rf2-d2-0.1.0-win-x64.zip)
 * [LINUX](https://github.com/b2ihealthcare/rf2-d2/releases/download/v0.1.0/rf2-d2-0.1.0-linux-x64.zip)
