@@ -153,7 +153,7 @@ public final class RF2Release extends RF2File {
 		extendedMapRefsetFile.create(context);
 		
 		// Metadata
-		RF2Directory metadataDir = RF2Directory.create(refSetDir.getPath(), "Map");
+		RF2Directory metadataDir = RF2Directory.create(refSetDir.getPath(), "Metadata");
 		metadataDir.create(context);
 		
 		RF2RefsetFile refsetDescriptorRefsetFile = RF2RefsetFile.createRefsetDescriptorRefset(mapDir.getPath(), contentSubType, context);
