@@ -112,6 +112,9 @@ public final class RF2Release extends RF2File {
 		
 		RF2RefsetFile owlExpressionRefsetFile = RF2RefsetFile.createOwlExpressionRefset(terminologyDir.getPath(), contentSubType, context);
 		owlExpressionRefsetFile.create(context);
+		
+		RF2IdentifierFile identifierFile = RF2IdentifierFile.create(terminologyDir.getPath(), contentSubType, context);
+		identifierFile.create(context);
 	}
 	
 	private void createRefsetContent(RF2CreateContext context, String contentSubType, RF2Directory contentSubTypeDir) throws IOException {

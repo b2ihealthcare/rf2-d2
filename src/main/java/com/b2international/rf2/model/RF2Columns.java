@@ -43,6 +43,10 @@ public abstract class RF2Columns {
 	public static final String CHARACTERISTIC_TYPE_ID = "characteristicTypeId";
 	public static final String MODIFIER_ID = "modifierId";
 	
+	// Identifier
+	public static final String IDENTIFIER_SCHEME_ID = "identifierSchemeId";
+	public static final String ALTERNATE_IDENTIFIER = "alternateIdentifier";
+	
 	// Refset fields
 	public static final String REFSET_ID = "refsetId";
 	public static final String REFERENCED_COMPONENT_ID = "referencedComponentId";
