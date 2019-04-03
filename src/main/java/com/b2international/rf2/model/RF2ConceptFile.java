@@ -23,7 +23,7 @@ import com.b2international.rf2.naming.RF2FileName;
 /**
  * @since 0.1
  */
-public final class RF2ConceptFile extends RF2TerminologyFile {
+public final class RF2ConceptFile extends RF2ContentFile {
 	
 	public RF2ConceptFile(Path parent, RF2FileName fileName) {
 		super(parent, fileName);

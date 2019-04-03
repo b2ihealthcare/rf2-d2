@@ -24,7 +24,7 @@ import com.b2international.rf2.naming.file.RF2ContentType;
 /**
  * @since 0.1
  */
-public final class RF2DescriptionFile extends RF2TerminologyFile {
+public final class RF2DescriptionFile extends RF2ContentFile {
 	
 	public RF2DescriptionFile(Path path, RF2FileName fileName) {
 		super(path, fileName);
