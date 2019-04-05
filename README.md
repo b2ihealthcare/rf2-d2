@@ -1,7 +1,7 @@
 # RF2-D2  
 
 [![build status](https://img.shields.io/travis/b2ihealthcare/rf2-d2/master.svg?style=flat-square)](https://travis-ci.org/b2ihealthcare/rf2-d2)
-[![latest release](https://img.shields.io/github/tag/b2ihealthcare/rf2-d2.svg?style=flat-square)](https://github.com/b2ihealthcare/rf2-d2/releases/tag/v0.1.0)
+[![latest release](https://img.shields.io/github/tag/b2ihealthcare/rf2-d2.svg?style=flat-square)](https://github.com/b2ihealthcare/rf2-d2/releases/tag/v0.2.0)
 [![downloads](https://img.shields.io/github/downloads/b2ihealthcare/rf2-d2/total.svg?style=flat-square)](https://github.com/b2ihealthcare/rf2-d2/releases/)
 [![GitHub](https://img.shields.io/github/license/b2ihealthcare/rf2-d2.svg?style=flat-square)](https://github.com/b2ihealthcare/rf2-d2/blob/master/LICENSE)
 
@@ -26,21 +26,21 @@ Feature include:
 
 # Download
 
-* [WINDOWS](https://github.com/b2ihealthcare/rf2-d2/releases/download/v0.1.0/rf2-d2-0.1.0-win-x64.zip)
-* [LINUX](https://github.com/b2ihealthcare/rf2-d2/releases/download/v0.1.0/rf2-d2-0.1.0-linux-x64.zip)
-* [MACOS](https://github.com/b2ihealthcare/rf2-d2/releases/download/v0.1.0/rf2-d2-0.1.0-osx-x64.zip)
+* [WINDOWS](https://github.com/b2ihealthcare/rf2-d2/releases/download/v0.2.0/rf2-d2-0.2.0-win-x64.zip)
+* [LINUX](https://github.com/b2ihealthcare/rf2-d2/releases/download/v0.2.0/rf2-d2-0.2.0-linux-x64.zip)
+* [MACOS](https://github.com/b2ihealthcare/rf2-d2/releases/download/v0.2.0/rf2-d2-0.2.0-osx-x64.zip)
 
 # First steps
 
 After successfully downloading the appropriate RF2-D2 release package for your operating system, run:
 
-    unzip rf2-d2-0.1.0-linux-64.zip
+    unzip rf2-d2-0.2.0-linux-64.zip
     cd rf2-d2-linux-64/bin
     ./rf2 -v
 
 It will return with the version of RF2-D2 and the supported RF2 version:
 
-    RF2-D2 v0.1.0 @Copyright 2019 B2i Healthcare
+    RF2-D2 v0.2.0 @Copyright 2019 B2i Healthcare
     Supported RF2 Version: 20190131
 
 Run the following command to get the supported list of subcommands and their descriptions:
