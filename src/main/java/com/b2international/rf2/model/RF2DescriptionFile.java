@@ -46,12 +46,12 @@ public final class RF2DescriptionFile extends RF2ContentFile {
 	}
 	
 	public static RF2DescriptionFile create(Path parent, String contentSubType, RF2CreateContext context) {
-		final String fileName = String.format("sct2_%s_%s-en-GB_%s%s_%s.%s", RF2ContentType.DESCRIPTION, contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
+		final String fileName = String.format("sct2_%s_%s-en_%s%s_%s.%s", RF2ContentType.DESCRIPTION, contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
 		return new RF2DescriptionFile(parent, new RF2FileName(fileName));
 	}
 	
 	public static RF2DescriptionFile createTextDefinition(Path parent, String contentSubType, RF2CreateContext context) {
-		final String fileName = String.format("sct2_%s_%s-en-GB_%s%s_%s.%s", RF2ContentType.TEXT_DEFINITION, contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
+		final String fileName = String.format("sct2_%s_%s-en_%s%s_%s.%s", RF2ContentType.TEXT_DEFINITION, contentSubType, context.getCountry(), context.getNamespace(), context.getReleaseDate(), TXT);
 		return new RF2DescriptionFile(parent, new RF2FileName(fileName));
 	}
 
