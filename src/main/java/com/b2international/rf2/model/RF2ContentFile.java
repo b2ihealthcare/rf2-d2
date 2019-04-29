@@ -114,6 +114,11 @@ public abstract class RF2ContentFile extends RF2File {
 
 			context.visitSourceRows(getType(), getHeader(), /* parallel if */ releaseType.isSnapshot(), line -> {
 				try {
+					// if type specific filter filters it out, then skip line from the source files
+					if (!filter(line)) {
+						return;
+					}
+					
 					String id = line[0];
 					String effectiveTime = line[1];
 					String rawLine = newLine(line);
@@ -161,13 +166,17 @@ public abstract class RF2ContentFile extends RF2File {
 			if (releaseType.isSnapshot()) {
 				context.visitSourceRows(getType(), getHeader(), false, line -> {
 					try {
+						// if type specific filter filters it out, then skip line from the source files
+						if (!filter(line)) {
+							return;
+						}
+						
 						String id = line[0];
 						String effectiveTime = line[1];
-						String rawLine = newLine(line);
 						if (componentsByIdEffectiveTime.containsKey(id) && componentsByIdEffectiveTime.get(id).containsKey(effectiveTime)) {
 							// remove the item from the id effective time map to indicate that we wrote it out
 							componentsByIdEffectiveTime.remove(id);
-							writer.write(rawLine);
+							writer.write(newLine(line));
 						}
 					} catch (IOException e) {
 						throw new RuntimeException(e);
@@ -177,6 +186,16 @@ public abstract class RF2ContentFile extends RF2File {
 		}
 	}
 	
+	/**
+	 * Subtypes may optionally filter out RF2 lines from the output files. 
+	 * @param line
+	 * @return
+	 * @see RF2RelationshipFile
+	 */
+	protected boolean filter(String[] line) {
+		return true;
+	}
+
 	protected final String newLine(String[] values) {
 		return String.format("%s%s", String.join(TAB, values), CRLF);
 	}

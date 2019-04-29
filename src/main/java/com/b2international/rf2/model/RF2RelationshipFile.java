@@ -26,8 +26,24 @@ import com.b2international.rf2.naming.file.RF2ContentType;
  */
 public final class RF2RelationshipFile extends RF2ContentFile {
 
+	private static final String STATED_CHARACTERISTIC_TYPE_ID = "900000000000010007";
+
 	public RF2RelationshipFile(Path path, RF2FileName fileName) {
 		super(path, fileName);
+	}
+	
+	@Override
+	protected boolean filter(String[] line) {
+		switch (getType()) {
+		case "Relationship":
+			// every row with non-stated char type should be placed in the Relationship file
+			return !STATED_CHARACTERISTIC_TYPE_ID.equals(line[8]);
+		case "StatedRelationship":
+			// every row with stated cha type should be placed in the StatedRelatinship file
+			return STATED_CHARACTERISTIC_TYPE_ID.equals(line[8]);
+		default:
+			return super.filter(line);
+		}
 	}
 	
 	@Override
