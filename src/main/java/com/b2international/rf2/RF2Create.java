@@ -15,6 +15,7 @@
  */
 package com.b2international.rf2;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,9 +26,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.b2international.rf2.config.RF2ReleaseContent;
+import com.b2international.rf2.config.RF2ReleaseSpecification;
+import com.b2international.rf2.config.RF2Specification;
 import com.b2international.rf2.model.RF2File;
 import com.b2international.rf2.model.RF2Release;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
+import com.google.common.base.Strings;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -88,6 +98,21 @@ public final class RF2Create extends RF2Command {
 			return;
 		}
 
+		final Path configPath = Paths.get(System.getProperty("user.dir")).resolve("rf2-spec.yml");
+		if (Files.exists(configPath)) {
+			final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+			mapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
+			mapper.configure(JsonParser.Feature.ALLOW_YAML_COMMENTS, true);
+
+			final RF2Specification specification = mapper.readValue(configPath.toFile(), RF2Specification.class);
+			final RF2ReleaseSpecification releaseSpecification = specification.getRelease();
+			if (Strings.isNullOrEmpty(specification.getVersion()) || releaseSpecification == null) {
+				console.log("No configuration found at '%s'", configPath);
+				return;
+			}
+		}
+
+
 		final List<RF2File> sources;
 		if (paths != null) {
 			sources = paths.stream().map(path -> RF2File.<RF2File>detect(Paths.get(path))).collect(Collectors.toList());
@@ -95,7 +120,7 @@ public final class RF2Create extends RF2Command {
 			sources = Collections.emptyList();
 		}
 		
-		RF2Release release = RF2Release.create(parent, product, releaseStatus, releaseDate, releaseTime);
+		final RF2Release release = RF2Release.create(parent, this.product, releaseStatus, releaseDate, releaseTime);
 		release.create(new RF2CreateContext(contentSubTypes, releaseDate, country, namespace, sources, console));
 		console.log("Created RF2 release at %s", release.getPath());
 	}
