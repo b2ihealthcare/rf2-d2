@@ -15,7 +15,6 @@
  */
 package com.b2international.rf2;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.b2international.rf2.config.RF2ReleaseContent;
 import com.b2international.rf2.config.RF2ReleaseSpecification;
 import com.b2international.rf2.config.RF2Specification;
 import com.b2international.rf2.model.RF2File;
@@ -34,7 +32,6 @@ import com.b2international.rf2.model.RF2Release;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import com.google.common.base.Strings;
