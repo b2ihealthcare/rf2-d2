@@ -1,0 +1,83 @@
+version: "1.0"
+rf2Version: "20190131"
+release:
+  initial: "SnomedCT"
+  product: ''
+  format: "RF2"
+  status: "PRODUCTION"
+  date: ''
+  time: '120000'
+  country: "INT"
+  namespace: ''
+  contentSubType:
+    - "Full"
+    - "Snapshot"
+    - "Delta"
+  content:
+    Terminology:
+      - contentType: Concept
+        header: [id, effectiveTime, active, moduleId, definitionStatusId]
+      - contentType: Description
+        languageCode: en
+        header: [id, effectiveTime, active, moduleId, conceptId, languageCode, typeId, term, caseSignificanceId]
+      - contentType: TextDefinition
+        languageCode: en
+        header: [id, effectiveTime, active, moduleId, conceptId, languageCode, typeId, term, caseSignificanceId]
+      - contentType: Relationship
+        header: [id, effectiveTime, active, moduleId, sourceId, destinationId, relationshipGroup, typeId, characteristicTypeId, modifierId]
+      - contentType: StatedRelationship
+        header: [id, effectiveTime, active, moduleId, sourceId, destinationId, relationshipGroup, typeId, characteristicTypeId, modifierId]
+      - contentType: Identifier
+        header: [identifierSchemeId, alternateIdentifier, effectiveTime, active, moduleId, referencedComponentId]
+      - fileType: sct2
+        contentType: sRefset
+        summary: OwlExpression
+        header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, owlExpression]
+    Refset:
+      Content:
+        - contentType: Refset
+          summary: Simple
+          header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId]
+        - contentType: cRefset
+          summary: Association
+          header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, targetComponentId]
+        - contentType: cRefset
+          summary: AttributeValue
+          header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, valueId]
+      Language:
+        - contentType: cRefset
+          summary: Language
+          languageCode: en
+          header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, acceptabilityId]
+      Map:
+        - contentType: sRefset
+          summary: SimpleMap
+          header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, mapTarget]
+        - contentType: iissscRefset
+          summary: ComplexMap
+          header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, mapGroup, mapPriority, mapRule, mapAdvice, mapTarget, correlationId]
+        - contentType: iisssccRefset
+          summary: ExtendedMap
+          header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, mapGroup, mapPriority, mapRule, mapAdvice, mapTarget, correlationId, mapCategoryId]
+      Metadata:
+        - contentType: cciRefset
+          summary: RefsetDescriptor
+          header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, attributeDescription, attributeType, attributeOrder]
+        - contentType: ciRefset
+          summary: DescriptionType
+          header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, descriptionFormat, descriptionLength]
+        - contentType: cissccRefset
+          summary: MRCMAttributeDomain
+          header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, domainId, grouped, attributeCardinality, attributeInGroupCardinality, ruleStrengthId, contentTypeId]
+        - contentType: cRefset
+          summary: MRCMModuleScope
+          header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, mrcmRuleRefsetId]
+        - contentType: ssccRefset
+          summary: MRCMAttributeRange
+          header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, rangeConstraint, attributeRule, ruleStrengthId, contentTypeId]
+        - contentType: sssssssRefset
+          summary: MRCMDomain
+          header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, domainConstraint, parentDomain, proximalPrimitiveConstraint, proximalPrimitiveRefinement, domainTemplateForPrecoordination, domainTemplateForPostcoordination, guideURL]
+        - contentType: ssRefset
+          summary: ModuleDependency
+          header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, sourceEffectiveTime, targetEffectiveTime]

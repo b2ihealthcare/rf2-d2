@@ -21,22 +21,30 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 
-import com.b2international.rf2.Constants;
 import com.b2international.rf2.RF2CreateContext;
+import com.b2international.rf2.naming.RF2DirectoryName;
 import com.b2international.rf2.naming.RF2ReleaseName;
+import com.b2international.rf2.spec.RF2ContentFileSpecification;
+import com.b2international.rf2.spec.RF2ReleaseSpecification;
+import com.b2international.rf2.spec.RF2Specification;
 
 /**
  * @since 0.1 
  */
 public final class RF2Release extends RF2File {
 
-	public RF2Release(Path parent, RF2ReleaseName fileName) {
-		super(parent, fileName);
-	}
+	private final RF2Specification specification;
 
+	public RF2Release(Path parent, RF2ReleaseName fileName, RF2Specification specification) {
+		super(parent, fileName);
+		this.specification = specification;
+	}
+	
 	@Override
 	public void visit(Consumer<RF2File> visitor) throws IOException {
 		if (!Files.exists(getPath())) {
@@ -49,7 +57,7 @@ public final class RF2Release extends RF2File {
 				Files.walk(root, 1).forEach(path -> {
 					if (!RF2Directory.ROOT_PATH.equals(path.toString())) {
 						try {
-							RF2File.detect(path).visit(visitor);
+							specification.detect(path).visit(visitor);
 						} catch (IOException e) {
 							throw new RuntimeException("Couldn't visit path: " + path, e);
 						}
@@ -73,125 +81,35 @@ public final class RF2Release extends RF2File {
 		if (Files.exists(getPath())) {
 			throw new IllegalStateException("Cannot overwrite and create RF2 Release at path: " + getPath());
 		}
+
+		final RF2Specification specification = context.getSpecification();
 		
 		try (FileSystem zipfs = openZipfs(true)) {
 			// root folder with same name
-			RF2Directory rootDir = RF2Directory.create(zipfs.getPath("/"), getFileName().getFileName());
+			RF2Directory rootDir = new RF2DirectoryName(getRF2FileName().getFileName()).createRF2File(zipfs.getPath("/"), specification);
 			rootDir.create(context);
-			
-			for (String contentSubType : context.getContentSubTypes()) {
-				RF2Directory contentSubTypeDir = RF2Directory.create(rootDir.getPath(), contentSubType);
+
+			RF2ReleaseSpecification release = specification.getRelease();
+			for (String contentSubType : release.getContentSubTypes()) {
+				RF2Directory contentSubTypeDir = new RF2DirectoryName(contentSubType).createRF2File(rootDir.getPath(), specification);
 				contentSubTypeDir.create(context);
 				
-				createTerminologyContent(context, contentSubType, contentSubTypeDir);
-				createRefsetContent(context, contentSubType, contentSubTypeDir);
+				for (Entry<String, List<RF2ContentFileSpecification>> entry : release.getContent().getFiles().entrySet()) {
+					RF2Directory rf2Directory = new RF2DirectoryName(entry.getKey()).createRF2File(contentSubTypeDir.getPath(), specification);
+					rf2Directory.create(context);
+					entry.getValue().forEach(file -> {
+						try {
+							file.prepare(rf2Directory.getPath(), contentSubType, release.getCountry(), release.getNamespace(), release.getDate())
+								.create(context);
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					});
+				}
 			}
 			
 		}
-	}
-
-	private void createTerminologyContent(RF2CreateContext context, String contentSubType, RF2Directory contentSubTypeDir) throws IOException {
-		// create Terminology directory
-		RF2Directory terminologyDir = RF2Directory.create(contentSubTypeDir.getPath(), "Terminology");
-		terminologyDir.create(context);
-		
-		RF2ConceptFile conceptFile = RF2ConceptFile.create(terminologyDir.getPath(), contentSubType, context);
-		conceptFile.create(context);
-		
-		RF2DescriptionFile descriptionFile = RF2DescriptionFile.create(terminologyDir.getPath(), contentSubType, context);
-		descriptionFile.create(context);
-		
-		RF2DescriptionFile textDefinitionFile = RF2DescriptionFile.createTextDefinition(terminologyDir.getPath(), contentSubType, context);
-		textDefinitionFile.create(context);
-		
-		RF2RelationshipFile relationshipFile = RF2RelationshipFile.create(terminologyDir.getPath(), contentSubType, context);
-		relationshipFile.create(context);
-		
-		RF2RelationshipFile statedRelationshipFile = RF2RelationshipFile.createStated(terminologyDir.getPath(), contentSubType, context);
-		statedRelationshipFile.create(context);
-		
-		RF2RefsetFile owlExpressionRefsetFile = RF2RefsetFile.createOwlExpressionRefset(terminologyDir.getPath(), contentSubType, context);
-		owlExpressionRefsetFile.create(context);
-		
-		RF2IdentifierFile identifierFile = RF2IdentifierFile.create(terminologyDir.getPath(), contentSubType, context);
-		identifierFile.create(context);
-	}
-	
-	private void createRefsetContent(RF2CreateContext context, String contentSubType, RF2Directory contentSubTypeDir) throws IOException {
-		// create Refset directory
-		RF2Directory refSetDir = RF2Directory.create(contentSubTypeDir.getPath(), "Refset");
-		refSetDir.create(context);
-		
-		// create Content directory
-		{
-			RF2Directory contentDir = RF2Directory.create(refSetDir.getPath(), "Content");
-			contentDir.create(context);
-	
-			RF2RefsetFile simpleRefsetFile = RF2RefsetFile.createSimpleRefset(contentDir.getPath(), contentSubType, context);
-			simpleRefsetFile.create(context);
-			
-			RF2RefsetFile associationRefsetFile = RF2RefsetFile.createAssociationRefset(contentDir.getPath(), contentSubType, context);
-			associationRefsetFile.create(context);
-			
-			RF2RefsetFile attributeValueRefsetFile = RF2RefsetFile.createAttributeValueRefset(contentDir.getPath(), contentSubType, context);
-			attributeValueRefsetFile.create(context);
-		}
-		
-		// Language
-		{
-			RF2Directory languageDir = RF2Directory.create(refSetDir.getPath(), "Language");
-			languageDir.create(context);
-		
-			RF2RefsetFile languageRefsetFile = RF2RefsetFile.createLanguageRefset(languageDir.getPath(), contentSubType, context);
-			languageRefsetFile.create(context);
-		}
-		
-		// Map
-		{
-			RF2Directory mapDir = RF2Directory.create(refSetDir.getPath(), "Map");
-			mapDir.create(context);
-			
-			RF2RefsetFile simpleMapRefsetFile = RF2RefsetFile.createSimpleMapRefset(mapDir.getPath(), contentSubType, context);
-			simpleMapRefsetFile.create(context);
-			
-			RF2RefsetFile complexMapRefsetFile = RF2RefsetFile.createComplexMapRefset(mapDir.getPath(), contentSubType, context);
-			complexMapRefsetFile.create(context);
-			
-			RF2RefsetFile extendedMapRefsetFile = RF2RefsetFile.createExtendedMapRefset(mapDir.getPath(), contentSubType, context);
-			extendedMapRefsetFile.create(context);
-		}
-		
-		// Metadata
-		{
-			RF2Directory metadataDir = RF2Directory.create(refSetDir.getPath(), "Metadata");
-			metadataDir.create(context);
-			
-			RF2RefsetFile refsetDescriptorRefsetFile = RF2RefsetFile.createRefsetDescriptorRefset(metadataDir.getPath(), contentSubType, context);
-			refsetDescriptorRefsetFile.create(context);
-			
-			RF2RefsetFile descriptionTypeRefsetFile = RF2RefsetFile.createDescriptionTypeRefset(metadataDir.getPath(), contentSubType, context);
-			descriptionTypeRefsetFile.create(context);
-			
-			RF2RefsetFile mrcmAttributeDomainRefsetFile = RF2RefsetFile.createMRCMAttributeDomainRefset(metadataDir.getPath(), contentSubType, context);
-			mrcmAttributeDomainRefsetFile.create(context);
-			
-			RF2RefsetFile mrcmModuleScopeRefsetFile = RF2RefsetFile.createMRCMModuleScopeRefset(metadataDir.getPath(), contentSubType, context);
-			mrcmModuleScopeRefsetFile.create(context);
-			
-			RF2RefsetFile mrcmAttributeRangeRefsetFile = RF2RefsetFile.createMRCMAttributeRangeRefset(metadataDir.getPath(), contentSubType, context);
-			mrcmAttributeRangeRefsetFile.create(context);
-			
-			RF2RefsetFile mrcmDomainRefsetFile = RF2RefsetFile.createMRCMDomainRefset(metadataDir.getPath(), contentSubType, context);
-			mrcmDomainRefsetFile.create(context);
-			
-			RF2RefsetFile moduleDependencyRefsetFile = RF2RefsetFile.createModuleDependencyRefset(metadataDir.getPath(), contentSubType, context);
-			moduleDependencyRefsetFile.create(context);
-		}
-	}
-	
-	public static RF2Release create(Path parent, String product, String releaseStatus, String releaseDate, String releaseTime) {
-		String releaseName = String.format("SnomedCT_%sRF2_%s_%sT%sZ.%s", product, releaseStatus, releaseDate, releaseTime, Constants.ZIP);
-		return new RF2Release(parent, new RF2ReleaseName(releaseName));
+		context.log().log("Created RF2 release at %s", getPath());
 	}
 	
 }

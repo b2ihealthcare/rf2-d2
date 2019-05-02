@@ -20,14 +20,14 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 
 import com.b2international.rf2.RF2CreateContext;
-import com.b2international.rf2.naming.RF2FileNameBase;
+import com.b2international.rf2.naming.RF2FileName;
 
 /**
  * @since 0.1
  */
 public final class RF2UnrecognizedFile extends RF2File {
 
-	public RF2UnrecognizedFile(Path path, RF2FileNameBase fileName) {
+	public RF2UnrecognizedFile(Path path, RF2FileName fileName) {
 		super(path, fileName);
 	}
 	
@@ -38,7 +38,7 @@ public final class RF2UnrecognizedFile extends RF2File {
 	
 	@Override
 	public void create(RF2CreateContext context) throws IOException {
-		throw new UnsupportedOperationException("Unrecognized files are not supported yet.");
+		context.log().warn("Creating unrecognized files like '%s' is not supported yet.", getRF2FileName());
 	}
 	
 	@Override

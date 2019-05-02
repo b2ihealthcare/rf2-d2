@@ -16,75 +16,156 @@
 package com.b2international.rf2.naming;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
-import com.b2international.rf2.model.RF2ConceptFile;
-import com.b2international.rf2.model.RF2DescriptionFile;
 import com.b2international.rf2.model.RF2File;
-import com.b2international.rf2.model.RF2RefsetFile;
-import com.b2international.rf2.model.RF2RelationshipFile;
-import com.b2international.rf2.model.RF2UnrecognizedFile;
-import com.b2international.rf2.naming.file.RF2ContentSubType;
-import com.b2international.rf2.naming.file.RF2ContentType;
-import com.b2international.rf2.naming.file.RF2CountryNamespace;
-import com.b2international.rf2.naming.file.RF2FileType;
-import com.b2international.rf2.naming.file.RF2VersionDate;
+import com.b2international.rf2.spec.RF2Specification;
 
 /**
  * @since 0.1
  */
-public final class RF2FileName extends RF2FileNameBase {
+public abstract class RF2FileName {
 
-	public RF2FileName(String fileName) {
-		super(fileName, 
-			RF2FileType.class,
-			RF2ContentType.class,
-			RF2ContentSubType.class,
-			RF2CountryNamespace.class,
-			RF2VersionDate.class
-		);
-	}
-
-	@Override
-	public boolean isUnrecognized() {
-		return getElements().isEmpty();
-	}
+	public static final String ELEMENT_SEPARATOR = "_";
+	public static final String FILE_EXT_SEPARATOR = ".";
 	
-	@Override
-	public RF2File createRF2File(Path parent) {
-		// first try to detect the actual RF2 file type by its name 
-		RF2File file = createByName(parent);
-		if (file.isUnrecognized()) {	
-			// then by the content type aka header by reading the file
-			file = createByContent(parent);
+	private final String fileName;
+	private final String extension;
+	private final List<RF2NameElement> elements;
+	private final List<Class<?>> missingElements;
+	
+	public RF2FileName(String fileName, Class<?>...expectedRF2NameElements) {
+		if (fileName == null || fileName.isBlank()) {
+			throw new IllegalArgumentException("FileName argument cannot be null or empty");
 		}
-		return file;
-	}
+		
+		final int lastExtSeparatorIndex = fileName.lastIndexOf(FILE_EXT_SEPARATOR);
+		if (lastExtSeparatorIndex == -1) {
+			this.extension = "";
+			this.fileName = fileName;
+		} else {
+			this.extension = fileName.substring(lastExtSeparatorIndex + 1);
+			this.fileName = fileName.substring(0, lastExtSeparatorIndex);
+		}
+		
+		final Iterator<String> actualElements;
+		
+		if (expectedRF2NameElements.length == 1 && expectedRF2NameElements[0] == RF2NameElement.AcceptAll.class) {
+			this.elements = new ArrayList<>(expectedRF2NameElements.length);
+			this.missingElements = Collections.emptyList();
+			
+			actualElements = Arrays.asList(this.fileName).iterator();
+		} else {
+			this.elements = new ArrayList<>(expectedRF2NameElements.length);
+			this.missingElements = new ArrayList<>(expectedRF2NameElements.length);
 
-	private RF2File createByName(Path parent) {
-		return getElement(RF2ContentType.class)
-				.map(contentType -> createTerminologyRF2File(parent, contentType))
-				.orElse(new RF2UnrecognizedFile(parent, this));
-	}
-	
-	private RF2File createTerminologyRF2File(Path parent, RF2ContentType contentType) {
-		final String type = contentType.getContentType();
-		switch (type) {
-		case "Concept": 
-			return new RF2ConceptFile(parent, this);
-		case "Description":
-		case "TextDefinition":
-			return new RF2DescriptionFile(parent, this);
-		case "Relationship":
-		case "StatedRelationship":
-			return new RF2RelationshipFile(parent, this);
-		default: 
-			return new RF2UnrecognizedFile(parent, this);
+			actualElements = Arrays.asList(this.fileName.split(ELEMENT_SEPARATOR)).iterator();
+		}
+		
+		final Iterator<Class<?>> expectedElements = Arrays.asList(expectedRF2NameElements).iterator();
+		
+		// consume both iterators in order, since an RF2 file has a strict specification
+		while (actualElements.hasNext() && expectedElements.hasNext()) {
+			parse(actualElements.next(), expectedElements.next());
+		}
+
+		// if at this point we still have actualElements, report them as unrecognized
+		while (actualElements.hasNext()) {
+			elements.add(RF2NameElement.unrecognized(actualElements.next()));
+		}
+		
+		// if at this point we still have expectedElements, report them as missing
+		while (expectedElements.hasNext()) {
+			missingElements.add(expectedElements.next());
 		}
 	}
-	
-	private RF2File createByContent(Path parent) {
-		// refset files are currently cannot be detected 100% by purely using the file name so we are falling back to content type aka header
-		return RF2RefsetFile.detect(parent, this);
+
+	private void parse(String actualElement, Class<?> expectedElement) {
+		Matcher matcher = RF2NameElement.getNamingPattern(expectedElement).matcher(actualElement);
+		if (matcher.matches()) {
+			Object[] args = new String[matcher.groupCount()];
+			for (int i = 0; i < matcher.groupCount(); i++) {
+				args[i] = matcher.group(i + 1);
+			}
+			try {
+				elements.add((RF2NameElement) expectedElement.getConstructors()[0].newInstance(args));
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			elements.add(RF2NameElement.unrecognized(actualElement));
+			missingElements.add(expectedElement);
+		}
+	}
+
+	public final String getFileName() {
+		return fileName;
+	}
+
+	public final String getExtension() {
+		return extension;
 	}
 	
+	public final List<RF2NameElement> getElements() {
+		return Collections.unmodifiableList(elements);
+	}
+	
+	/**
+	 * Returns the first (and the only) occurrence of an RF2 name element
+	 * @param nameType
+	 * @return
+	 */
+	public final <T extends RF2NameElement> Optional<T> getElement(Class<T> nameType) {
+		return getElements().stream()
+				.filter(nameType::isInstance)
+				.map(nameType::cast)
+				.findFirst();
+	}
+	
+	public final List<RF2NameElement.Unrecognized> getUnrecognizedElements() {
+		return getElements().stream()
+				.filter(RF2NameElement.Unrecognized.class::isInstance)
+				.map(RF2NameElement.Unrecognized.class::cast)
+				.collect(Collectors.toUnmodifiableList());
+	}
+	
+	public final List<Class<?>> getMissingElements() {
+		return Collections.unmodifiableList(missingElements);
+	}
+
+	/**
+	 * @return whether this RF2 File Name has any unrecognized parts in the given {@link #getRF2FileName() fileName}.
+	 */
+	public final boolean hasUnrecognizedElement() {
+		return !getUnrecognizedElements().isEmpty();
+	}
+	
+	/**
+	 * Subclasses must specify the cases when an RF2 file name considered unrecognized.
+	 * 
+	 * @return whether this RF2 file name is unrecognized or not
+	 */
+	public abstract boolean isUnrecognized();
+	
+	/**
+	 * Creates an {@link RF2File} based on the described RF2 File Name elements and the given {@link RF2Specification}.
+	 * 
+	 * @param parent - the parent path where the file is currently located or will be located
+	 * @param specification - the RF2 specification to use when creating the {@link RF2File}  
+	 * @return an {@link RF2File} instance
+	 */
+	public abstract RF2File createRF2File(Path parent, RF2Specification specification);
+	
+	@Override
+	public final String toString() {
+		return String.format("%s%s%s", elements.stream().map(Object::toString).collect(Collectors.joining(ELEMENT_SEPARATOR)), extension.isEmpty() ? "" : FILE_EXT_SEPARATOR, extension);
+	}
+
 }

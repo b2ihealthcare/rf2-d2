@@ -49,7 +49,7 @@ public final class RF2ComponentIDValidator implements RF2ColumnValidator {
 		Map.entry(RF2Columns.VALUE_ID, Set.of(RF2ContentType.CONCEPT)),
 		Map.entry(RF2Columns.MAP_CATEGORY_ID, Set.of(RF2ContentType.CONCEPT)),
 		Map.entry(RF2Columns.DESCRIPTION_FORMAT, Set.of(RF2ContentType.CONCEPT)),
-		Map.entry(RF2Columns.RULE_REFSET_ID, Set.of(RF2ContentType.CONCEPT)),
+		Map.entry(RF2Columns.MRCM_RULE_REFSET_ID, Set.of(RF2ContentType.CONCEPT)),
 		Map.entry(RF2Columns.REFERENCED_COMPONENT_ID, Set.of(RF2ContentType.CONCEPT, RF2ContentType.DESCRIPTION, RF2ContentType.RELATIONSHIP)),
 		Map.entry(RF2Columns.TARGET_COMPONENT_ID, Set.of(RF2ContentType.CONCEPT, RF2ContentType.DESCRIPTION, RF2ContentType.RELATIONSHIP)),
 		Map.entry(RF2Columns.CORRELATION_ID, Set.of(RF2ContentType.CONCEPT)),

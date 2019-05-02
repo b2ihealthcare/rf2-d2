@@ -24,6 +24,7 @@ import java.util.List;
 import com.b2international.rf2.check.RF2IssueAcceptor;
 import com.b2international.rf2.model.RF2ContentFile;
 import com.b2international.rf2.model.RF2File;
+import com.b2international.rf2.spec.RF2Specification;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -44,17 +45,18 @@ public final class RF2Check extends RF2Command {
 	
 	@Override
 	public void doRun() throws Exception {
+		RF2Specification specification = getRF2Specification();
 		for (String path : paths) {
-			check(Paths.get(path));
+			check(specification, Paths.get(path));
 		}
 	}
 	
-	private void check(final Path path) throws IOException {
-		RF2File.detect(path).visit(file -> {
+	private void check(final RF2Specification specification, final Path path) throws IOException {
+		specification.detect(path).visit(file -> {
 			try {
 				checkRF2File(file, file.getPath().equals(path));
 			} catch (IOException e) {
-				console.error("Couldn't check RF2File at %s", file.getFileName());
+				console.error("Couldn't check RF2File at %s", file.getRF2FileName());
 			}
 		});
 	}
@@ -62,7 +64,7 @@ public final class RF2Check extends RF2Command {
 	private void checkRF2File(RF2File file, boolean isPathArgument) throws IOException {
 		int indentation = isPathArgument ? 0 : file.getPath().getNameCount();
 		final Console console = this.console.withIndentation(indentation);
-		console.log(file.getFileName().toString());
+		console.log(file.getRF2FileName().toString());
 		
 		final Console detailConsole = this.console.withIndentation(indentation + 1).withPrefix("-");
 		detailConsole.log("type: %s", file.getType());

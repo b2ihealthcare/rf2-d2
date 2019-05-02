@@ -26,7 +26,7 @@ public final class Console {
 	private static final int TAB_SIZE = 2;
 	
 	public static final PrintStream OUT = System.out;
-	public static final PrintStream ERR = System.err;
+	public static final PrintStream ERR = System.out;
 
 	private final int indentation;
 	private final String linePrefix;

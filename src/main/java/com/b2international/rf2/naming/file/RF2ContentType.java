@@ -32,6 +32,7 @@ public final class RF2ContentType implements RF2NameElement {
 	public static final RF2ContentType STATED_RELATIONSHIP = new RF2ContentType("StatedRelationship");
 	public static final RF2ContentType TEXT_DEFINITION = new RF2ContentType("TextDefinition");
 	public static final RF2ContentType IDENTIFIER = new RF2ContentType("Identifier");
+	private static final String REFSET_CONTENT_TYPE = "Refset";
 	
 	private final String contentType;
 
@@ -60,6 +61,14 @@ public final class RF2ContentType implements RF2NameElement {
 	@Override
 	public String toString() {
 		return contentType;
+	}
+
+	public boolean isRefset() {
+		return isRefset(getContentType());
+	}
+	
+	public static boolean isRefset(String contentType) {
+		return contentType.endsWith(REFSET_CONTENT_TYPE);
 	}
 	
 }

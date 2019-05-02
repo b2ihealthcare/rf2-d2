@@ -2,6 +2,7 @@
 .gradle/
 .idea/
 build/
+target/
 bin/
 
 # Log files

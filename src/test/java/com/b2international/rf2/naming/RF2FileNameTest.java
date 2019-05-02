@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.b2international.rf2.naming.RF2FileName;
+import com.b2international.rf2.naming.RF2ContentFileName;
 import com.b2international.rf2.naming.RF2NameElement;
 import com.b2international.rf2.naming.file.RF2ContentSubType;
 import com.b2international.rf2.naming.file.RF2ContentType;
@@ -36,7 +36,7 @@ public class RF2FileNameTest {
 
 	@Test
 	public void unrecognized() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("unrecognized");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("unrecognized");
 		assertTrue(rf2FileName.getExtension().isEmpty());
 		assertThat(rf2FileName.getElements())
 			.contains(RF2NameElement.unrecognized("unrecognized"));
@@ -44,7 +44,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void fileType_sct() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("sct");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("sct");
 		assertThat(rf2FileName.getElements())
 			.containsOnly(
 				new RF2FileType("", "sct", "")
@@ -53,7 +53,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void fileType_sct1() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("sct1");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("sct1");
 		assertThat(rf2FileName.getElements())
 			.containsOnly(
 				RF2FileType.SCT1
@@ -62,7 +62,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void fileType_sct2() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("sct2");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("sct2");
 		assertThat(rf2FileName.getElements())
 			.containsOnly(
 				RF2FileType.SCT2
@@ -71,7 +71,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void fileType_xsct2() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("xsct2");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("xsct2");
 		assertThat(rf2FileName.getElements())
 			.containsOnly(
 				new RF2FileType("x", "sct", "2")
@@ -80,7 +80,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void fileType_zdoc() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("zdoc");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("zdoc");
 		assertThat(rf2FileName.getElements())
 			.containsOnly(
 				new RF2FileType("z", "doc", "")
@@ -89,14 +89,14 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void fileType_Unrecognized() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("adoc");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("adoc");
 		assertThat(rf2FileName.getElements())
 			.contains(RF2NameElement.unrecognized("adoc"));
 	}
 	
 	@Test
 	public void contentType_sct2_Concept() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("sct2_Concept");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("sct2_Concept");
 		assertThat(rf2FileName.getElements()).
 			containsOnly(
 				RF2FileType.SCT2,
@@ -106,7 +106,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void contentType_sct2_Relationship() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("sct2_Relationship");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("sct2_Relationship");
 		assertThat(rf2FileName.getElements()).
 			containsOnly(
 				RF2FileType.SCT2,
@@ -116,7 +116,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void contentType_sct2_Description() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("sct2_Description");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("sct2_Description");
 		assertThat(rf2FileName.getElements()).
 			containsOnly(
 				RF2FileType.SCT2,
@@ -126,7 +126,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void contentSubType_Full() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("sct2_Concept_Full");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("sct2_Concept_Full");
 		assertThat(rf2FileName.getElements())
 			.containsOnly(
 				RF2FileType.SCT2,
@@ -137,7 +137,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void contentSubType_Delta() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("sct2_Description_Delta");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("sct2_Description_Delta");
 		assertThat(rf2FileName.getElements())
 			.containsOnly(
 				RF2FileType.SCT2,
@@ -148,7 +148,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void contentSubType_Snapshot() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("sct2_Relationship_Snapshot");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("sct2_Relationship_Snapshot");
 		assertThat(rf2FileName.getElements())
 			.containsOnly(
 				RF2FileType.SCT2,
@@ -159,7 +159,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void contentSubType_AttributeValueDelta() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("der2_cRefSet_AttributeValueDelta");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("der2_cRefSet_AttributeValueDelta");
 		assertThat(rf2FileName.getElements())
 			.containsOnly(
 				RF2FileType.DER2,
@@ -170,7 +170,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void contentSubType_LanguageDelta_en() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("der2_cRefSet_LanguageDelta-en");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("der2_cRefSet_LanguageDelta-en");
 		assertThat(rf2FileName.getElements())
 			.containsOnly(
 				RF2FileType.DER2,
@@ -181,7 +181,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void contentSubType_LanguageDelta_en_sg() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("der2_cRefSet_LanguageDelta-en-sg");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("der2_cRefSet_LanguageDelta-en-sg");
 		assertThat(rf2FileName.getElements())
 			.containsOnly(
 				RF2FileType.DER2,
@@ -192,7 +192,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void countryNamespace_INT() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("der2_cRefSet_LanguageDelta-en-sg_INT");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("der2_cRefSet_LanguageDelta-en-sg_INT");
 		assertThat(rf2FileName.getElements())
 			.containsOnly(
 				RF2FileType.DER2,
@@ -204,7 +204,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void countryNamespace_INTWithNamespace() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("der2_cRefSet_LanguageDelta-en-sg_INT1000000");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("der2_cRefSet_LanguageDelta-en-sg_INT1000000");
 		assertThat(rf2FileName.getElements())
 			.containsOnly(
 				RF2FileType.DER2,
@@ -216,7 +216,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void countryNamespace_NRC() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("der2_cRefSet_LanguageDelta-en-sg_AU");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("der2_cRefSet_LanguageDelta-en-sg_AU");
 		assertThat(rf2FileName.getElements())
 			.containsOnly(
 				RF2FileType.DER2,
@@ -228,7 +228,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void countryNamespace_NRCWithNamespace() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("der2_cRefSet_LanguageDelta-en-sg_AU1000001");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("der2_cRefSet_LanguageDelta-en-sg_AU1000001");
 		assertThat(rf2FileName.getElements())
 			.containsOnly(
 				RF2FileType.DER2,
@@ -240,7 +240,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void countryNamespace_NamespaceOnly() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("der2_cRefSet_LanguageDelta-en-sg_1000001");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("der2_cRefSet_LanguageDelta-en-sg_1000001");
 		assertThat(rf2FileName.getElements())
 			.containsOnly(
 				RF2FileType.DER2,
@@ -252,7 +252,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void countryNamespace_Unrecognized() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("der2_cRefSet_LanguageDelta-en-sg_10001");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("der2_cRefSet_LanguageDelta-en-sg_10001");
 		assertThat(rf2FileName.getElements())
 			.containsOnly(
 				RF2FileType.DER2,
@@ -265,7 +265,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void versionDate_20190131() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("der2_cRefSet_LanguageDelta-en_INT_20190131");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("der2_cRefSet_LanguageDelta-en_INT_20190131");
 		assertThat(rf2FileName.getElements())
 			.containsOnly(
 				RF2FileType.DER2,
@@ -278,7 +278,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void versionDate_Unrecognized() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("der2_cRefSet_LanguageDelta-en_INT_0131");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("der2_cRefSet_LanguageDelta-en_INT_0131");
 		assertThat(rf2FileName.getElements())
 			.containsOnly(
 				RF2FileType.DER2,
@@ -292,7 +292,7 @@ public class RF2FileNameTest {
 	
 	@Test
 	public void completeRF2FileName() throws Exception {
-		RF2FileName rf2FileName = new RF2FileName("der2_cRefSet_LanguageDelta-en_INT_20190131.txt");
+		RF2ContentFileName rf2FileName = new RF2ContentFileName("der2_cRefSet_LanguageDelta-en_INT_20190131.txt");
 		assertThat(rf2FileName.hasUnrecognizedElement());
 		assertThat(rf2FileName.getElements())
 			.containsOnly(

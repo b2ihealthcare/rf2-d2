@@ -16,8 +16,11 @@
 package com.b2international.rf2;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
+import com.b2international.rf2.spec.RF2Specification;
 import com.google.common.base.Strings;
 
 import picocli.CommandLine.Command;
@@ -38,6 +41,7 @@ public abstract class RF2Command implements Runnable {
 
 	private static final String VERSION_PROPERTY = "version";
 	private static final String DEV_VERSION = "@version@";
+	protected static final Path WORK_DIR = Paths.get(System.getProperty("user.dir"));
 	
 	protected final Console console = new Console();
 
@@ -63,6 +67,14 @@ public abstract class RF2Command implements Runnable {
 	 * @throws Exception
 	 */
 	protected abstract void doRun() throws Exception;
+	
+	/**
+	 * @return the current {@link RF2Specification} instance read from the working directory and merged with the default spec file.
+	 * @throws IOException
+	 */
+	public static final RF2Specification getRF2Specification() throws IOException {
+		return RF2Specification.get(WORK_DIR);
+	}
 	
 	/**
 	 * @return the cli.properties file content as {@link Properties}

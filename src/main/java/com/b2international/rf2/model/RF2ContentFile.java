@@ -26,13 +26,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.b2international.rf2.RF2CreateContext;
 import com.b2international.rf2.check.RF2IssueAcceptor;
-import com.b2international.rf2.naming.RF2FileName;
+import com.b2international.rf2.naming.RF2ContentFileName;
 import com.b2international.rf2.naming.file.RF2ContentSubType;
 import com.b2international.rf2.naming.file.RF2ContentType;
+import com.b2international.rf2.naming.file.RF2VersionDate;
+import com.b2international.rf2.spec.RF2ContentFileSpecification;
 import com.b2international.rf2.validation.RF2ColumnValidator;
 import com.google.common.collect.Iterables;
 import com.google.common.hash.Hashing;
@@ -40,17 +43,21 @@ import com.google.common.hash.Hashing;
 /**
  * @since 0.1
  */
-public abstract class RF2ContentFile extends RF2File {
+public final class RF2ContentFile extends RF2File {
 
+	private static final String STATED_CHARACTERISTIC_TYPE_ID = "900000000000010007";
+	
+	private final RF2ContentFileSpecification specification;
 	private String[] header;
 	
-	public RF2ContentFile(Path parent, RF2FileName fileName) {
+	public RF2ContentFile(Path parent, RF2ContentFileName fileName, RF2ContentFileSpecification specification) {
 		super(parent, fileName);
+		this.specification = specification;
 	}
 	
 	@Override
 	public String getType() {
-		return getFileName()
+		return getRF2FileName()
 				.getElement(RF2ContentType.class)
 				.map(RF2ContentType::getContentType)
 				// TODO recognize type from header
@@ -63,7 +70,7 @@ public abstract class RF2ContentFile extends RF2File {
 	}
 	
 	public RF2ContentSubType getReleaseType() {
-		return getFileName()
+		return getRF2FileName()
 				.getElement(RF2ContentSubType.class)
 				.orElse(null);
 	}
@@ -72,7 +79,7 @@ public abstract class RF2ContentFile extends RF2File {
 	public void check(RF2IssueAcceptor acceptor) throws IOException {
 		super.check(acceptor);
 		// check RF2 header
-		final String[] rf2HeaderSpec = getRF2HeaderSpec();
+		final String[] rf2HeaderSpec = specification.getHeader();
 		final String[] actualHeader = getHeader();
 		if (!Arrays.equals(rf2HeaderSpec, actualHeader)) {
 			// TODO report incorrect header columns
@@ -107,18 +114,17 @@ public abstract class RF2ContentFile extends RF2File {
 		context.log().log("Creating '%s'...", getPath());
 		
 		final RF2ContentSubType releaseType = getReleaseType();
+		final String currentReleaseDate = getRF2FileName().getElement(RF2VersionDate.class).map(RF2VersionDate::getVersionDate).orElse("N/A");
+		
 		try (BufferedWriter writer = Files.newBufferedWriter(getPath(), StandardOpenOption.CREATE_NEW)) {
 			writer.write(newLine(getHeader()));
 			
 			final Map<String, Map<String, String>> componentsByIdEffectiveTime = new HashMap<>(); 
 
-			context.visitSourceRows(getType(), getHeader(), /* parallel if */ releaseType.isSnapshot(), line -> {
+			final Predicate<String[]> lineFilter = getLineFilter();
+			
+			context.visitSourceRows(this::fileFilter, lineFilter, /* parallel if */ releaseType.isSnapshot(), line -> {
 				try {
-					// if type specific filter filters it out, then skip line from the source files
-					if (!filter(line)) {
-						return;
-					}
-					
 					String id = line[0];
 					String effectiveTime = line[1];
 					String rawLine = newLine(line);
@@ -152,7 +158,7 @@ public abstract class RF2ContentFile extends RF2File {
 					} else if (releaseType.isDelta()) {
 						// in case of Delta we will only add the lines with the releaseDate effective time
 						// TODO support closest to specified releaseDate!!!
-						if (context.getReleaseDate().equals(effectiveTime)) {
+						if (currentReleaseDate.equals(effectiveTime)) {
 							componentsByIdEffectiveTime.put(id, Map.of(effectiveTime, lineHash));
 							writer.write(rawLine);
 						}
@@ -164,13 +170,8 @@ public abstract class RF2ContentFile extends RF2File {
 			
 			// Snapshot needs a second run, since we just extracted the applicable rows from all source files, and we need to actually write them into the output
 			if (releaseType.isSnapshot()) {
-				context.visitSourceRows(getType(), getHeader(), false, line -> {
+				context.visitSourceRows(this::fileFilter, lineFilter, false, line -> {
 					try {
-						// if type specific filter filters it out, then skip line from the source files
-						if (!filter(line)) {
-							return;
-						}
-						
 						String id = line[0];
 						String effectiveTime = line[1];
 						if (componentsByIdEffectiveTime.containsKey(id) && componentsByIdEffectiveTime.get(id).containsKey(effectiveTime)) {
@@ -186,16 +187,40 @@ public abstract class RF2ContentFile extends RF2File {
 		}
 	}
 	
-	/**
-	 * Subtypes may optionally filter out RF2 lines from the output files. 
-	 * @param line
-	 * @return
-	 * @see RF2RelationshipFile
-	 */
-	protected boolean filter(String[] line) {
-		return true;
+	private Predicate<String[]> getLineFilter() {
+		// TODO apply description type based
+		switch (getType()) {
+		case "Relationship":
+			// every row with non-stated char type should be placed in the Relationship file
+			return line -> !STATED_CHARACTERISTIC_TYPE_ID.equals(line[8]);
+		case "StatedRelationship":
+			// every row with stated char type should be placed in the StatedRelatinship file
+			return line -> STATED_CHARACTERISTIC_TYPE_ID.equals(line[8]);
+		default:
+			return line -> true;
+		}
 	}
 
+	private boolean fileFilter(RF2ContentFile file) {
+		final String sourceContentType = file.getType();
+		switch (getType()) {
+		// allow both Relationship/StatedRelationships files as sources for these types
+		case "Relationship":
+		case "StatedRelationship":
+			return "StatedRelationship".equals(sourceContentType) || "Relationship".equals(sourceContentType); 
+		default:
+			if (!sourceContentType.equals(getType())) {
+				return false;
+			}
+		}
+		// check actual content type as well, to copy content from the right files
+		if (!Arrays.equals(file.getHeader(), getHeader())) {
+			return false;
+		}
+		
+		return true;
+	}
+	
 	protected final String newLine(String[] values) {
 		return String.format("%s%s", String.join(TAB, values), CRLF);
 	}
@@ -204,22 +229,13 @@ public abstract class RF2ContentFile extends RF2File {
 	 * @return the current RF2 header by reading the first line of the file or if this is a non-existing file returns the header from the spec for kind of RF2 files
 	 * @throws IOException 
 	 */
-	public final String[] getHeader() throws IOException {
+	public final String[] getHeader() {
 		if (header == null) {
-			if (Files.exists(getPath())) {
-				header = Files.lines(getPath()).findFirst().orElse("N/A").split(TAB);
-			} else {
-				header = getRF2HeaderSpec();
-			}
+			header = extractHeader(getPath());
 		}
-		return header;
+		return header == null ? specification.getHeader() : header;
 	}
 
-	/**
-	 * @return the RF2 specification header from the {@link RF2Header} l
-	 */
-	protected abstract String[] getRF2HeaderSpec();
-	
 	/**
 	 * @return the actual raw data from this RF2 content file without header and each line converted into String[] objects in a sequential stream.
 	 * @throws IOException
@@ -239,6 +255,22 @@ public abstract class RF2ContentFile extends RF2File {
 				.skip(1)
 				.parallel()
 				.map(line -> line.split(TAB));
+	}
+	
+	/**
+	 * Extract the RF2 file header from the file specified the the given path. Returns <code>null</code> if the path does not exist.
+	 * @param path
+	 * @return
+	 */
+	public static String[] extractHeader(Path path) {
+		if (!Files.exists(path)) {
+			return null;
+		}
+		try {
+			return Files.lines(path).findFirst().orElse("N/A").split(TAB);
+		} catch (IOException e) {
+			throw new RuntimeException("Couldn't extract RF2 file header from path: " + path, e);
+		}
 	}
 
 }

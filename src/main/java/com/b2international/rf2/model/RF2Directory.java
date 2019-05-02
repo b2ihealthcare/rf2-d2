@@ -21,8 +21,8 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 
 import com.b2international.rf2.RF2CreateContext;
-import com.b2international.rf2.naming.RF2DirectoryName;
-import com.b2international.rf2.naming.RF2FileNameBase;
+import com.b2international.rf2.naming.RF2FileName;
+import com.b2international.rf2.spec.RF2Specification;
 
 /**
  * @since 0.1
@@ -30,9 +30,11 @@ import com.b2international.rf2.naming.RF2FileNameBase;
 public final class RF2Directory extends RF2File {
 
 	public static final String ROOT_PATH = "/";
+	private final RF2Specification specification;
 
-	public RF2Directory(Path parent, RF2FileNameBase fileName) {
+	public RF2Directory(Path parent, RF2FileName fileName, RF2Specification specification) {
 		super(parent, fileName);
+		this.specification = specification;
 	}
 
 	@Override
@@ -41,7 +43,7 @@ public final class RF2Directory extends RF2File {
 		Files.walk(getPath(), 1).forEach(path -> {
 			if (!path.equals(getPath())) {
 				try {
-					RF2File.detect(path).visit(visitor);
+					specification.detect(path).visit(visitor);
 				} catch (IOException e) {
 					throw new RuntimeException("Couldn't visit path: " + path, e);
 				}
@@ -57,10 +59,6 @@ public final class RF2Directory extends RF2File {
 	@Override
 	public void create(RF2CreateContext context) throws IOException {
 		Files.createDirectories(getPath());
-	}
-
-	public static RF2Directory create(Path parent, String directoryName) {
-		return new RF2Directory(parent, new RF2DirectoryName(directoryName));
 	}
 
 }

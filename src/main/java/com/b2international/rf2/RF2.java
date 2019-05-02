@@ -36,8 +36,6 @@ import picocli.CommandLine.Option;
 )
 public final class RF2 extends RF2Command {
 
-	public static final String RF2_VERSION = "20190131";
-	
 	@Option(names = {"-v", "--version"}, versionHelp = true, description = "Print version information and exit.")
 	boolean versionInfoRequested;
 
@@ -61,8 +59,8 @@ public final class RF2 extends RF2Command {
 		@Override
 		public String[] getVersion() throws Exception {
 			return new String[] {
-				"RF2-D2 v" + getVersion() + " @Copyright 2019 B2i Healthcare",
-				"Supported RF2 Version: " + RF2_VERSION
+				"RF2-D2 v" + RF2Command.getVersion() + " @Copyright 2019 B2i Healthcare",
+				"Supported RF2 Version: " + getRF2Specification().getRf2Version()
 			};
 		}
 		

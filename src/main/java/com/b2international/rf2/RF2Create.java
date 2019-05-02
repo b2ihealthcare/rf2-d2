@@ -15,26 +15,18 @@
  */
 package com.b2international.rf2;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.b2international.rf2.config.RF2ReleaseSpecification;
-import com.b2international.rf2.config.RF2Specification;
 import com.b2international.rf2.model.RF2File;
-import com.b2international.rf2.model.RF2Release;
+import com.b2international.rf2.spec.RF2ReleaseSpecification;
+import com.b2international.rf2.spec.RF2Specification;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-
-import com.google.common.base.Strings;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -58,68 +50,58 @@ public final class RF2Create extends RF2Command {
 	private static final String NAMESPACE_DESCRIPTION = "Configure the namespace value in the [CountryNamespace] part of RF2 Release files. Default value is empty.";
 	private static final String CONTENT_SUB_TYPES_DESCRIPTION = "Configure the content sub types to be created in the RF2 Release. Default is ['Delta', 'Snapshot', 'Full'].";
 	
-	private final LocalDateTime now = LocalDateTime.now(ZoneId.of("UTC"));
-	
-	@Parameters(arity = "1", paramLabel = "OUTDIR", description = OUTDIR_DESCRIPTION, index = "0")
-	String outDir;
-	
-	@Parameters(arity = "0..*", paramLabel = "PATH", description = PATH_DESCRIPTION, index = "1..*")
+	@Parameters(arity = "0..*", paramLabel = "PATH", description = PATH_DESCRIPTION)
 	List<String> paths;
 	
+	@Option(required = false, names = {"-o", "--outdir"}, description = OUTDIR_DESCRIPTION)
+	String outDir = "target";
+	
 	@Option(required = false, names = {"-p", "--product"}, description = PRODUCT_DESCRIPTION)
-	String product = "";
+	String product;
 	
 	@Option(required = false, names = {"-s", "--status"}, description = RELEASE_STATUS_DESCRIPTION)
-	String releaseStatus = "PRODUCTION";
+	String releaseStatus;
 	
 	@Option(required = false, names = {"-d", "--date"}, description = RELEASE_DATE_DESCRIPTION)
-	String releaseDate = now.format(DateTimeFormatter.BASIC_ISO_DATE);
+	String releaseDate;
 	
 	@Option(required = false, names = {"-t", "--time"}, description = RELEASE_TIME_DESCRIPTION)
-	String releaseTime = now.format(DateTimeFormatter.ofPattern("HHmmss"));
+	String releaseTime;
 	
 	@Option(required = false, names = {"-c", "--country"}, description = COUNTRY_DESCRIPTION)
-	String country = "INT";
+	String country;
 	
 	@Option(required = false, names = {"-n", "--namespace"}, description = NAMESPACE_DESCRIPTION)
-	String namespace = "";
+	String namespace;
 	
 	@Option(required = false, names = {"-C", "--contentsubtype"}, description = CONTENT_SUB_TYPES_DESCRIPTION)
-	String[] contentSubTypes = new String[] {"Full", "Snapshot", "Delta"};
+	String[] contentSubTypes;
 	
 	@Override
 	public void doRun() throws Exception {
-		final Path parent = Paths.get(outDir);
-		if (!Files.isDirectory(parent)) {
-			console.log("Output directory '%s' does not exist or is not a directory.", outDir);
-			return;
+		final Path outputDirectory;
+		if (new File(outDir).isAbsolute()) {
+			outputDirectory = Paths.get(outDir);
+		} else {
+			outputDirectory = WORK_DIR.resolve(outDir);
 		}
+		Files.createDirectories(outputDirectory);
 
-		final Path configPath = Paths.get(System.getProperty("user.dir")).resolve("rf2-spec.yml");
-		if (Files.exists(configPath)) {
-			final ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-			mapper.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
-			mapper.configure(JsonParser.Feature.ALLOW_YAML_COMMENTS, true);
-
-			final RF2Specification specification = mapper.readValue(configPath.toFile(), RF2Specification.class);
-			final RF2ReleaseSpecification releaseSpecification = specification.getRelease();
-			if (Strings.isNullOrEmpty(specification.getVersion()) || releaseSpecification == null) {
-				console.log("No configuration found at '%s'", configPath);
-				return;
-			}
-		}
-
-
+		// load RF2 specification
+		RF2Specification specification = getRF2Specification()
+				// merge overridable options from command line
+				.merge(new RF2Specification(null, null, new RF2ReleaseSpecification(null, product, null, releaseStatus, country, namespace, releaseDate, releaseTime, contentSubTypes, null)));
+		
 		final List<RF2File> sources;
 		if (paths != null) {
-			sources = paths.stream().map(path -> RF2File.<RF2File>detect(Paths.get(path))).collect(Collectors.toList());
+			sources = paths.stream().map(path -> specification.<RF2File>detect(Paths.get(path))).collect(Collectors.toList());
 		} else {
 			sources = Collections.emptyList();
 		}
 		
-		final RF2Release release = RF2Release.create(parent, this.product, releaseStatus, releaseDate, releaseTime);
-		release.create(new RF2CreateContext(contentSubTypes, releaseDate, country, namespace, sources, console));
-		console.log("Created RF2 release at %s", release.getPath());
+		specification
+			.prepare(outputDirectory)
+			.create(new RF2CreateContext(specification, sources, console));
 	}
 
 }

@@ -51,13 +51,13 @@ public final class RF2IdentifierValidator implements RF2ColumnValidator {
 	@Override
 	public void check(RF2ContentFile file, String columnHeader, String columnValue, RF2IssueAcceptor acceptor) {
 		// verify that the RF2 file do have content type in the file name otherwise
-		Optional<RF2ContentType> rf2ContentType = file.getFileName().getElement(RF2ContentType.class);
+		Optional<RF2ContentType> rf2ContentType = file.getRF2FileName().getElement(RF2ContentType.class);
 		if (!rf2ContentType.isPresent()) {
 			acceptor.warn("Unable to validate ID column due to missing content type part in file name");
 			return;
 		} else {
 			RF2ContentType contentType = rf2ContentType.get();
-			if (contentType.getContentType().endsWith("Refset")) {
+			if (contentType.isRefset()) {
 				// verify member UUID
 				try {
 					UUID.fromString(columnValue);

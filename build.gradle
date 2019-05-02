@@ -29,6 +29,7 @@ dependencies {
 processResources {
     from('src/main/resources') {
         include 'cli.properties'
+        include 'rf2-spec.yml'
         filter(ReplaceTokens, tokens: [version : project.version])
     }
 }

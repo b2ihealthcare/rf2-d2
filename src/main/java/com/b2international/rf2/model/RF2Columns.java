@@ -121,7 +121,7 @@ public abstract class RF2Columns {
 	public static final String ATTRIBUTE_RULE = "attributeRule";
 	
 	// MRCM Module Scope
-	public static final String RULE_REFSET_ID = "mrcmRuleRefsetId";
+	public static final String MRCM_RULE_REFSET_ID = "mrcmRuleRefsetId";
 	
 	// OWL Expression
 	public static final String OWL_EXPRESSION = "owlExpression";

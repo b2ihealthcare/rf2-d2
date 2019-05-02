@@ -16,17 +16,13 @@
 package com.b2international.rf2.model;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.function.Consumer;
 
 import com.b2international.rf2.RF2CreateContext;
 import com.b2international.rf2.check.RF2IssueAcceptor;
-import com.b2international.rf2.naming.RF2DirectoryName;
 import com.b2international.rf2.naming.RF2FileName;
-import com.b2international.rf2.naming.RF2FileNameBase;
-import com.b2international.rf2.naming.RF2ReleaseName;
 
 /**
  * @since 0.1
@@ -38,9 +34,9 @@ public abstract class RF2File {
 	public static final String CRLF = "\r\n";
 	
 	private final Path parent;
-	private final RF2FileNameBase fileName;
+	private final RF2FileName fileName;
 
-	public RF2File(Path parent, RF2FileNameBase fileName) {
+	public RF2File(Path parent, RF2FileName fileName) {
 		this.parent = Objects.requireNonNull(parent);
 		this.fileName = Objects.requireNonNull(fileName);
 	}
@@ -49,7 +45,7 @@ public abstract class RF2File {
 	 * @return the path to this RF2 file
 	 */
 	public final Path getPath() {
-		return parent.resolve(getFileName().toString());
+		return parent.resolve(getRF2FileName().toString());
 	}
 
 	/**
@@ -62,7 +58,7 @@ public abstract class RF2File {
 	/**
 	 * @return the file name of this RF2 file.
 	 */
-	public final RF2FileNameBase getFileName() {
+	public final RF2FileName getRF2FileName() {
 		return fileName;
 	}
 
@@ -71,7 +67,7 @@ public abstract class RF2File {
 	 *         RF2 version}.
 	 */
 	public final boolean isUnrecognized() {
-		return this instanceof RF2UnrecognizedFile || getFileName().isUnrecognized();
+		return this instanceof RF2UnrecognizedFile || getRF2FileName().isUnrecognized();
 	}
 
 	/**
@@ -89,16 +85,17 @@ public abstract class RF2File {
 	 */
 	public void check(RF2IssueAcceptor acceptor) throws IOException {
 		// check name first
-		getFileName().getUnrecognizedElements().forEach(unrecognized -> {
+		getRF2FileName().getUnrecognizedElements().forEach(unrecognized -> {
 			acceptor.error("Unrecognized name part: %s", unrecognized);
 		});
-		getFileName().getMissingElements().forEach(missing -> {
+		getRF2FileName().getMissingElements().forEach(missing -> {
 			acceptor.error("Missing name part: %s", missing.getSimpleName().replaceAll("RF2", ""));
 		});
 	}
 	
 	/**
 	 * Creates the RF2 file at the specified location and file name.
+	 * 
 	 * @param context
 	 * @throws IOException
 	 */
@@ -108,39 +105,5 @@ public abstract class RF2File {
 	 * @return the type (or category) of this {@link RF2File}.
 	 */
 	public abstract String getType();
-
-	/**
-	 * Detects an {@link RF2File} from the given file path.
-	 * 
-	 * @param path
-	 *            - the file path to recognize
-	 * @return an {@link RF2File} instance
-	 */
-	@SuppressWarnings("unchecked")
-	public static <T extends RF2File> T detect(final Path path) {
-		if (!Files.exists(path)) {
-			throw new IllegalArgumentException(String.format("'%s' path argument does not exist.", path));
-		}
-		
-		String fileName = path.getFileName().toString();
-		RF2FileNameBase rf2Release;
-		// directories are always recognized and accepted
-		if (Files.isDirectory(path)) {
-			rf2Release = new RF2DirectoryName(fileName);
-		} else {
-			// if we are not in the OS file system, then in case of zip files we treat them as regular files
-			if (path.toUri().getScheme().equals("jar")) {
-				rf2Release = new RF2FileName(fileName);
-			} else {
-				// if it is not a directory and we are in the OS file system then try to parse the fileName as an RF2Release
-				rf2Release = new RF2ReleaseName(fileName);
-				if (rf2Release.isUnrecognized()) {
-					// if it is not a release package fall back and treat it as an RF2 File (in general any file can be part of a release)
-					rf2Release = new RF2FileName(fileName);
-				}
-			}
-		}
-		return (T) rf2Release.createRF2File(path.getParent());
-	}
 
 }

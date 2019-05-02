@@ -24,11 +24,12 @@ import com.b2international.rf2.naming.release.RF2Product;
 import com.b2international.rf2.naming.release.RF2ReleaseDate;
 import com.b2international.rf2.naming.release.RF2ReleaseInitial;
 import com.b2international.rf2.naming.release.RF2ReleaseStatus;
+import com.b2international.rf2.spec.RF2Specification;
 
 /**
  * @since 0.1
  */
-public final class RF2ReleaseName extends RF2FileNameBase {
+public final class RF2ReleaseName extends RF2FileName {
 
 	public RF2ReleaseName(String fileName) {
 		super(fileName, 
@@ -52,8 +53,8 @@ public final class RF2ReleaseName extends RF2FileNameBase {
 	}
 	
 	@Override
-	public RF2Release createRF2File(Path parent) {
-		return new RF2Release(parent, this);
+	public RF2Release createRF2File(Path parent, RF2Specification specification) {
+		return new RF2Release(parent, this, specification);
 	}
 
 }
