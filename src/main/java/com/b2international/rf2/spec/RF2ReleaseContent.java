@@ -129,18 +129,21 @@ public final class RF2ReleaseContent {
             while (fields.hasNext()) {
                 final Map.Entry<String, JsonNode> field = fields.next();
                 final JsonNode value = field.getValue();
-                if (value.isObject()) {
-                    final Map<String, List<RF2ContentFileSpecification>> subFileSpecificationsByContent = deserializeSpecifications(value);
+                if ("files".equals(field.getKey())) {
+                	final List<RF2ContentFileSpecification> fileSpecificationList = new ObjectMapper().convertValue(value, new TypeReference<List<RF2ContentFileSpecification>>(){});
+                	fileSpecificationsByContent.put(field.getKey(), fileSpecificationList);
+                } else {
+                	final Map<String, List<RF2ContentFileSpecification>> subFileSpecificationsByContent = deserializeSpecifications(value);
                     for (String key : subFileSpecificationsByContent.keySet()) {
                         final List<RF2ContentFileSpecification> fileSpecifications = subFileSpecificationsByContent.get(key);
-                        fileSpecificationsByContent.put(String.format("%s%s%s", field.getKey(), File.separator, key), fileSpecifications);
+                        // files directory should be attached to the parent directory
+                        if ("files".equals(key)) {
+                        	fileSpecificationsByContent.put(field.getKey(), fileSpecifications);
+                        } else {
+                        	fileSpecificationsByContent.put(String.format("%s%s%s", field.getKey(), File.separator, key), fileSpecifications);
+                        }
                     }
-                } else if (value.isArray()) {
-                    // On this branch this is a specification it can safely be converted
-                    final List<RF2ContentFileSpecification> fileSpecificationList = new ObjectMapper().convertValue(value, new TypeReference<List<RF2ContentFileSpecification>>(){});
-                    fileSpecificationsByContent.put(field.getKey(), fileSpecificationList);
                 }
-
             }
 
             return fileSpecificationsByContent;
