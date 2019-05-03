@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 import com.b2international.rf2.model.RF2File;
@@ -87,22 +86,13 @@ public abstract class RF2FileName {
 		}
 	}
 
-	private void parse(String actualElement, Class<?> expectedElement) {
-		Matcher matcher = RF2NameElement.getNamingPattern(expectedElement).matcher(actualElement);
-		if (matcher.matches()) {
-			Object[] args = new String[matcher.groupCount()];
-			for (int i = 0; i < matcher.groupCount(); i++) {
-				args[i] = matcher.group(i + 1);
-			}
-			try {
-				elements.add((RF2NameElement) expectedElement.getConstructors()[0].newInstance(args));
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		} else {
-			elements.add(RF2NameElement.unrecognized(actualElement));
+	private RF2NameElement parse(String actualElement, Class<?> expectedElement) {
+		RF2NameElement element = RF2NameElement.parse(actualElement, expectedElement);
+		elements.add(element);
+		if (element.isUnrecognized()) {
 			missingElements.add(expectedElement);
 		}
+		return element;
 	}
 
 	public final String getFileName() {

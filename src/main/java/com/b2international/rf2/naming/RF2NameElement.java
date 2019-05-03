@@ -16,12 +16,17 @@
 package com.b2international.rf2.naming;
 
 import java.util.Objects;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * @since 0.1
  */
 public interface RF2NameElement {
+	
+	default boolean isUnrecognized() {
+		return this instanceof Unrecognized;
+	}
 	
 	/**
 	 * @param type
@@ -41,7 +46,7 @@ public interface RF2NameElement {
 	 * @since 0.1
 	 */
 	@RF2NamePattern("(.+)")
-	class AcceptAll implements RF2NameElement {
+	final class AcceptAll implements RF2NameElement {
 		
 		private final String name;
 
@@ -73,7 +78,7 @@ public interface RF2NameElement {
 	/**
 	 * @since 0.1
 	 */
-	class Unrecognized implements RF2NameElement {
+	final class Unrecognized implements RF2NameElement {
 		
 		private final String name;
 
@@ -105,5 +110,22 @@ public interface RF2NameElement {
 	static RF2NameElement unrecognized(String name) {
 		return new Unrecognized(name);
 	}
-	
+
+	static RF2NameElement parse(String actualElement, Class<?> expectedElement) {
+		Matcher matcher = RF2NameElement.getNamingPattern(expectedElement).matcher(actualElement);
+		if (matcher.matches()) {
+			Object[] args = new String[matcher.groupCount()];
+			for (int i = 0; i < matcher.groupCount(); i++) {
+				args[i] = matcher.group(i + 1);
+			}
+			try {
+				return (RF2NameElement) expectedElement.getConstructors()[0].newInstance(args);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			return unrecognized(actualElement);
+		}		
+	}
+
 }
