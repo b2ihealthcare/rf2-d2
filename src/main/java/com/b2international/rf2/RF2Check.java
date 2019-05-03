@@ -70,8 +70,10 @@ public final class RF2Check extends RF2Command {
 		detailConsole.log("type: %s", file.getType());
 		if (file instanceof RF2ContentFile) {
 			RF2ContentFile rf2ContentFile = (RF2ContentFile) file;
-			detailConsole.log("header: %s", Arrays.toString(rf2ContentFile.getHeader()));
-			detailConsole.log("lines: %d", rf2ContentFile.rowsParallel().count());
+			if (rf2ContentFile.isDataFile()) {
+				detailConsole.log("header: %s", Arrays.toString(rf2ContentFile.getHeader()));
+				detailConsole.log("lines: %d", rf2ContentFile.rowsParallel().count());
+			}
 		}
 
 		// check all RF2 files

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import com.b2international.rf2.RF2CreateContext;
 import com.b2international.rf2.naming.RF2DirectoryName;
@@ -96,16 +97,36 @@ public final class RF2Release extends RF2File {
 				
 				for (Entry<String, List<RF2ContentFileSpecification>> entry : release.getContent().getFiles().entrySet()) {
 					RF2Directory rf2Directory = new RF2DirectoryName(entry.getKey()).createRF2File(contentSubTypeDir.getPath(), specification);
-					rf2Directory.create(context);
-					entry.getValue().forEach(file -> {
+					entry.getValue()
+						.stream()
+						.filter(RF2ContentFileSpecification::isDataFile)
+						.forEach(file -> {
+							try {
+								rf2Directory.create(context);
+								file.prepare(rf2Directory.getPath(), release, contentSubType)
+									.create(context);
+							} catch (IOException e) {
+								throw new RuntimeException(e);
+							}
+						});
+				}
+			}
+			
+			// create all non-data files outside of the contentSubType directories
+			for (Entry<String, List<RF2ContentFileSpecification>> entry : release.getContent().getFiles().entrySet()) {
+				RF2Directory rf2Directory = new RF2DirectoryName(entry.getKey()).createRF2File(rootDir.getPath(), specification);
+				entry.getValue()
+					.stream()
+					.filter(Predicate.not(RF2ContentFileSpecification::isDataFile))
+					.forEach(file -> {
 						try {
-							file.prepare(rf2Directory.getPath(), contentSubType, release.getCountry(), release.getNamespace(), release.getDate())
+							rf2Directory.create(context);
+							file.prepare(rf2Directory.getPath(), release, null /*use specification based contentSubType*/)
 								.create(context);
-						} catch (IOException e) {
+						} catch (Exception e) {
 							throw new RuntimeException(e);
 						}
 					});
-				}
 			}
 			
 		}

@@ -28,7 +28,9 @@ import com.b2international.rf2.naming.file.RF2ContentSubType;
 import com.b2international.rf2.naming.file.RF2ContentType;
 import com.b2international.rf2.naming.file.RF2FileType;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
 /**
@@ -37,43 +39,74 @@ import com.google.common.base.Strings;
 public final class RF2ContentFileSpecification {
 
 	private final String[] header;
-	private final String fileType;
+	private final RF2FileType fileType;
 	private final String contentType;
+	private final String contentSubType;
 	private final String summary;
 	private final String languageCode;
+	private final String extension;
 
 	@JsonCreator
 	public RF2ContentFileSpecification(
 			@JsonProperty("header") String[] header, 
 			@JsonProperty("fileType") String fileType,
-			@JsonProperty("contentType") String contentType, 
+			@JsonProperty("contentType") String contentType,
+			@JsonProperty("contentSubType") String contentSubType,
 			@JsonProperty("summary") String summary, 
-			@JsonProperty("languageCode") String languageCode) {
+			@JsonProperty("languageCode") String languageCode,
+			@JsonProperty("extension") String extension) {
+		this(
+			header, 
+			fileType == null 
+				? null 
+				: Strings.isNullOrEmpty(fileType) ? RF2FileType.EMPTY : RF2FileType.valueOf(fileType), 
+			contentType, 
+			contentSubType, 
+			summary, 
+			languageCode, 
+			extension
+		);
+	}
+	
+	public RF2ContentFileSpecification(
+			String[] header, 
+			RF2FileType fileType,
+			String contentType,
+			String contentSubType,
+			String summary, 
+			String languageCode,
+			String extension) {
 		this.header = header;
-		if (Strings.isNullOrEmpty(fileType)) {
+		if (fileType == null) {
 			if (RF2ContentType.isRefset(contentType)) {
-				this.fileType = RF2FileType.DER2.toString();
+				this.fileType = RF2FileType.DER2;
 			} else {
-				this.fileType = RF2FileType.SCT2.toString();
+				this.fileType = RF2FileType.SCT2;
 			}
 		} else {
 			this.fileType = fileType;
 		}
 		this.contentType = contentType;
+		this.contentSubType = contentSubType;
 		this.summary = summary;
 		this.languageCode = languageCode;
+		this.extension = Strings.isNullOrEmpty(extension) ? RF2File.TXT : extension;
 	}
 
 	public String[] getHeader() {
 		return header;
 	}
 
-	public String getFileType() {
+	public RF2FileType getFileType() {
 		return fileType;
 	}
 
 	public String getContentType() {
 		return contentType;
+	}
+	
+	public String getContentSubType() {
+		return contentSubType;
 	}
 
 	public String getSummary() {
@@ -84,9 +117,18 @@ public final class RF2ContentFileSpecification {
 		return languageCode;
 	}
 	
+	public String getExtension() {
+		return extension;
+	}
+	
+	@JsonIgnore
+	public boolean isDataFile() {
+		return fileType.isData();
+	}
+	
 	@Override
 	public int hashCode() {
-		return Objects.hash(Arrays.hashCode(header), fileType, contentType, summary, languageCode);
+		return Objects.hash(Arrays.hashCode(header), fileType, contentType, contentSubType, summary, languageCode, extension);
 	}
 	
 	@Override
@@ -98,23 +140,32 @@ public final class RF2ContentFileSpecification {
 		return Arrays.equals(header, other.header)
 				&& Objects.equals(fileType, other.fileType)
 				&& Objects.equals(contentType, other.contentType)
+				&& Objects.equals(contentSubType, other.contentSubType)
 				&& Objects.equals(summary, other.summary)
-				&& Objects.equals(languageCode, other.languageCode);
+				&& Objects.equals(languageCode, other.languageCode)
+				&& Objects.equals(extension, other.extension);
 	}
 	
 	public RF2ContentFileSpecification merge(RF2ContentFileSpecification other) {
 		return new RF2ContentFileSpecification(
 			Optional.ofNullable(other.header).orElse(header), 
 			Optional.ofNullable(other.fileType).orElse(fileType), 
-			Optional.ofNullable(other.contentType).orElse(contentType), 
+			Optional.ofNullable(other.contentType).orElse(contentType),
+			Optional.ofNullable(other.contentSubType).orElse(contentSubType), 
 			Optional.ofNullable(other.summary).orElse(summary), 
-			Optional.ofNullable(other.languageCode).orElse(languageCode)
+			Optional.ofNullable(other.languageCode).orElse(languageCode),
+			Optional.ofNullable(other.extension).orElse(extension)
 		);
 	}
 
-	public RF2File prepare(Path parent, String contentSubType, String country, String namespace, String releaseDate) {
-		final String name = String.join(RF2FileName.ELEMENT_SEPARATOR, fileType, contentType, new RF2ContentSubType(summary, contentSubType, languageCode).toString(), country + namespace, releaseDate);
-		final String fileName = String.join(RF2FileName.FILE_EXT_SEPARATOR, name, RF2File.TXT);
+	public RF2File prepare(Path parent, RF2ReleaseSpecification specification, String contentSubType) {
+		final String contentSubTypeToUse = Strings.isNullOrEmpty(this.contentSubType) ? contentSubType : this.contentSubType;
+		final RF2ContentSubType rf2ContentSubType = new RF2ContentSubType(summary, contentSubTypeToUse, languageCode);
+
+		final String name = Joiner.on(RF2FileName.ELEMENT_SEPARATOR)
+			.skipNulls()
+			.join(fileType.isEmpty() ? null : fileType, contentType, rf2ContentSubType.isEmpty() ? null : rf2ContentSubType, specification.getCountry() + specification.getNamespace(), specification.getDate());
+		final String fileName = String.join(RF2FileName.FILE_EXT_SEPARATOR, name, extension);
 		return new RF2ContentFile(parent, new RF2ContentFileName(fileName), this);
 	}
 

@@ -69,53 +69,59 @@ public final class RF2ContentFile extends RF2File {
 		visitor.accept(this);
 	}
 	
-	public RF2ContentSubType getReleaseType() {
-		return getRF2FileName()
-				.getElement(RF2ContentSubType.class)
-				.orElse(null);
+	public boolean isDataFile() {
+		return specification.isDataFile();
 	}
 	
 	@Override
 	public void check(RF2IssueAcceptor acceptor) throws IOException {
 		super.check(acceptor);
-		// check RF2 header
-		final String[] rf2HeaderSpec = specification.getHeader();
-		final String[] actualHeader = getHeader();
-		if (!Arrays.equals(rf2HeaderSpec, actualHeader)) {
-			// TODO report incorrect header columns
-			acceptor.error("Header does not conform to specification");
-			return;
-		}
-
-		// assign validators to RF2 columns
-		final String[] header = getHeader();
-		final Map<Integer, RF2ColumnValidator> validatorsByIndex = new HashMap<>(header.length);
-		for (int i = 0; i < header.length; i++) {
-			final String columnHeader = header[i];
-			final RF2ColumnValidator validator = RF2ColumnValidator.VALIDATORS.get(columnHeader);
-			if (validator != null) {
-				validatorsByIndex.put(i, validator);
-			} else {
-				acceptor.warn("No validator is registered for column header '%s'.", columnHeader);
-				validatorsByIndex.put(i, RF2ColumnValidator.NOOP);
+		if (isDataFile()) {
+			// check RF2 header
+			final String[] rf2HeaderSpec = specification.getHeader();
+			final String[] actualHeader = getHeader();
+			if (!Arrays.equals(rf2HeaderSpec, actualHeader)) {
+				// TODO report incorrect header columns
+				acceptor.error("Header does not conform to specification");
+				return;
 			}
-		}
-		
-		// validate each row in RF2 content file
-		rowsParallel().forEach(row -> {
-			for (int i = 0; i < row.length; i++) {
-				validatorsByIndex.get(i).check(this, header[i], row[i], acceptor);
+			
+			// assign validators to RF2 columns
+			final Map<Integer, RF2ColumnValidator> validatorsByIndex = new HashMap<>(actualHeader.length);
+			for (int i = 0; i < actualHeader.length; i++) {
+				final String columnHeader = actualHeader[i];
+				final RF2ColumnValidator validator = RF2ColumnValidator.VALIDATORS.get(columnHeader);
+				if (validator != null) {
+					validatorsByIndex.put(i, validator);
+				} else {
+					acceptor.warn("No validator is registered for column header '%s'.", columnHeader);
+					validatorsByIndex.put(i, RF2ColumnValidator.NOOP);
+				}
 			}
-		});
+			// validate each row in RF2 content file
+			rowsParallel().forEach(row -> {
+				for (int i = 0; i < row.length; i++) {
+					validatorsByIndex.get(i).check(this, actualHeader[i], row[i], acceptor);
+				}
+			});
+		}
 	}
 	
 	@Override
 	public void create(RF2CreateContext context) throws IOException {
 		context.log().log("Creating '%s'...", getPath());
 		
-		final RF2ContentSubType releaseType = getReleaseType();
+		if (isDataFile()) {
+			createDataFile(context);
+		} else {
+			// TODO copy applicable files from sources or create empty file
+			Files.createFile(getPath());
+		}
+	}
+
+	private void createDataFile(RF2CreateContext context) throws IOException {
+		final RF2ContentSubType releaseType = getRF2FileName().getElement(RF2ContentSubType.class).orElse(null);
 		final String currentReleaseDate = getRF2FileName().getElement(RF2VersionDate.class).map(RF2VersionDate::getVersionDate).orElse("N/A");
-		
 		try (BufferedWriter writer = Files.newBufferedWriter(getPath(), StandardOpenOption.CREATE_NEW)) {
 			writer.write(newLine(getHeader()));
 			
@@ -263,7 +269,7 @@ public final class RF2ContentFile extends RF2File {
 	 * @return
 	 */
 	public static String[] extractHeader(Path path) {
-		if (!Files.exists(path)) {
+		if (!path.endsWith(TXT) || !Files.exists(path)) {
 			return null;
 		}
 		try {
