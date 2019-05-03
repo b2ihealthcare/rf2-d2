@@ -19,6 +19,9 @@ import java.util.Objects;
 
 import com.b2international.rf2.naming.RF2NameElement;
 import com.b2international.rf2.naming.RF2NamePattern;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.base.Preconditions;
 
 /**
  * @since 0.1
@@ -29,6 +32,7 @@ public final class RF2FileType implements RF2NameElement {
 	public static final RF2FileType SCT1 = new RF2FileType("", "sct", "1");
 	public static final RF2FileType SCT2 = new RF2FileType("", "sct", "2");
 	public static final RF2FileType DER2 = new RF2FileType("", "der", "2");
+	public static final RF2FileType EMPTY = new RF2FileType("", "", "");
 	
 	private final String status;
 	private final String type;
@@ -55,6 +59,19 @@ public final class RF2FileType implements RF2NameElement {
 		return format;
 	}
 	
+	public boolean isDoc() {
+		return "doc".equals(type);
+	}
+	
+	public boolean isData() {
+		return "der".equals(type) || "sct".equals(type);
+	}
+	
+	public boolean isEmpty() {
+		return equals(EMPTY);
+	}
+	
+	@JsonValue
 	@Override
 	public String toString() {
 		return String.join("", status, type, format);
@@ -76,4 +93,11 @@ public final class RF2FileType implements RF2NameElement {
 				&& Objects.equals(format, other.format);
 	}
 	
+	@JsonCreator
+	public static RF2FileType valueOf(String value) {
+		RF2NameElement element = RF2NameElement.parse(value, RF2FileType.class);
+		Preconditions.checkArgument(!element.isUnrecognized(), "Value '%s' is not a valid RF2 fileType property.", value);
+		return (RF2FileType) element;
+	}
+
 }

@@ -36,7 +36,7 @@ public final class RF2ContentSubType implements RF2NameElement {
 
 	public RF2ContentSubType(String summary, String releaseType, String languageCode) {
 		this.summary = Objects.toString(summary, "");
-		this.releaseType = Objects.requireNonNull(releaseType);
+		this.releaseType = Objects.toString(releaseType, "");
 		this.languageCode = Objects.toString(languageCode, "");
 	}
 	
@@ -83,6 +83,10 @@ public final class RF2ContentSubType implements RF2NameElement {
 	
 	public boolean isDelta() {
 		return "Delta".equals(releaseType);
+	}
+
+	public boolean isEmpty() {
+		return toString().isBlank();
 	}
 	
 }
