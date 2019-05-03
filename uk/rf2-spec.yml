@@ -1,0 +1,49 @@
+version: "1.0"
+rf2Version: "UK - 20190601"
+release:
+  product: UKDrug
+  country: GB
+  namespace: "1000001"
+  content:
+    Refset:
+      Map:
+        files:
+          - contentType: iisssciRefset
+            summary: ExtendedMap
+            header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, mapGroup, mapPriority, mapRule, mapAdvice, mapTarget, correlationId, mapBlock]
+    Documentation:
+      Current:
+        files:
+          - fileType: doc
+            contentType: UKSnomedCTDrugReleaseNotes
+            languageCode: en
+            contentSubType: Current
+            extension: pdf
+          - fileType: doc
+            contentType: UKSnomedCTGeneralOverview
+            languageCode: en
+            contentSubType: Current
+            extension: pdf
+          - fileType: doc
+            contentType: UKSnomedCTInventoryOfDocumentation
+            languageCode: en
+            contentSubType: Current
+            extension: pdf
+          - fileType: doc
+            contentType: UKSnomedCTSubsetOverview
+            languageCode: en
+            contentSubType: Current
+            extension: pdf
+    Resources:
+      files:
+        - fileType: res
+          contentType: UKRF1SubsetToRF2ReferenceSetMapping
+          contentSubType: ''
+      DeveloperToolkit:
+        UKDrugBonusFiles:
+          files:
+            - fileType: ''
+              contentType: UKDrugBonusFiles
+              contentSubType: ''
+              extension: zip
+            
