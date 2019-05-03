@@ -24,7 +24,7 @@ import com.b2international.rf2.naming.RF2NamePattern;
  * @since 0.1
  */
 @RF2NamePattern("([0-9]{8})")
-public final class RF2VersionDate implements RF2NameElement {
+public final class RF2VersionDate implements RF2NameElement, Comparable<RF2VersionDate> {
 
 	private final String versionDate;
 
@@ -53,6 +53,11 @@ public final class RF2VersionDate implements RF2NameElement {
 	@Override
 	public String toString() {
 		return versionDate;
+	}
+	
+	@Override
+	public int compareTo(RF2VersionDate other) {
+		return versionDate.compareTo(other.versionDate);
 	}
 	
 }

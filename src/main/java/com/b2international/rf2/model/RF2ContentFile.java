@@ -32,12 +32,14 @@ import java.util.stream.Stream;
 import com.b2international.rf2.RF2CreateContext;
 import com.b2international.rf2.check.RF2IssueAcceptor;
 import com.b2international.rf2.naming.RF2ContentFileName;
+import com.b2international.rf2.naming.RF2FileName;
 import com.b2international.rf2.naming.file.RF2ContentSubType;
 import com.b2international.rf2.naming.file.RF2ContentType;
 import com.b2international.rf2.naming.file.RF2VersionDate;
 import com.b2international.rf2.spec.RF2ContentFileSpecification;
 import com.b2international.rf2.validation.RF2ColumnValidator;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Ordering;
 import com.google.common.hash.Hashing;
 
 /**
@@ -114,8 +116,37 @@ public final class RF2ContentFile extends RF2File {
 		if (isDataFile()) {
 			createDataFile(context);
 		} else {
-			// TODO copy applicable files from sources or create empty file
-			Files.createFile(getPath());
+//			Ordering<RF2VersionDate> ordering = Ordering.natural().nullsFirst();
+//			RF2FileName matchingSourceFile = null;
+//			RF2VersionDate maxVersionDate = null;
+//			for (RF2File source : context.getSources()) {
+//				source.visit(file -> {
+//					if (getType().equals(file.getType())) {
+//						RF2FileName rf2FileName = file.getRF2FileName();
+//						RF2VersionDate newMaxVersionDate = ordering.max(maxVersionDate, rf2FileName.getElement(RF2VersionDate.class).orElse(null));
+//						if (newMaxVersionDate != maxVersionDate) {
+//							matchingSourceFile = rf2FileName;
+//							maxVersionDate = newMaxVersionDate;
+//						}
+//					}
+//				});
+//			}
+//			
+//			if (matchingSourceFile == null) {
+				Files.createFile(getPath());
+//			} else {
+//				for (RF2File source : context.getSources()) {
+//					source.visit(file -> {
+//						if (matchingSourceFile.equals(file.getRF2FileName())) {
+//							try {
+//								Files.copy(file.getPath(), getPath());
+//							} catch (IOException e) {
+//								throw new RuntimeException(e);
+//							}
+//						}
+//					});
+//				}
+//			}
 		}
 	}
 
