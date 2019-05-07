@@ -340,7 +340,7 @@ public final class RF2ContentFile extends RF2File {
 	 * @return
 	 */
 	public static String[] extractHeader(Path path) {
-		if (!path.endsWith(TXT) || !Files.exists(path)) {
+		if (!path.toString().endsWith(TXT) || !Files.exists(path)) {
 			return null;
 		}
 		try {
