@@ -17,6 +17,7 @@ package com.b2international.rf2.spec;
 
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -41,6 +42,8 @@ public final class RF2ContentFileSpecification {
 	private final String[] header;
 	private final RF2FileType fileType;
 	private final String contentType;
+	private final List<RF2Filter> inclusions;
+	private final List<RF2Filter> exclusions;
 	private final String contentSubType;
 	private final String summary;
 	private final String languageCode;
@@ -51,6 +54,8 @@ public final class RF2ContentFileSpecification {
 			@JsonProperty("header") String[] header, 
 			@JsonProperty("fileType") String fileType,
 			@JsonProperty("contentType") String contentType,
+			@JsonProperty("include") List<RF2Filter> inclusions,
+			@JsonProperty("exclude") List<RF2Filter> exclusions,
 			@JsonProperty("contentSubType") String contentSubType,
 			@JsonProperty("summary") String summary, 
 			@JsonProperty("languageCode") String languageCode,
@@ -60,7 +65,9 @@ public final class RF2ContentFileSpecification {
 			fileType == null 
 				? null 
 				: Strings.isNullOrEmpty(fileType) ? RF2FileType.EMPTY : RF2FileType.valueOf(fileType), 
-			contentType, 
+			contentType,
+			inclusions,
+			exclusions,
 			contentSubType, 
 			summary, 
 			languageCode, 
@@ -69,11 +76,13 @@ public final class RF2ContentFileSpecification {
 	}
 	
 	public RF2ContentFileSpecification(
-			String[] header, 
+			String[] header,
 			RF2FileType fileType,
 			String contentType,
+			List<RF2Filter> inclusions,
+			List<RF2Filter> exclusions,
 			String contentSubType,
-			String summary, 
+			String summary,
 			String languageCode,
 			String extension) {
 		this.header = header;
@@ -87,38 +96,12 @@ public final class RF2ContentFileSpecification {
 			this.fileType = fileType;
 		}
 		this.contentType = contentType;
+		this.inclusions = inclusions;
+		this.exclusions = exclusions;
 		this.contentSubType = contentSubType;
 		this.summary = summary;
 		this.languageCode = languageCode;
 		this.extension = Strings.isNullOrEmpty(extension) ? RF2File.TXT : extension;
-	}
-
-	public String[] getHeader() {
-		return header;
-	}
-
-	public RF2FileType getFileType() {
-		return fileType;
-	}
-
-	public String getContentType() {
-		return contentType;
-	}
-	
-	public String getContentSubType() {
-		return contentSubType;
-	}
-
-	public String getSummary() {
-		return summary;
-	}
-
-	public String getLanguageCode() {
-		return languageCode;
-	}
-	
-	public String getExtension() {
-		return extension;
 	}
 	
 	@JsonIgnore
@@ -126,31 +109,13 @@ public final class RF2ContentFileSpecification {
 		return fileType.isData();
 	}
 	
-	@Override
-	public int hashCode() {
-		return Objects.hash(Arrays.hashCode(header), fileType, contentType, contentSubType, summary, languageCode, extension);
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) return true;
-		if (obj == null) return false;
-		if (getClass() != obj.getClass()) return false;
-		RF2ContentFileSpecification other = (RF2ContentFileSpecification) obj;
-		return Arrays.equals(header, other.header)
-				&& Objects.equals(fileType, other.fileType)
-				&& Objects.equals(contentType, other.contentType)
-				&& Objects.equals(contentSubType, other.contentSubType)
-				&& Objects.equals(summary, other.summary)
-				&& Objects.equals(languageCode, other.languageCode)
-				&& Objects.equals(extension, other.extension);
-	}
-	
 	public RF2ContentFileSpecification merge(RF2ContentFileSpecification other) {
 		return new RF2ContentFileSpecification(
 			Optional.ofNullable(other.header).orElse(header), 
 			Optional.ofNullable(other.fileType).orElse(fileType), 
 			Optional.ofNullable(other.contentType).orElse(contentType),
+			Optional.ofNullable(other.inclusions).orElse(inclusions),
+			Optional.ofNullable(other.exclusions).orElse(exclusions),
 			Optional.ofNullable(other.contentSubType).orElse(contentSubType), 
 			Optional.ofNullable(other.summary).orElse(summary), 
 			Optional.ofNullable(other.languageCode).orElse(languageCode),
@@ -167,6 +132,65 @@ public final class RF2ContentFileSpecification {
 			.join(fileType.isEmpty() ? null : fileType, contentType, rf2ContentSubType.isEmpty() ? null : rf2ContentSubType, specification.getCountry() + specification.getNamespace(), specification.getDate());
 		final String fileName = String.join(RF2FileName.FILE_EXT_SEPARATOR, name, extension);
 		return new RF2ContentFile(parent, new RF2ContentFileName(fileName), this);
+	}
+
+
+	public String[] getHeader() {
+		return header;
+	}
+
+	public RF2FileType getFileType() {
+		return fileType;
+	}
+
+	public String getContentType() {
+		return contentType;
+	}
+
+	public List<RF2Filter> getInclusions() {
+		return inclusions;
+	}
+
+	public List<RF2Filter> getExclusions() {
+		return exclusions;
+	}
+
+	public String getContentSubType() {
+		return contentSubType;
+	}
+
+	public String getSummary() {
+		return summary;
+	}
+
+	public String getLanguageCode() {
+		return languageCode;
+	}
+
+	public String getExtension() {
+		return extension;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(Arrays.hashCode(header), fileType, contentType, contentSubType, summary, languageCode, extension);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		RF2ContentFileSpecification other = (RF2ContentFileSpecification) obj;
+		return Arrays.equals(header, other.header)
+				&& Objects.equals(fileType, other.fileType)
+				&& Objects.equals(contentType, other.contentType)
+				&& Objects.equals(inclusions, other.inclusions)
+				&& Objects.equals(exclusions, other.exclusions)
+				&& Objects.equals(contentSubType, other.contentSubType)
+				&& Objects.equals(summary, other.summary)
+				&& Objects.equals(languageCode, other.languageCode)
+				&& Objects.equals(extension, other.extension);
 	}
 
 }

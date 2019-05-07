@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
@@ -32,14 +33,15 @@ import java.util.stream.Stream;
 import com.b2international.rf2.RF2CreateContext;
 import com.b2international.rf2.check.RF2IssueAcceptor;
 import com.b2international.rf2.naming.RF2ContentFileName;
-import com.b2international.rf2.naming.RF2FileName;
 import com.b2international.rf2.naming.file.RF2ContentSubType;
 import com.b2international.rf2.naming.file.RF2ContentType;
 import com.b2international.rf2.naming.file.RF2VersionDate;
 import com.b2international.rf2.spec.RF2ContentFileSpecification;
+import com.b2international.rf2.spec.RF2Filter;
 import com.b2international.rf2.validation.RF2ColumnValidator;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Ordering;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
 
 /**
@@ -47,8 +49,6 @@ import com.google.common.hash.Hashing;
  */
 public final class RF2ContentFile extends RF2File {
 
-	private static final String STATED_CHARACTERISTIC_TYPE_ID = "900000000000010007";
-	
 	private final RF2ContentFileSpecification specification;
 	private String[] header;
 	
@@ -156,17 +156,17 @@ public final class RF2ContentFile extends RF2File {
 		try (BufferedWriter writer = Files.newBufferedWriter(getPath(), StandardOpenOption.CREATE_NEW)) {
 			writer.write(newLine(getHeader()));
 			
-			final Map<String, Map<String, String>> componentsByIdEffectiveTime = new HashMap<>(); 
+			final Map<String, Map<String, String>> componentsByIdEffectiveTime = new HashMap<>();
+            Predicate<String[]> lineFilter = getLineFilter();
 
-			final Predicate<String[]> lineFilter = getLineFilter();
-			
-			context.visitSourceRows(this::fileFilter, lineFilter, /* parallel if */ releaseType.isSnapshot(), line -> {
+
+            context.visitSourceRows(this::fileFilter, lineFilter, /* parallel if */ releaseType.isSnapshot(), line -> {
 				try {
 					String id = line[0];
 					String effectiveTime = line[1];
 					String rawLine = newLine(line);
 					String lineHash = Hashing.sha256().hashString(rawLine, StandardCharsets.UTF_8).toString();
-					
+
 					if (componentsByIdEffectiveTime.containsKey(id) && componentsByIdEffectiveTime.get(id).containsKey(effectiveTime)) {
 						// log a warning about inconsistent ID-EffectiveTime content, keep the first occurrence of the line and skip the others
 						if (!lineHash.equals(componentsByIdEffectiveTime.get(id).get(effectiveTime))) {
@@ -174,7 +174,7 @@ public final class RF2ContentFile extends RF2File {
 						}
 						return;
 					}
-					
+
 					if (releaseType.isFull()) {
 						// in case of Full we can immediately write it out
 						if (!componentsByIdEffectiveTime.containsKey(id)) {
@@ -226,16 +226,56 @@ public final class RF2ContentFile extends RF2File {
 	
 	private Predicate<String[]> getLineFilter() {
 		// TODO apply description type based
-		switch (getType()) {
-		case "Relationship":
-			// every row with non-stated char type should be placed in the Relationship file
-			return line -> !STATED_CHARACTERISTIC_TYPE_ID.equals(line[8]);
-		case "StatedRelationship":
-			// every row with stated char type should be placed in the StatedRelatinship file
-			return line -> STATED_CHARACTERISTIC_TYPE_ID.equals(line[8]);
-		default:
-			return line -> true;
+		final List<Predicate<String[]>> lineFilters = Lists.newArrayList();
+		final Map<String, Integer> indexByHeader = Maps.newHashMap();
+		final List<String> header = Arrays.asList(getHeader());
+		for (int i = 0; i < header.size(); i++) {
+			indexByHeader.put(header.get(i), i);
 		}
+
+		if (specification.getInclusions() != null) {
+			lineFilters.addAll(createInclusions(indexByHeader));
+		}
+
+		if (specification.getExclusions() != null) {
+			lineFilters.addAll(createExclusions(indexByHeader));
+		}
+
+		return line -> lineFilters.stream().allMatch(filter -> filter.test(line));
+	}
+
+	private List<Predicate<String[]>> createInclusions(Map<String, Integer> indexByHeader) {
+		final List<Predicate<String[]>> inclusions = Lists.newArrayList();
+
+		for (RF2Filter inclusion : specification.getInclusions()) {
+			for (Entry<String, String> filterEntry : inclusion.getFilters().entrySet()) {
+				final String fieldName = filterEntry.getKey();
+				final String inclusionValue = filterEntry.getValue();
+				if (indexByHeader.containsKey(fieldName)) {
+					final int headerIndex = indexByHeader.get(fieldName).intValue();
+					inclusions.add(line -> inclusionValue.equals(line[headerIndex]));
+				}
+			}
+		}
+
+		return inclusions;
+	}
+
+	private List<Predicate<String[]>> createExclusions(Map<String, Integer> indexByHeader) {
+		final List<Predicate<String[]>> exclusions = Lists.newArrayList();
+
+		for (RF2Filter inclusion : specification.getExclusions()) {
+			for (Entry<String, String> filterEntry : inclusion.getFilters().entrySet()) {
+				final String fieldName = filterEntry.getKey();
+				final String exclusionValue = filterEntry.getValue();
+				if (indexByHeader.containsKey(fieldName)) {
+					final int headerIndex = indexByHeader.get(fieldName).intValue();
+					exclusions.add(line -> !exclusionValue.equals(line[headerIndex]));
+				}
+			}
+		}
+
+		return exclusions;
 	}
 
 	private boolean fileFilter(RF2ContentFile file) {
