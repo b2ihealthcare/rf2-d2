@@ -22,6 +22,7 @@ import java.util.function.Consumer;
 
 import com.b2international.rf2.RF2CreateContext;
 import com.b2international.rf2.check.RF2IssueAcceptor;
+import com.b2international.rf2.func.RF2FileTransformation;
 import com.b2international.rf2.naming.RF2FileName;
 
 /**
@@ -94,8 +95,7 @@ public abstract class RF2File {
 	}
 	
 	/**
-	 * Creates the RF2 file at the specified location and file name.
-	 * 
+	 * Creates this RF2 file at the specified location and file name.
 	 * @param context
 	 * @throws IOException
 	 */
@@ -105,5 +105,14 @@ public abstract class RF2File {
 	 * @return the type (or category) of this {@link RF2File}.
 	 */
 	public abstract String getType();
+
+	/**
+	 * Prepares a script based transformation on this {@link RF2File}.
+	 * @param script - the script to use for the transformation
+	 * @return an {@link RF2FileTransformation} object
+	 */
+	public final RF2FileTransformation transform(String script) {
+		return new RF2FileTransformation(this, script);
+	}
 
 }
