@@ -26,8 +26,12 @@ release:
           header: [id, effectiveTime, active, moduleId, conceptId, languageCode, typeId, term, caseSignificanceId]
         - contentType: Relationship
           header: [id, effectiveTime, active, moduleId, sourceId, destinationId, relationshipGroup, typeId, characteristicTypeId, modifierId]
+          exclude:
+            - characteristicTypeId: 900000000000010007
         - contentType: StatedRelationship
           header: [id, effectiveTime, active, moduleId, sourceId, destinationId, relationshipGroup, typeId, characteristicTypeId, modifierId]
+          include:
+            - characteristicTypeId: 900000000000011006
         - contentType: Identifier
           header: [identifierSchemeId, alternateIdentifier, effectiveTime, active, moduleId, referencedComponentId]
         - fileType: sct2
