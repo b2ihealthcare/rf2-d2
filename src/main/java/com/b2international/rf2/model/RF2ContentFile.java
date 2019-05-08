@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -33,6 +35,7 @@ import java.util.stream.Stream;
 import com.b2international.rf2.RF2CreateContext;
 import com.b2international.rf2.check.RF2IssueAcceptor;
 import com.b2international.rf2.naming.RF2ContentFileName;
+import com.b2international.rf2.naming.RF2FileName;
 import com.b2international.rf2.naming.file.RF2ContentSubType;
 import com.b2international.rf2.naming.file.RF2ContentType;
 import com.b2international.rf2.naming.file.RF2VersionDate;
@@ -42,6 +45,7 @@ import com.b2international.rf2.validation.RF2ColumnValidator;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Ordering;
 import com.google.common.hash.Hashing;
 
 /**
@@ -101,6 +105,7 @@ public final class RF2ContentFile extends RF2File {
 				}
 			}
 			// validate each row in RF2 content file
+
 			rowsParallel().forEach(row -> {
 				for (int i = 0; i < row.length; i++) {
 					validatorsByIndex.get(i).check(this, actualHeader[i], row[i], acceptor);
@@ -111,42 +116,52 @@ public final class RF2ContentFile extends RF2File {
 	
 	@Override
 	public void create(RF2CreateContext context) throws IOException {
-		context.log().log("Creating '%s'...", getPath());
+		context.log("Creating '%s'...", getPath());
 		
 		if (isDataFile()) {
 			createDataFile(context);
 		} else {
-//			Ordering<RF2VersionDate> ordering = Ordering.natural().nullsFirst();
-//			RF2FileName matchingSourceFile = null;
-//			RF2VersionDate maxVersionDate = null;
-//			for (RF2File source : context.getSources()) {
-//				source.visit(file -> {
-//					if (getType().equals(file.getType())) {
-//						RF2FileName rf2FileName = file.getRF2FileName();
-//						RF2VersionDate newMaxVersionDate = ordering.max(maxVersionDate, rf2FileName.getElement(RF2VersionDate.class).orElse(null));
-//						if (newMaxVersionDate != maxVersionDate) {
-//							matchingSourceFile = rf2FileName;
-//							maxVersionDate = newMaxVersionDate;
-//						}
-//					}
-//				});
-//			}
-//			
-//			if (matchingSourceFile == null) {
+			final Ordering<RF2VersionDate> ordering = Ordering.natural().nullsFirst();
+			final AtomicReference<RF2FileName> matchingSourceFile = new AtomicReference<>();
+			final AtomicReference<RF2VersionDate> maxVersionDate = new AtomicReference<>();
+			final AtomicBoolean exit = new AtomicBoolean(false);
+			context.getSources()
+					.stream()
+					.takeWhile(file -> exit.get())
+					.forEach(source -> {
+						try {
+							source.visit(file -> {
+								if (getType().equals(file.getType())) {
+									final RF2FileName rf2FileName = file.getRF2FileName();
+									final RF2VersionDate newMaxVersionDate = ordering.max(maxVersionDate.get(), rf2FileName.getElement(RF2VersionDate.class).orElse(null));
+									if (newMaxVersionDate != maxVersionDate.get()) {
+										exit.set(true);
+										matchingSourceFile.set(rf2FileName);
+										maxVersionDate.set(newMaxVersionDate);
+									}
+								}
+							});
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					});
+
+			if (matchingSourceFile.get() == null) {
 				Files.createFile(getPath());
-//			} else {
-//				for (RF2File source : context.getSources()) {
-//					source.visit(file -> {
-//						if (matchingSourceFile.equals(file.getRF2FileName())) {
-//							try {
-//								Files.copy(file.getPath(), getPath());
-//							} catch (IOException e) {
-//								throw new RuntimeException(e);
-//							}
-//						}
-//					});
-//				}
-//			}
+
+			} else {
+				for (RF2File source : context.getSources()) {
+					source.visit(file -> {
+						if (matchingSourceFile.get().equals(file.getRF2FileName())) {
+							try {
+								Files.copy(file.getPath(), getPath());
+							} catch (IOException e) {
+								throw new RuntimeException(e);
+							}
+						}
+					});
+				}
+			}
 		}
 	}
 
@@ -168,9 +183,9 @@ public final class RF2ContentFile extends RF2File {
 					String lineHash = Hashing.sha256().hashString(rawLine, StandardCharsets.UTF_8).toString();
 
 					if (componentsByIdEffectiveTime.containsKey(id) && componentsByIdEffectiveTime.get(id).containsKey(effectiveTime)) {
-						// log a warning about inconsistent ID-EffectiveTime content, keep the first occurrence of the line and skip the others
+						// getLogger a warning about inconsistent ID-EffectiveTime content, keep the first occurrence of the line and skip the others
 						if (!lineHash.equals(componentsByIdEffectiveTime.get(id).get(effectiveTime))) {
-							context.log().warn("Skipping duplicate RF2 line found with same '%s' ID in '%s' effectiveTime but with different column values.", id, effectiveTime);
+							context.warn("Skipping duplicate RF2 line found with same '%s' ID in '%s' effectiveTime but with different column values.", id, effectiveTime);
 						}
 						return;
 					}
@@ -227,24 +242,20 @@ public final class RF2ContentFile extends RF2File {
 	private Predicate<String[]> getLineFilter() {
 		// TODO apply description type based
 		final List<Predicate<String[]>> lineFilters = Lists.newArrayList();
-		final Map<String, Integer> indexByHeader = Maps.newHashMap();
-		final List<String> header = Arrays.asList(getHeader());
-		for (int i = 0; i < header.size(); i++) {
-			indexByHeader.put(header.get(i), i);
-		}
 
 		if (specification.getInclusions() != null) {
-			lineFilters.addAll(createInclusions(indexByHeader));
+			lineFilters.addAll(createInclusions());
 		}
 
 		if (specification.getExclusions() != null) {
-			lineFilters.addAll(createExclusions(indexByHeader));
+			lineFilters.addAll(createExclusions());
 		}
 
 		return line -> lineFilters.stream().allMatch(filter -> filter.test(line));
 	}
 
-	private List<Predicate<String[]>> createInclusions(Map<String, Integer> indexByHeader) {
+	private List<Predicate<String[]>> createInclusions() {
+		final Map<String, Integer> indexByHeader = getIndexByHeader();
 		final List<Predicate<String[]>> inclusions = Lists.newArrayList();
 
 		for (RF2Filter inclusion : specification.getInclusions()) {
@@ -261,8 +272,9 @@ public final class RF2ContentFile extends RF2File {
 		return inclusions;
 	}
 
-	private List<Predicate<String[]>> createExclusions(Map<String, Integer> indexByHeader) {
+	private List<Predicate<String[]>> createExclusions() {
 		final List<Predicate<String[]>> exclusions = Lists.newArrayList();
+		final Map<String, Integer> indexByHeader = getIndexByHeader();
 
 		for (RF2Filter inclusion : specification.getExclusions()) {
 			for (Entry<String, String> filterEntry : inclusion.getFilters().entrySet()) {
@@ -311,6 +323,20 @@ public final class RF2ContentFile extends RF2File {
 			header = extractHeader(getPath());
 		}
 		return header == null ? specification.getHeader() : header;
+	}
+
+	/**
+	 * @return the current RF2 header indexes mapped by the header's name.
+	 */
+	public final Map<String, Integer> getIndexByHeader() {
+		final Map<String, Integer> indexByHeader = Maps.newHashMap();
+		final List<String> header = Arrays.asList(getHeader());
+
+		for (int i = 0; i < header.size(); i++) {
+			indexByHeader.put(header.get(i), i);
+		}
+
+		return indexByHeader;
 	}
 
 	/**

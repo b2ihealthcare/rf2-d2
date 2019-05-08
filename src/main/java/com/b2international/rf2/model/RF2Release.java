@@ -130,7 +130,7 @@ public final class RF2Release extends RF2File {
 			}
 			
 		}
-		context.log().log("Created RF2 release at %s", getPath());
+		context.log("Created RF2 release at %s", getPath());
 	}
 	
 }

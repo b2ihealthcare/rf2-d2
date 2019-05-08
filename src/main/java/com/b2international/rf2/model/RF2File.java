@@ -75,7 +75,7 @@ public abstract class RF2File {
 	 * Visit this {@link RF2File} with the given visitor.
 	 * 
 	 * @param visitor
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public abstract void visit(Consumer<RF2File> visitor) throws IOException;
 
