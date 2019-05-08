@@ -49,8 +49,16 @@ public final class RF2CreateContext {
 		return sources;
 	}
 	
-	public Console log() {
-		return log;
+	public void log(String message, Object... args) {
+		log.log(message, args);
+	}
+
+	public void warn(String message, Object... args) {
+		log.warn(message, args);
+	}
+
+	public void error(String message, Object... args) {
+		log.error(message, args);
 	}
 	
 	public void visitSourceRows(Predicate<RF2ContentFile> fileFilter, Predicate<String[]> lineFilter, boolean parallel, Consumer<String[]> visitor) throws IOException {
