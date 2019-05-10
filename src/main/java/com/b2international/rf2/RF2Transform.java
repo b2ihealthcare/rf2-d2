@@ -20,7 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import com.b2international.rf2.model.RF2File;
-
+import com.b2international.rf2.spec.RF2Specification;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -47,7 +47,7 @@ public class RF2Transform extends RF2Command {
 	String script;
 	
 	@Option(required = false, names = {"-o", "--outdir"}, description = OUTDIR_DESCRIPTION)
-	String outDir = "rf2d2-target";
+	String outDir = "target";
 	
 	@Override
 	protected void doRun() throws Exception {
@@ -64,11 +64,13 @@ public class RF2Transform extends RF2Command {
 		}
 		
 		final Path outputDirectory = Paths.get(outDir);
-		Files.createDirectories(outputDirectory);
-		
-		RF2File.detect(Paths.get(path))
-			.transform(rawScript)
-			.writeTo(Paths.get(outDir));
+		if (!Files.exists(outputDirectory)) {
+			Files.createDirectories(outputDirectory);
+		}
+
+		final RF2Specification defaultSpecification = getRF2Specification();
+		final RF2File sourceFile = defaultSpecification.detect(Paths.get(path));
+		sourceFile.transform(new RF2TransformContext(rawScript, defaultSpecification, outputDirectory, console));
 	}
-	
+
 }

@@ -62,7 +62,7 @@ public final class RF2CreateContext {
 	}
 	
 	public void visitSourceRows(Predicate<RF2ContentFile> fileFilter, Predicate<String[]> lineFilter, boolean parallel, Consumer<String[]> visitor) throws IOException {
-		for (RF2File source : getSources()) {
+		for (RF2File source : sources) {
 			source.visit(file -> {
 				if (file instanceof RF2ContentFile) {
 					final RF2ContentFile contentFile = (RF2ContentFile) file;
