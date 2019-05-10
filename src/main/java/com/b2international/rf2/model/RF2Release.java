@@ -54,7 +54,7 @@ public final class RF2Release extends RF2File {
 		}
 		
 		visitor.accept(this);
-		try (FileSystem zipfs = openZipfs(false)) {
+		try (FileSystem zipfs = openZipfs(false, getPath())) {
 			for (Path root : zipfs.getRootDirectories()) {
 				Files.walk(root, 1).forEach(path -> {
 					if (!RF2Directory.ROOT_PATH.equals(path.toString())) {
@@ -69,8 +69,8 @@ public final class RF2Release extends RF2File {
 		}
 	}
 	
-	private FileSystem openZipfs(boolean create) throws IOException {
-		return FileSystems.newFileSystem(URI.create("jar:" + getPath().toUri()), Map.of("create", String.valueOf(create)));
+	private static FileSystem openZipfs(boolean create, Path path) throws IOException {
+		return FileSystems.newFileSystem(URI.create("jar:" + path.toUri()), Map.of("create", String.valueOf(create)));
 	}
 	
 	@Override
@@ -86,7 +86,7 @@ public final class RF2Release extends RF2File {
 
 		final RF2Specification specification = context.getSpecification();
 
-		try (FileSystem zipfs = openZipfs(true)) {
+		try (FileSystem zipfs = openZipfs(true, getPath())) {
 			// root folder with same name
 			RF2Directory rootDir = new RF2DirectoryName(getRF2FileName().getFileName()).createRF2File(zipfs.getPath("/"), specification);
 			rootDir.create(context);
@@ -136,16 +136,22 @@ public final class RF2Release extends RF2File {
 
 	@Override
 	public void transform(RF2TransformContext context) throws IOException {
-		try (FileSystem zipfs = openZipfs(true)) {
-			visit(file ->{
-				if (!this.equals(file)) {
-					try {
-						file.transform(context.newSubContext(zipfs.getPath("/")));
-					} catch (IOException e) {
-						throw new RuntimeException(e);
-					}
+		final RF2File release = getRF2FileName().createRF2File(context.getParent(), context.getSpecification());
+		try (FileSystem newReleaseZipfs = openZipfs(true, release.getPath())) {
+			try (FileSystem sourceReleaseZipfs = openZipfs(false, getPath())) {
+
+				for (Path root : sourceReleaseZipfs.getRootDirectories()) {
+					Files.walk(root, 1).forEach(path -> {
+						if (!RF2Directory.ROOT_PATH.equals(path.toString())) {
+							try {
+								specification.detect(path).transform(context.newSubContext(newReleaseZipfs.getPath(root.toString())));
+							} catch (IOException e) {
+								throw new RuntimeException("Couldn't transform path: " + path, e);
+							}
+						}
+					});
 				}
-			});
+			}
 		}
 	}
 

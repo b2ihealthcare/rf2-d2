@@ -65,7 +65,19 @@ public final class RF2Directory extends RF2File {
 	@Override
 	public void transform(RF2TransformContext context) throws IOException {
 		// there's nothing to transform so we'll just create the directory to its new location
-		Files.createDirectories(getRF2FileName().createRF2File(context.getParent(), context.getSpecification()).getPath());
+		final RF2File newRF2Directory = getRF2FileName().createRF2File(context.getParent(), context.getSpecification());
+
+		Files.createDirectories(newRF2Directory.getPath());
+		context.log("Creating directory '%s'", getPath());
+		Files.walk(getPath(), 1).forEach(path -> {
+			if (!path.equals(getPath())) {
+				try {
+					specification.detect(path).transform(context.newSubContext(newRF2Directory.getPath()));
+				} catch (IOException e) {
+					throw new RuntimeException("Couldn't transform path: " + path, e);
+				}
+			}
+		});
 	}
 
 }

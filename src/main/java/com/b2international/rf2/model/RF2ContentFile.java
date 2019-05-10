@@ -16,6 +16,7 @@
 package com.b2international.rf2.model;
 
 import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -174,39 +175,43 @@ public final class RF2ContentFile extends RF2File {
 		final RF2File contentFile = getRF2FileName().createRF2File(context.getParent(), context.getSpecification());
 
 		if (isDataFile()) {
-			final BufferedWriter writer = Files.newBufferedWriter(contentFile.getPath(), StandardOpenOption.CREATE_NEW);
-			writer.write(newLine(getHeader()));
 
-			// In case of data file run the script on source
-			rows().forEach(line -> {
-				final Map<String, Object> params = Maps.newHashMap();
-				params.put("_file", this);
+			try (BufferedWriter writer = Files.newBufferedWriter(contentFile.getPath(), StandardOpenOption.CREATE_NEW)) {
+				writer.write(newLine(getHeader()));
 
-				final String[] header = getHeader();
-				for (int i = 0; i < line.length ; i++) {
-					params.put(header[i], line[i]);
-				}
+				// In case of data file run the script on source
+				rows().forEach(line -> {
+					final Map<String, Object> params = Maps.newHashMap();
+					params.put("_file", this);
 
-				final Binding binding = new Binding(params);
-				compiledScript.setBinding(binding);
-				final Object returnValue = compiledScript.run();
-
-				final boolean include = returnValue instanceof Boolean ? (boolean) returnValue : true;
-				if (include) {
-
-					final String[] newLine = new String[header.length];
-					for (int i = 0; i < header.length; i++) {
-						newLine[i] = String.valueOf(params.get(header[i]));
+					final String[] header = getHeader();
+					for (int i = 0; i < line.length; i++) {
+						params.put(header[i], line[i]);
 					}
 
-					try {
-						writer.write(newLine(newLine));
-					} catch (IOException e) {
-						throw new RuntimeException(e);
+					final Binding binding = new Binding(params);
+					compiledScript.setBinding(binding);
+					final Object returnValue = compiledScript.run();
+
+					final boolean include = returnValue instanceof Boolean ? (boolean) returnValue : true;
+					if (include) {
+
+						final String[] newDataLine = new String[header.length];
+						for (int i = 0; i < header.length; i++) {
+							newDataLine[i] = String.valueOf(params.get(header[i]));
+						}
+
+						try {
+							writer.write(newLine(newDataLine));
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
 					}
-				}
-			});
+				});
+			}
+			context.log("Transforming '%s'..." , getPath());
 		} else {
+			context.log("Copying '%s'..." , getPath());
 			Files.copy(getPath(), contentFile.getPath());
 		}
 	}
@@ -219,7 +224,6 @@ public final class RF2ContentFile extends RF2File {
 			
 			final Map<String, Map<String, String>> componentsByIdEffectiveTime = new HashMap<>();
             Predicate<String[]> lineFilter = getLineFilter();
-
 
             context.visitSourceRows(this::fileFilter, lineFilter, /* parallel if */ releaseType.isSnapshot(), line -> {
 				try {

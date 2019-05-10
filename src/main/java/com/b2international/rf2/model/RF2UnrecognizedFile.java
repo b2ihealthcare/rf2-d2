@@ -40,7 +40,7 @@ public final class RF2UnrecognizedFile extends RF2File {
 	
 	@Override
 	public void create(RF2CreateContext context) throws IOException {
-		context.warn("Creating unrecognized files like '%s' is not supported yet.", getRF2FileName());
+		context.warn("Creating unrecognized files like '%s' is not supported.", getRF2FileName());
 	}
 
     @Override
