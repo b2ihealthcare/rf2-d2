@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -142,26 +141,24 @@ public final class RF2ContentFile extends RF2File {
             final Ordering<RF2VersionDate> ordering = Ordering.natural().nullsFirst();
             final AtomicReference<RF2FileName> matchingSourceFile = new AtomicReference<>();
             final AtomicReference<RF2VersionDate> maxVersionDate = new AtomicReference<>();
-            context.getSources()
-                    .stream()
-                    .forEach(source -> {
-                        try {
-                            source.visit(file -> {
-                                if (getType().equals(file.getType())) {
-                                    final RF2FileName rf2FileName = file.getRF2FileName();
-                                    final RF2VersionDate newMaxVersionDate = ordering.max(maxVersionDate.get(), rf2FileName.getElement(RF2VersionDate.class).orElse(null));
-                                    if (newMaxVersionDate != maxVersionDate.get()) {
-                                        matchingSourceFile.set(rf2FileName);
-                                        maxVersionDate.set(newMaxVersionDate);
-                                    }
-                                }
-                            });
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
+            context.getSources().forEach(source -> {
+                try {
+                    source.visit(file -> {
+                        if (getType().equals(file.getType())) {
+                            final RF2FileName rf2FileName = file.getRF2FileName();
+                            final RF2VersionDate newMaxVersionDate = ordering.max(maxVersionDate.get(), rf2FileName.getElement(RF2VersionDate.class).orElse(null));
+                            if (newMaxVersionDate != maxVersionDate.get()) {
+                                matchingSourceFile.set(rf2FileName);
+                                maxVersionDate.set(newMaxVersionDate);
+                            }
                         }
                     });
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
 
-            if (Optional.ofNullable(matchingSourceFile).isPresent()) {
+            if (matchingSourceFile.get() != null) {
                 Files.createFile(getPath());
             } else {
                 for (RF2File source : context.getSources()) {
@@ -207,7 +204,7 @@ public final class RF2ContentFile extends RF2File {
                     compiledScript.setBinding(binding);
                     final Object returnValue = compiledScript.run();
 
-                    final boolean include = returnValue instanceof Boolean ? (boolean) returnValue : true;
+                    final boolean include = !(returnValue instanceof Boolean) || (boolean) returnValue;
                     if (include) {
 
                         final String[] newDataLine = new String[header.length];
@@ -339,7 +336,7 @@ public final class RF2ContentFile extends RF2File {
                 final String fieldName = filterEntry.getKey();
                 final String inclusionValue = filterEntry.getValue();
                 if (indexByHeader.containsKey(fieldName)) {
-                    final int headerIndex = indexByHeader.get(fieldName).intValue();
+                    final int headerIndex = indexByHeader.get(fieldName);
                     inclusions.add(line -> inclusionValue.equals(line[headerIndex]));
                 }
             }
@@ -357,7 +354,7 @@ public final class RF2ContentFile extends RF2File {
                 final String fieldName = filterEntry.getKey();
                 final String exclusionValue = filterEntry.getValue();
                 if (indexByHeader.containsKey(fieldName)) {
-                    final int headerIndex = indexByHeader.get(fieldName).intValue();
+                    final int headerIndex = indexByHeader.get(fieldName);
                     exclusions.add(line -> !exclusionValue.equals(line[headerIndex]));
                 }
             }
@@ -379,20 +376,15 @@ public final class RF2ContentFile extends RF2File {
                 }
         }
         // check actual content type as well, to copy content from the right files
-        if (!Arrays.equals(file.getHeader(), getHeader())) {
-            return false;
-        }
-
-        return true;
+        return Arrays.equals(file.getHeader(), getHeader());
     }
 
-    protected final String newLine(String[] values) {
+    private String newLine(String[] values) {
         return String.format("%s%s", String.join(TAB, values), CRLF);
     }
 
     /**
      * @return the current RF2 header by reading the first line of the file or if this is a non-existing file returns the header from the spec for kind of RF2 files
-     * @throws IOException
      */
     public final String[] getHeader() {
         if (header == null) {
@@ -404,7 +396,7 @@ public final class RF2ContentFile extends RF2File {
     /**
      * @return the current RF2 header indexes mapped by the header's name.
      */
-    public final Map<String, Integer> getIndexByHeader() {
+    private Map<String, Integer> getIndexByHeader() {
         final Map<String, Integer> indexByHeader = Maps.newHashMap();
         final String[] header = getHeader();
         for (int i = 0; i < header.length; i++) {
