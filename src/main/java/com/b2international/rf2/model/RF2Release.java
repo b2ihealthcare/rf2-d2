@@ -137,7 +137,6 @@ public final class RF2Release extends RF2File {
 	@Override
 	public void transform(RF2TransformContext context) throws IOException {
 		final RF2File release = getRF2FileName().createRF2File(context.getParent(), context.getSpecification());
-		context.log("Transforming release '%s'...", release.getPath());
 
 		try (FileSystem newReleaseZipfs = openZipfs(true, release.getPath())) {
 			try (FileSystem sourceReleaseZipfs = openZipfs(false, getPath())) {
@@ -155,6 +154,8 @@ public final class RF2Release extends RF2File {
 				}
 			}
 		}
+
+        context.log("Transformed release '%s'", release.getPath());
 	}
 
 }
