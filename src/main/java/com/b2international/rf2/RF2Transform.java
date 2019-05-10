@@ -30,7 +30,7 @@ import picocli.CommandLine.Parameters;
  */
 @Command(
 	name = "transform",
-	description = "Apply an expression to every RF2 row Modifies values in specified columns in a given set of RF2 releases/files"
+	description = "Apply an expression to transform and/or filter RF2 rows in the given RF2 source."
 )
 public class RF2Transform extends RF2Command {
 
