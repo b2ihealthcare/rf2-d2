@@ -29,32 +29,21 @@ import com.b2international.rf2.spec.RF2Specification;
 /**
  * @since 0.1
  */
-public final class RF2CreateContext {
+public final class RF2CreateContext extends RF2Context{
 
-	private final RF2Specification specification;
 	private final List<RF2File> sources;
-	private final Console log;
-	
+
 	public RF2CreateContext(RF2Specification specification, List<RF2File> sources, Console log) {
-		this.specification = specification;
-		this.log = log;
+		super(specification, log);
 		this.sources = sources == null ? Collections.emptyList() : sources;
-	}
-	
-	public RF2Specification getSpecification() {
-		return specification;
 	}
 	
 	public List<RF2File> getSources() {
 		return sources;
 	}
-	
-	public Console log() {
-		return log;
-	}
-	
+
 	public void visitSourceRows(Predicate<RF2ContentFile> fileFilter, Predicate<String[]> lineFilter, boolean parallel, Consumer<String[]> visitor) throws IOException {
-		for (RF2File source : getSources()) {
+		for (RF2File source : sources) {
 			source.visit(file -> {
 				if (file instanceof RF2ContentFile) {
 					final RF2ContentFile contentFile = (RF2ContentFile) file;

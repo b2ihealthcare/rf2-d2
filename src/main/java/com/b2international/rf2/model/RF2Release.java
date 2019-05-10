@@ -28,6 +28,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import com.b2international.rf2.RF2CreateContext;
+import com.b2international.rf2.RF2TransformContext;
 import com.b2international.rf2.naming.RF2DirectoryName;
 import com.b2international.rf2.naming.RF2ReleaseName;
 import com.b2international.rf2.spec.RF2ContentFileSpecification;
@@ -53,7 +54,7 @@ public final class RF2Release extends RF2File {
 		}
 		
 		visitor.accept(this);
-		try (FileSystem zipfs = openZipfs(false)) {
+		try (FileSystem zipfs = openZipfs(false, getPath())) {
 			for (Path root : zipfs.getRootDirectories()) {
 				Files.walk(root, 1).forEach(path -> {
 					if (!RF2Directory.ROOT_PATH.equals(path.toString())) {
@@ -68,8 +69,8 @@ public final class RF2Release extends RF2File {
 		}
 	}
 	
-	private FileSystem openZipfs(boolean create) throws IOException {
-		return FileSystems.newFileSystem(URI.create("jar:" + getPath().toUri()), Map.of("create", String.valueOf(create)));
+	private static FileSystem openZipfs(boolean create, Path path) throws IOException {
+		return FileSystems.newFileSystem(URI.create("jar:" + path.toUri()), Map.of("create", String.valueOf(create)));
 	}
 	
 	@Override
@@ -84,8 +85,8 @@ public final class RF2Release extends RF2File {
 		}
 
 		final RF2Specification specification = context.getSpecification();
-		
-		try (FileSystem zipfs = openZipfs(true)) {
+
+		try (FileSystem zipfs = openZipfs(true, getPath())) {
 			// root folder with same name
 			RF2Directory rootDir = new RF2DirectoryName(getRF2FileName().getFileName()).createRF2File(zipfs.getPath("/"), specification);
 			rootDir.create(context);
@@ -94,7 +95,7 @@ public final class RF2Release extends RF2File {
 			for (String contentSubType : release.getContentSubTypes()) {
 				RF2Directory contentSubTypeDir = new RF2DirectoryName(contentSubType).createRF2File(rootDir.getPath(), specification);
 				contentSubTypeDir.create(context);
-				
+
 				for (Entry<String, List<RF2ContentFileSpecification>> entry : release.getContent().getFiles().entrySet()) {
 					RF2Directory rf2Directory = new RF2DirectoryName(entry.getKey()).createRF2File(contentSubTypeDir.getPath(), specification);
 					entry.getValue()
@@ -111,7 +112,7 @@ public final class RF2Release extends RF2File {
 						});
 				}
 			}
-			
+
 			// create all non-data files outside of the contentSubType directories
 			for (Entry<String, List<RF2ContentFileSpecification>> entry : release.getContent().getFiles().entrySet()) {
 				RF2Directory rf2Directory = new RF2DirectoryName(entry.getKey()).createRF2File(rootDir.getPath(), specification);
@@ -130,7 +131,31 @@ public final class RF2Release extends RF2File {
 			}
 			
 		}
-		context.log().log("Created RF2 release at %s", getPath());
+		context.log("Created RF2 release at %s", getPath());
 	}
-	
+
+	@Override
+	public void transform(RF2TransformContext context) throws IOException {
+		final RF2File release = getRF2FileName().createRF2File(context.getParent(), context.getSpecification());
+
+		try (FileSystem newReleaseZipfs = openZipfs(true, release.getPath())) {
+			try (FileSystem sourceReleaseZipfs = openZipfs(false, getPath())) {
+
+				for (Path root : sourceReleaseZipfs.getRootDirectories()) {
+					Files.walk(root, 1).forEach(path -> {
+						if (!RF2Directory.ROOT_PATH.equals(path.toString())) {
+							try {
+								specification.detect(path).transform(context.newSubContext(newReleaseZipfs.getPath(root.toString())));
+							} catch (IOException e) {
+								throw new RuntimeException("Couldn't transform path: " + path, e);
+							}
+						}
+					});
+				}
+			}
+		}
+
+        context.log("Transformed release '%s'", release.getPath());
+	}
+
 }

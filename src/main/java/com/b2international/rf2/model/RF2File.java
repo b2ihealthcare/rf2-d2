@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import com.b2international.rf2.RF2CreateContext;
+import com.b2international.rf2.RF2TransformContext;
 import com.b2international.rf2.check.RF2IssueAcceptor;
 import com.b2international.rf2.naming.RF2FileName;
 
@@ -74,7 +75,7 @@ public abstract class RF2File {
 	 * Visit this {@link RF2File} with the given visitor.
 	 * 
 	 * @param visitor
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public abstract void visit(Consumer<RF2File> visitor) throws IOException;
 
@@ -94,13 +95,19 @@ public abstract class RF2File {
 	}
 	
 	/**
-	 * Creates the RF2 file at the specified location and file name.
-	 * 
+	 * Creates this RF2 file at the specified location and file name.
 	 * @param context
 	 * @throws IOException
 	 */
 	public abstract void create(RF2CreateContext context) throws IOException;
-	
+
+	/**
+	 * Transforms this RF2 file based on a transformContext.
+	 * @param context
+	 * @throws IOException
+	 */
+	public abstract void transform(RF2TransformContext context) throws IOException;
+
 	/**
 	 * @return the type (or category) of this {@link RF2File}.
 	 */

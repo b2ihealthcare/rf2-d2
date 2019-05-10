@@ -19,7 +19,7 @@ dependencies {
 	implementation 'com.fasterxml.jackson.core:jackson-databind:2.8.11'
 	implementation 'com.fasterxml.jackson.core:jackson-annotations:2.8.11'
 	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.8.11'
-	
+	implementation 'org.codehaus.groovy:groovy-all:2.4.13'
 	// test
 	testImplementation 'junit:junit:4.12'
 	testImplementation 'org.assertj:assertj-core:3.10.0'
@@ -47,7 +47,7 @@ if (System.getenv("TRAVIS") != null) {
 		targetPlatform('win-x64', System.getenv("JDK11_WIN"))
 		
 		options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
-		modules = ['java.base', 'jdk.zipfs']
+		modules = ['java.base', 'java.sql', 'jdk.zipfs']
 		imageDir = file("$buildDir/${rootProject.name}-${version}")
 		imageZip = file("$buildDir/${rootProject.name}-${version}.zip")
 	}	
@@ -55,7 +55,7 @@ if (System.getenv("TRAVIS") != null) {
 	// otherwise just for the running platform
 	runtime {
 		options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
-		modules = ['java.base', 'jdk.zipfs']
+		modules = ['java.base', 'java.sql', 'jdk.zipfs']
 		imageDir = file("$buildDir/${rootProject.name}-${version}")
 		imageZip = file("$buildDir/${rootProject.name}-${version}.zip")
 	}

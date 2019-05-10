@@ -16,10 +16,12 @@
 package com.b2international.rf2.model;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
 import com.b2international.rf2.RF2CreateContext;
+import com.b2international.rf2.RF2TransformContext;
 import com.b2international.rf2.naming.RF2FileName;
 
 /**
@@ -38,9 +40,16 @@ public final class RF2UnrecognizedFile extends RF2File {
 	
 	@Override
 	public void create(RF2CreateContext context) throws IOException {
-		context.log().warn("Creating unrecognized files like '%s' is not supported yet.", getRF2FileName());
+		context.warn("Creating unrecognized files like '%s' is not supported.", getRF2FileName());
 	}
-	
+
+    @Override
+    public void transform(RF2TransformContext context) throws IOException {
+	    // In case of unrecognized files transform is essentially a copy
+        Files.copy(getPath(), getRF2FileName().createRF2File(context.getParent(), context.getSpecification()).getPath());
+        context.log("Copied unrecognized file '%s'", getPath());
+    }
+
 	@Override
 	public String getType() {
 		return "Unrecognized";
