@@ -33,6 +33,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.b2international.rf2.RF2CreateContext;
+import com.b2international.rf2.RF2TransformContext;
 import com.b2international.rf2.check.RF2IssueAcceptor;
 import com.b2international.rf2.naming.RF2ContentFileName;
 import com.b2international.rf2.naming.RF2FileName;
@@ -47,6 +48,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.common.hash.Hashing;
+import groovy.lang.Binding;
+import groovy.lang.Script;
 
 /**
  * @since 0.1
@@ -165,6 +168,49 @@ public final class RF2ContentFile extends RF2File {
 		}
 	}
 
+	@Override
+	public void transform(RF2TransformContext context) throws IOException {
+		final Script compiledScript = context.getCompiledScript();
+		final RF2File contentFile = getRF2FileName().createRF2File(context.getParent(), context.getSpecification());
+
+		if (isDataFile()) {
+			final BufferedWriter writer = Files.newBufferedWriter(contentFile.getPath(), StandardOpenOption.CREATE_NEW);
+			writer.write(newLine(getHeader()));
+
+			// In case of data file run the script on source
+			rows().forEach(line -> {
+				final Map<String, Object> params = Maps.newHashMap();
+				params.put("_file", this);
+
+				final String[] header = getHeader();
+				for (int i = 0; i < line.length ; i++) {
+					params.put(header[i], line[i]);
+				}
+
+				final Binding binding = new Binding(params);
+				compiledScript.setBinding(binding);
+				final Object returnValue = compiledScript.run();
+
+				final boolean include = returnValue instanceof Boolean ? (boolean) returnValue : true;
+				if (include) {
+
+					final String[] newLine = new String[header.length];
+					for (int i = 0; i < header.length; i++) {
+						newLine[i] = String.valueOf(params.get(header[i]));
+					}
+
+					try {
+						writer.write(newLine(newLine));
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
+				}
+			});
+		} else {
+			Files.copy(getPath(), contentFile.getPath());
+		}
+	}
+
 	private void createDataFile(RF2CreateContext context) throws IOException {
 		final RF2ContentSubType releaseType = getRF2FileName().getElement(RF2ContentSubType.class).orElse(null);
 		final String currentReleaseDate = getRF2FileName().getElement(RF2VersionDate.class).map(RF2VersionDate::getVersionDate).orElse("N/A");
@@ -183,7 +229,7 @@ public final class RF2ContentFile extends RF2File {
 					String lineHash = Hashing.sha256().hashString(rawLine, StandardCharsets.UTF_8).toString();
 
 					if (componentsByIdEffectiveTime.containsKey(id) && componentsByIdEffectiveTime.get(id).containsKey(effectiveTime)) {
-						// getLogger a warning about inconsistent ID-EffectiveTime content, keep the first occurrence of the line and skip the others
+						// log a warning about inconsistent ID-EffectiveTime content, keep the first occurrence of the line and skip the others
 						if (!lineHash.equals(componentsByIdEffectiveTime.get(id).get(effectiveTime))) {
 							context.warn("Skipping duplicate RF2 line found with same '%s' ID in '%s' effectiveTime but with different column values.", id, effectiveTime);
 						}

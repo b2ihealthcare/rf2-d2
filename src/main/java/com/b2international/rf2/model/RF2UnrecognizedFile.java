@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 
 import com.b2international.rf2.RF2CreateContext;
+import com.b2international.rf2.RF2TransformContext;
 import com.b2international.rf2.naming.RF2FileName;
 
 /**
@@ -39,27 +40,16 @@ public final class RF2UnrecognizedFile extends RF2File {
 	
 	@Override
 	public void create(RF2CreateContext context) throws IOException {
-		// In case of unrecognized files (bonus files) which are not represented in the rf2-spec.yml
-		// they'll be copied over to the new result zip, during a transformation
-		context.log("Creating  unrecognized '%s'...", getPath());
-
-//		TODO: Determine if the current process is a file transformation
-//		if (context.getSpecification().isTransforMation()) {
-
-		for (RF2File source : context.getSources()) {
-			source.visit(file -> {
-				try {
-					Files.copy(file.getPath(), getPath());
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-			});
-		}
-//		} else {
-//			context.warn("Creating unrecognized files like '%s' is not supported yet.", getRF2FileName());
-//		}
+		context.warn("Creating unrecognized files like '%s' is not supported yet.", getRF2FileName());
 	}
-	
+
+    @Override
+    public void transform(RF2TransformContext context) throws IOException {
+	    // In case of unrecognized files transform is essentially a copy
+		context.log("Copying  unrecognized '%s'...", getPath());
+        Files.copy(getPath(), getRF2FileName().createRF2File(context.getParent(), context.getSpecification()).getPath());
+    }
+
 	@Override
 	public String getType() {
 		return "Unrecognized";

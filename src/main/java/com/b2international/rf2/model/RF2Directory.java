@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.util.function.Consumer;
 
 import com.b2international.rf2.RF2CreateContext;
+import com.b2international.rf2.RF2TransformContext;
 import com.b2international.rf2.naming.RF2FileName;
 import com.b2international.rf2.spec.RF2Specification;
 
@@ -59,6 +60,12 @@ public final class RF2Directory extends RF2File {
 	@Override
 	public void create(RF2CreateContext context) throws IOException {
 		Files.createDirectories(getPath());
+	}
+
+	@Override
+	public void transform(RF2TransformContext context) throws IOException {
+		// there's nothing to transform so we'll just create the directory to its new location
+		Files.createDirectories(getRF2FileName().createRF2File(context.getParent(), context.getSpecification()).getPath());
 	}
 
 }

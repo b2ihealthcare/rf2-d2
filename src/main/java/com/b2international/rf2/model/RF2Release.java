@@ -28,6 +28,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import com.b2international.rf2.RF2CreateContext;
+import com.b2international.rf2.RF2TransformContext;
 import com.b2international.rf2.naming.RF2DirectoryName;
 import com.b2international.rf2.naming.RF2ReleaseName;
 import com.b2international.rf2.spec.RF2ContentFileSpecification;
@@ -84,7 +85,7 @@ public final class RF2Release extends RF2File {
 		}
 
 		final RF2Specification specification = context.getSpecification();
-		
+
 		try (FileSystem zipfs = openZipfs(true)) {
 			// root folder with same name
 			RF2Directory rootDir = new RF2DirectoryName(getRF2FileName().getFileName()).createRF2File(zipfs.getPath("/"), specification);
@@ -94,7 +95,7 @@ public final class RF2Release extends RF2File {
 			for (String contentSubType : release.getContentSubTypes()) {
 				RF2Directory contentSubTypeDir = new RF2DirectoryName(contentSubType).createRF2File(rootDir.getPath(), specification);
 				contentSubTypeDir.create(context);
-				
+
 				for (Entry<String, List<RF2ContentFileSpecification>> entry : release.getContent().getFiles().entrySet()) {
 					RF2Directory rf2Directory = new RF2DirectoryName(entry.getKey()).createRF2File(contentSubTypeDir.getPath(), specification);
 					entry.getValue()
@@ -111,7 +112,7 @@ public final class RF2Release extends RF2File {
 						});
 				}
 			}
-			
+
 			// create all non-data files outside of the contentSubType directories
 			for (Entry<String, List<RF2ContentFileSpecification>> entry : release.getContent().getFiles().entrySet()) {
 				RF2Directory rf2Directory = new RF2DirectoryName(entry.getKey()).createRF2File(rootDir.getPath(), specification);
@@ -132,5 +133,20 @@ public final class RF2Release extends RF2File {
 		}
 		context.log("Created RF2 release at %s", getPath());
 	}
-	
+
+	@Override
+	public void transform(RF2TransformContext context) throws IOException {
+		try (FileSystem zipfs = openZipfs(true)) {
+			visit(file ->{
+				if (!this.equals(file)) {
+					try {
+						file.transform(context.newSubContext(zipfs.getPath("/")));
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
+				}
+			});
+		}
+	}
+
 }
