@@ -24,12 +24,9 @@ import java.nio.file.Path;
 /**
  * @since 0.3
  */
-public final class RF2TransformContext {
+public final class RF2TransformContext extends RF2Context {
 
-    private final RF2Specification specification;
     private final Path parent;
-    private final Console console;
-
     private Script compiledScript;
 
     public RF2TransformContext(String rawScript, RF2Specification specification, Path parent, Console console) {
@@ -37,10 +34,9 @@ public final class RF2TransformContext {
     }
 
     RF2TransformContext(Script compiledScript, RF2Specification specification, Path parent,  Console console) {
-        this.specification = specification;
+        super(specification, console);
         this.parent = parent;
         this.compiledScript = compiledScript;
-        this.console = console;
     }
 
     private static Script compileScript(String rawScript) {
@@ -51,22 +47,6 @@ public final class RF2TransformContext {
             throw new RuntimeException("Couldn't instantiate script", e);
         }
 
-    }
-
-    public void log(String message, Object... args) {
-        console.log(message, args);
-    }
-
-    public void warn(String message, Object... args) {
-        console.warn(message, args);
-    }
-
-    public void error(String message, Object... args) {
-        console.error(message, args);
-    }
-
-    public RF2Specification getSpecification() {
-        return specification;
     }
 
     public Path getParent() {
