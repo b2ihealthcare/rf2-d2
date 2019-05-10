@@ -128,10 +128,8 @@ public final class RF2ContentFile extends RF2File {
 			final Ordering<RF2VersionDate> ordering = Ordering.natural().nullsFirst();
 			final AtomicReference<RF2FileName> matchingSourceFile = new AtomicReference<>();
 			final AtomicReference<RF2VersionDate> maxVersionDate = new AtomicReference<>();
-			final AtomicBoolean exit = new AtomicBoolean(false);
 			context.getSources()
 					.stream()
-					.takeWhile(file -> exit.get())
 					.forEach(source -> {
 						try {
 							source.visit(file -> {
@@ -139,7 +137,6 @@ public final class RF2ContentFile extends RF2File {
 									final RF2FileName rf2FileName = file.getRF2FileName();
 									final RF2VersionDate newMaxVersionDate = ordering.max(maxVersionDate.get(), rf2FileName.getElement(RF2VersionDate.class).orElse(null));
 									if (newMaxVersionDate != maxVersionDate.get()) {
-										exit.set(true);
 										matchingSourceFile.set(rf2FileName);
 										maxVersionDate.set(newMaxVersionDate);
 									}
