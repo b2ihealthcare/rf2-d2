@@ -62,7 +62,12 @@ public class RF2Transform extends RF2Command {
 		} else {
 			rawScript = script;
 		}
-		
+
+		if (!Files.exists(Paths.get(path))) {
+			console.log("The specified source at '%s' does not exist", path);
+			return;
+		}
+
 		final Path outputDirectory = Paths.get(outDir);
 		if (!Files.exists(outputDirectory)) {
 			Files.createDirectories(outputDirectory);

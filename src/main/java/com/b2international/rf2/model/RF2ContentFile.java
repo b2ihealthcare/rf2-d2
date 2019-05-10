@@ -16,7 +16,6 @@
 package com.b2international.rf2.model;
 
 import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -27,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -147,9 +146,8 @@ public final class RF2ContentFile extends RF2File {
 						}
 					});
 
-			if (matchingSourceFile.get() == null) {
+			if (Optional.ofNullable(matchingSourceFile).isPresent()) {
 				Files.createFile(getPath());
-
 			} else {
 				for (RF2File source : context.getSources()) {
 					source.visit(file -> {
@@ -377,10 +375,9 @@ public final class RF2ContentFile extends RF2File {
 	 */
 	public final Map<String, Integer> getIndexByHeader() {
 		final Map<String, Integer> indexByHeader = Maps.newHashMap();
-		final List<String> header = Arrays.asList(getHeader());
-
-		for (int i = 0; i < header.size(); i++) {
-			indexByHeader.put(header.get(i), i);
+		final String[] header = getHeader();
+		for (int i = 0; i < header.length; i++) {
+			indexByHeader.put(header[i], i);
 		}
 
 		return indexByHeader;
