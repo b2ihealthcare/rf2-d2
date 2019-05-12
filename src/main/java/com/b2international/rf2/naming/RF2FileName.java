@@ -56,15 +56,12 @@ public abstract class RF2FileName {
 		
 		final Iterator<String> actualElements;
 		
+		this.elements = new ArrayList<>(expectedRF2NameElements.length);
+		this.missingElements = new ArrayList<>(expectedRF2NameElements.length);
+		
 		if (expectedRF2NameElements.length == 1 && expectedRF2NameElements[0] == RF2NameElement.AcceptAll.class) {
-			this.elements = new ArrayList<>(expectedRF2NameElements.length);
-			this.missingElements = Collections.emptyList();
-			
 			actualElements = Arrays.asList(this.fileName).iterator();
 		} else {
-			this.elements = new ArrayList<>(expectedRF2NameElements.length);
-			this.missingElements = new ArrayList<>(expectedRF2NameElements.length);
-
 			actualElements = Arrays.asList(this.fileName.split(ELEMENT_SEPARATOR)).iterator();
 		}
 		
