@@ -12,5 +12,4 @@
     <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.b2international.rf2.RF2"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="${string_prompt}"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="rf2-d2"/>
-    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="--illegal-access=deny"/>
 </launchConfiguration>

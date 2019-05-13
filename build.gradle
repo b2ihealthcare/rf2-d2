@@ -19,7 +19,7 @@ dependencies {
 	implementation 'com.fasterxml.jackson.core:jackson-databind:2.8.11'
 	implementation 'com.fasterxml.jackson.core:jackson-annotations:2.8.11'
 	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.8.11'
-	implementation 'org.codehaus.groovy:groovy-all:2.4.13'
+	implementation 'org.codehaus.groovy:groovy-all:2.5.7'
 	// test
 	testImplementation 'junit:junit:4.12'
 	testImplementation 'org.assertj:assertj-core:3.10.0'
@@ -39,6 +39,9 @@ application {
     applicationName = 'rf2'
 }
 
+// select Java 11 modules to be included in runtime here
+def java11_modules = ['java.base', 'java.sql', 'jdk.zipfs', 'java.desktop', 'java.scripting']
+
 if (System.getenv("TRAVIS") != null) {
 	// in case of TRAVIS-CI build, build for all platforms
 	runtime {
@@ -47,7 +50,7 @@ if (System.getenv("TRAVIS") != null) {
 		targetPlatform('win-x64', System.getenv("JDK11_WIN"))
 		
 		options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
-		modules = ['java.base', 'java.sql', 'jdk.zipfs']
+		modules = java11_modules
 		imageDir = file("$buildDir/${rootProject.name}-${version}")
 		imageZip = file("$buildDir/${rootProject.name}-${version}.zip")
 	}	
@@ -55,7 +58,7 @@ if (System.getenv("TRAVIS") != null) {
 	// otherwise just for the running platform
 	runtime {
 		options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
-		modules = ['java.base', 'java.sql', 'jdk.zipfs']
+		modules = java11_modules
 		imageDir = file("$buildDir/${rootProject.name}-${version}")
 		imageZip = file("$buildDir/${rootProject.name}-${version}.zip")
 	}

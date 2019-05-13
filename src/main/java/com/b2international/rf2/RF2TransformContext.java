@@ -15,50 +15,50 @@
  */
 package com.b2international.rf2;
 
+import java.nio.file.Path;
+
 import com.b2international.rf2.spec.RF2Specification;
+
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
-
-import java.nio.file.Path;
 
 /**
  * @since 0.3
  */
 public final class RF2TransformContext extends RF2Context {
 
-    private final Path parent;
-    private Script compiledScript;
+	private final Path parent;
+	private Script compiledScript;
 
-    public RF2TransformContext(String rawScript, RF2Specification specification, Path parent, Console console) {
-        this(compileScript(rawScript), specification, parent, console);
-    }
+	public RF2TransformContext(String rawScript, RF2Specification specification, Path parent, Console console) {
+		this(compileScript(rawScript), specification, parent, console);
+	}
 
-    RF2TransformContext(Script compiledScript, RF2Specification specification, Path parent,  Console console) {
-        super(specification, console);
-        this.parent = parent;
-        this.compiledScript = compiledScript;
-    }
+	RF2TransformContext(Script compiledScript, RF2Specification specification, Path parent, Console console) {
+		super(specification, console);
+		this.parent = parent;
+		this.compiledScript = compiledScript;
+	}
 
-    private static Script compileScript(String rawScript) {
-        final GroovyShell shell = new GroovyShell();
-        try {
-           return (Script) shell.getClassLoader().parseClass(rawScript).getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException("Couldn't instantiate script", e);
-        }
+	public Path getParent() {
+		return parent;
+	}
 
-    }
+	public RF2TransformContext newSubContext(Path parent) {
+		return new RF2TransformContext(compiledScript, specification, parent, console);
+	}
 
-    public Path getParent() {
-        return parent;
-    }
-
-    public RF2TransformContext newSubContext(Path parent) {
-        return new RF2TransformContext(compiledScript, specification, parent, console);
-    }
-
-    public Script getCompiledScript() {
-        return compiledScript;
-    }
+	public Script getCompiledScript() {
+		return compiledScript;
+	}
+	
+	private static Script compileScript(String rawScript) {
+		final GroovyShell shell = new GroovyShell();
+		try {
+			return (Script) shell.getClassLoader().parseClass(rawScript).getDeclaredConstructor().newInstance();
+		} catch (Exception e) {
+			throw new RuntimeException("Couldn't instantiate script", e);
+		}
+	}
 
 }
