@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.b2international.rf2.model.RF2Directory;
 import com.b2international.rf2.model.RF2File;
 import com.b2international.rf2.spec.RF2ReleaseSpecification;
 import com.b2international.rf2.spec.RF2Specification;
@@ -97,6 +98,18 @@ public final class RF2Create extends RF2Command {
 			sources = paths.stream().map(path -> specification.<RF2File>detect(Paths.get(path))).collect(Collectors.toList());
 		} else {
 			sources = Collections.emptyList();
+		}
+		
+		boolean validSources = true;
+		for (RF2File source : sources) {
+			if (source instanceof RF2Directory) {
+				console.log("Only .txt and .zip files are accepted as RF2 source files. '%s' is a directory.", source.getPath());
+				validSources = false;
+			}
+		}
+		
+		if (!validSources) {
+			return;
 		}
 		
 		specification
