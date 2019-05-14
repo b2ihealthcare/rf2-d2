@@ -160,7 +160,7 @@ public final class RF2ContentFile extends RF2File {
                 }
             });
 
-            if (matchingSourceFile.get() != null) {
+            if (matchingSourceFile.get() == null) {
                 Files.createFile(getPath());
             } else {
                 for (RF2File source : context.getSources()) {
