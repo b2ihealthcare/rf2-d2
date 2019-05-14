@@ -21,13 +21,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.b2international.rf2.model.RF2Directory;
 import com.b2international.rf2.model.RF2File;
 import com.b2international.rf2.spec.RF2ReleaseSpecification;
 import com.b2international.rf2.spec.RF2Specification;
 
+import com.google.common.collect.Lists;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -94,12 +94,27 @@ public final class RF2Create extends RF2Command {
 				.merge(new RF2Specification(null, null, new RF2ReleaseSpecification(null, product, null, releaseStatus, country, namespace, releaseDate, releaseTime, contentSubTypes, null)));
 		
 		final List<RF2File> sources;
+		final List<String> incorrectPaths = Lists.newArrayList();
 		if (paths != null) {
-			sources = paths.stream().map(path -> specification.<RF2File>detect(Paths.get(path))).collect(Collectors.toList());
+			sources = Lists.newArrayList();
+			for (String sourcePath : paths) {
+				if (Paths.get(sourcePath) != null) {
+					sources.add(specification.detect(Paths.get(sourcePath)));
+				} else if (WORK_DIR.resolve(sourcePath) != null) {
+					sources.add(specification.detect(WORK_DIR.resolve(sourcePath)));
+				} else {
+					incorrectPaths.add(sourcePath);
+				}
+			}
 		} else {
 			sources = Collections.emptyList();
 		}
-		
+
+        if (!incorrectPaths.isEmpty()) {
+            incorrectPaths.stream().forEach(incorrectPath -> console.error("File or path could not be resolved: '%s'", incorrectPath));
+            return;
+        }
+
 		boolean validSources = true;
 		for (RF2File source : sources) {
 			if (source instanceof RF2Directory) {
@@ -107,11 +122,11 @@ public final class RF2Create extends RF2Command {
 				validSources = false;
 			}
 		}
-		
+
 		if (!validSources) {
 			return;
 		}
-		
+
 		specification
 			.prepare(outputDirectory)
 			.create(new RF2CreateContext(specification, sources, console));

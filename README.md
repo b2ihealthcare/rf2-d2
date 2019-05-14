@@ -13,7 +13,7 @@ Feature include:
 * Packaging (see `create` command)
     * Packages a single RF2 Release from one or more RF2 files and other sources 
     * Configure and customize the name of the RF2 Release and RF2 files
-    * Configure release structure and add additional content like custom files, documentation and resources 
+    * Configure release structure and add additional content like custom files, documentation and resources
 * Validation and verification (see `check` command)
 	* Verifies existing RF2 Release file names and structure
     * Validates SNOMED CT content using a number of validation rules (WIP)

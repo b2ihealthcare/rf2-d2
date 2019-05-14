@@ -51,7 +51,7 @@ public final class RF2TransformContext extends RF2Context {
 	public Script getCompiledScript() {
 		return compiledScript;
 	}
-	
+
 	private static Script compileScript(String rawScript) {
 		final GroovyShell shell = new GroovyShell();
 		try {
