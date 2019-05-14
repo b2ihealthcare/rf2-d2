@@ -19,6 +19,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -86,15 +87,19 @@ public final class RF2Create extends RF2Command {
 			outputDirectory = WORK_DIR.resolve(outDir);
 		}
 		
-		List<RF2File> directories = sources.stream()
-			.filter(RF2Directory.class::isInstance)
-			.collect(Collectors.toList());
-		
-		if (!directories.isEmpty()) {
-			directories.forEach(source -> {
-				console.log("Only .txt and .zip files are accepted as RF2 source files. '%s' is a directory.", source.getPath());
-			});
-			return;
+		if (sources != null) {
+			List<RF2File> directories = sources.stream()
+					.filter(RF2Directory.class::isInstance)
+					.collect(Collectors.toList());
+			
+			if (!directories.isEmpty()) {
+				directories.forEach(source -> {
+					console.log("Only .txt and .zip files are accepted as RF2 source files. '%s' is a directory.", source.getPath());
+				});
+				return;
+			}
+		} else {
+			sources = Collections.emptyList();
 		}
 		
 		Files.createDirectories(outputDirectory);

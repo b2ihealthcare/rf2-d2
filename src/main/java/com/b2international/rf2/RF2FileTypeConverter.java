@@ -32,13 +32,7 @@ final class RF2FileTypeConverter implements ITypeConverter<RF2File> {
 	@Override
 	public RF2File convert(String path) throws Exception {
 		RF2Specification spec = RF2Command.getRF2Specification();
-		Path rf2FilePath = Paths.get(path);
-		if (Files.exists(rf2FilePath)) {
-			return spec.detect(rf2FilePath);
-		}
-		
-		rf2FilePath = RF2Command.WORK_DIR.resolve(path);
-		
+		Path rf2FilePath = Paths.get(path).toAbsolutePath();
 		if (Files.exists(rf2FilePath)) {
 			return spec.detect(rf2FilePath);
 		}
