@@ -18,7 +18,7 @@ package com.b2international.rf2;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -43,7 +43,7 @@ public final class RF2CreateContext extends RF2Context{
 		return sources;
 	}
 
-	public void visitSourceRows(Predicate<RF2ContentFile> fileFilter, Predicate<String[]> lineFilter, boolean parallel, Consumer<String[]> visitor) throws IOException {
+	public void visitSourceRows(Predicate<RF2ContentFile> fileFilter, Predicate<String[]> lineFilter, boolean parallel, BiConsumer<RF2File, String[]> visitor) throws IOException {
 		for (RF2File source : sources) {
 			source.visit(file -> {
 				if (file instanceof RF2ContentFile) {
@@ -57,7 +57,7 @@ public final class RF2CreateContext extends RF2Context{
 						Stream<String[]> rows = parallel ? contentFile.rowsParallel() : contentFile.rows();
 						rows
 							.filter(lineFilter)
-							.forEach(visitor::accept);
+							.forEach(line -> visitor.accept(contentFile, line));
 					} catch (Exception e) {
 						throw new RuntimeException(e);
 					}

@@ -49,6 +49,7 @@ import com.google.common.collect.MapMaker;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.common.hash.Hashing;
+
 import groovy.lang.Binding;
 import groovy.lang.Script;
 
@@ -137,108 +138,113 @@ public final class RF2ContentFile extends RF2File {
 
     @Override
     public void create(RF2CreateContext context) throws IOException {
-        if (isDataFile()) {
-            createDataFile(context);
-        } else {
-            final Ordering<RF2VersionDate> ordering = Ordering.natural().nullsFirst();
-            final AtomicReference<RF2FileName> matchingSourceFile = new AtomicReference<>();
-            final AtomicReference<RF2VersionDate> maxVersionDate = new AtomicReference<>();
-            context.getSources().forEach(source -> {
-                try {
-                    source.visit(file -> {
-                        if (getType().equals(file.getType())) {
-                            final RF2FileName rf2FileName = file.getRF2FileName();
-                            final RF2VersionDate newMaxVersionDate = ordering.max(maxVersionDate.get(), rf2FileName.getElement(RF2VersionDate.class).orElse(null));
-                            if (newMaxVersionDate != maxVersionDate.get()) {
-                                matchingSourceFile.set(rf2FileName);
-                                maxVersionDate.set(newMaxVersionDate);
-                            }
-                        }
-                    });
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-
-            if (matchingSourceFile.get() == null) {
-                Files.createFile(getPath());
-            } else {
-                for (RF2File source : context.getSources()) {
-                    source.visit(file -> {
-                        if (matchingSourceFile.get().equals(file.getRF2FileName())) {
-                            try {
-                                Files.copy(file.getPath(), getPath());
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                    });
-                }
-            }
-        }
-        context.log("Created '%s'", getPath());
+    	context.task("Creating file '%s'", getPath()).run(() -> {
+    		if (isDataFile()) {
+    			createDataFile(context);
+    		} else {
+    			final Ordering<RF2VersionDate> ordering = Ordering.natural().nullsFirst();
+    			final AtomicReference<RF2FileName> matchingSourceFile = new AtomicReference<>();
+    			final AtomicReference<RF2VersionDate> maxVersionDate = new AtomicReference<>();
+    			context.getSources().forEach(source -> {
+    				try {
+    					source.visit(file -> {
+    						if (getType().equals(file.getType())) {
+    							final RF2FileName rf2FileName = file.getRF2FileName();
+    							final RF2VersionDate newMaxVersionDate = ordering.max(maxVersionDate.get(), rf2FileName.getElement(RF2VersionDate.class).orElse(null));
+    							if (newMaxVersionDate != maxVersionDate.get()) {
+    								matchingSourceFile.set(rf2FileName);
+    								maxVersionDate.set(newMaxVersionDate);
+    							}
+    						}
+    					});
+    				} catch (IOException e) {
+    					throw new RuntimeException(e);
+    				}
+    			});
+    			
+    			if (matchingSourceFile.get() == null) {
+    				Files.createFile(getPath());
+    			} else {
+    				for (RF2File source : context.getSources()) {
+    					source.visit(file -> {
+    						if (matchingSourceFile.get().equals(file.getRF2FileName())) {
+    							try {
+    								Files.copy(file.getPath(), getPath());
+    							} catch (IOException e) {
+    								throw new RuntimeException(e);
+    							}
+    						}
+    					});
+    				}
+    			}
+    		}
+    	});
     }
 
     @Override
     public void transform(RF2TransformContext context) throws IOException {
-        final Script compiledScript = context.getCompiledScript();
-        final RF2File contentFile = getRF2FileName().createRF2File(context.getParent(), context.getSpecification());
+    	final boolean isDataFile = isDataFile();
+    	context.task(isDataFile ? "Transforming '%s'" : "Copying '%s'", getPath()).run(() -> {
+    		final Script compiledScript = context.getCompiledScript();
+	        final RF2File contentFile = getRF2FileName().createRF2File(context.getParent(), context.getSpecification());
 
-        if (isDataFile()) {
-            int numberOfModifiedRows = 0;
-            int numberOfFilteredRows = 0;
-            int numberOfTotalRows = 0;
-            try (BufferedWriter writer = Files.newBufferedWriter(contentFile.getPath(), StandardOpenOption.CREATE_NEW)) {
-                writer.write(newLine(getHeader()));
+	        if (isDataFile) {
+	            int numberOfModifiedRows = 0;
+	            int numberOfFilteredRows = 0;
+	            int numberOfTotalRows = 0;
+	            try (BufferedWriter writer = Files.newBufferedWriter(contentFile.getPath(), StandardOpenOption.CREATE_NEW)) {
+	                writer.write(newLine(getHeader()));
 
-                // In case of data file run the script on source
-                for (String[] line : (Iterable<String[]>) rows()::iterator) {
+	                // In case of data file run the script on source
+	                for (String[] line : (Iterable<String[]>) rows()::iterator) {
 
-                    final Map<String, Object> params = Maps.newHashMap();
-                    params.put("_file", this);
+	                    final Map<String, Object> params = Maps.newHashMap();
+	                    params.put("_file", this);
 
-                    final String[] header = getHeader();
-                    for (int i = 0; i < line.length; i++) {
-                        params.put(header[i], line[i]);
-                    }
+	                    final String[] header = getHeader();
+	                    for (int i = 0; i < line.length; i++) {
+	                        params.put(header[i], line[i]);
+	                    }
 
-                    final Binding binding = new Binding(params);
-                    compiledScript.setBinding(binding);
-                    final Object returnValue = compiledScript.run();
+	                    final Binding binding = new Binding(params);
+	                    compiledScript.setBinding(binding);
+	                    final Object returnValue = compiledScript.run();
 
-                    final boolean include = !(returnValue instanceof Boolean) || (boolean) returnValue;
-                    if (include) {
+	                    final boolean include = !(returnValue instanceof Boolean) || (boolean) returnValue;
+	                    if (include) {
 
-                        final String[] newDataLine = new String[header.length];
-                        for (int i = 0; i < header.length; i++) {
-                            newDataLine[i] = String.valueOf(params.get(header[i]));
-                        }
-                        if (!Arrays.equals(newDataLine, line)) {
-                            numberOfModifiedRows++;
-                        }
+	                        final String[] newDataLine = new String[header.length];
+	                        for (int i = 0; i < header.length; i++) {
+	                            newDataLine[i] = String.valueOf(params.get(header[i]));
+	                        }
+	                        if (!Arrays.equals(newDataLine, line)) {
+	                            numberOfModifiedRows++;
+	                        }
 
 
-                        try {
-                            writer.write(newLine(newDataLine));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    } else {
-                        numberOfFilteredRows++;
-                    }
-                    numberOfTotalRows++;
-                }
-            }
-            if (numberOfModifiedRows > 0 && numberOfFilteredRows > 0) {
-                context.log("Transformed '%s' [lines: '%s', modified: '%s', excluded: '%s']", getPath(), numberOfTotalRows, numberOfModifiedRows, numberOfFilteredRows);
-            } else {
-                context.log("Copied '%s' [lines: '%s']", getPath(), numberOfTotalRows);
-            }
+	                        try {
+	                            writer.write(newLine(newDataLine));
+	                        } catch (IOException e) {
+	                            throw new RuntimeException(e);
+	                        }
+	                    } else {
+	                        numberOfFilteredRows++;
+	                    }
+	                    numberOfTotalRows++;
+	                }
+	            }
+	            if (numberOfModifiedRows > 0 && numberOfFilteredRows > 0) {
+	                context.log("Total lines: '%s'", numberOfTotalRows);
+	                context.log("Modified lines: '%s'", numberOfModifiedRows);
+	                context.log("Excluded lines: '%s'", numberOfFilteredRows);
+	            } else {
+	            	context.log("Total lines: '%s'", numberOfTotalRows);
+	            }
 
-        } else {
-            Files.copy(getPath(), contentFile.getPath());
-            context.log("Copied '%s'", getPath());
-        }
+	        } else {
+	            Files.copy(getPath(), contentFile.getPath());
+	        }    		
+    	});
     }
 
     private void createDataFile(RF2CreateContext context) throws IOException {
@@ -250,10 +256,18 @@ public final class RF2ContentFile extends RF2File {
             final ConcurrentMap<String, Map<String, String>> componentsByIdEffectiveTime = new MapMaker()
             		.concurrencyLevel(Math.max(2, Runtime.getRuntime().availableProcessors()))
             		.makeMap();
+            
+            final ConcurrentMap<String, Integer> copiedLinesPerFile = new MapMaker()
+            		.concurrencyLevel(Math.max(2, Runtime.getRuntime().availableProcessors()))
+            		.makeMap();
+            
             Predicate<String[]> lineFilter = getLineFilter();
 
-            context.visitSourceRows(this::fileFilter, lineFilter, /* parallel if */ releaseType.isSnapshot(), line -> {
+            context.visitSourceRows(this::fileFilter, lineFilter, /* parallel if */ releaseType.isSnapshot(), (file, line) -> {
                 try {
+                	// this will initialize the map with 0 counter values, just to register all files even if they are empty, so we will log all applicable files during the process
+                	copiedLinesPerFile.merge(file.getPath().toString(), 0, Integer::sum);
+                	
                     String id = line[0];
                     String effectiveTime = line[1];
                     String rawLine = newLine(line);
@@ -274,6 +288,8 @@ public final class RF2ContentFile extends RF2File {
                         }
                         componentsByIdEffectiveTime.get(id).put(effectiveTime, lineHash);
                         writer.write(rawLine);
+                        // this will increase the number of copied lines by 1
+                        copiedLinesPerFile.merge(file.getPath().toString(), 1, Integer::sum);
                     } else if (releaseType.isSnapshot()) {
                         // in case of Snapshot we check that the current effective time is greater than the currently registered and replace if yes
                         if (componentsByIdEffectiveTime.containsKey(id)) {
@@ -290,6 +306,7 @@ public final class RF2ContentFile extends RF2File {
                         if (currentReleaseDate.equals(effectiveTime)) {
                             componentsByIdEffectiveTime.put(id, Map.of(effectiveTime, lineHash));
                             writer.write(rawLine);
+                            copiedLinesPerFile.merge(file.getPath().toString(), 1, Integer::sum);
                         }
                     }
                 } catch (IOException e) {
@@ -299,7 +316,7 @@ public final class RF2ContentFile extends RF2File {
 
             // Snapshot needs a second run, since we just extracted the applicable rows from all source files, and we need to actually write them into the output
             if (releaseType.isSnapshot()) {
-                context.visitSourceRows(this::fileFilter, lineFilter, false, line -> {
+                context.visitSourceRows(this::fileFilter, lineFilter, false, (file, line) -> {
                     try {
                         String id = line[0];
                         String effectiveTime = line[1];
@@ -307,12 +324,18 @@ public final class RF2ContentFile extends RF2File {
                             // remove the item from the id effective time map to indicate that we wrote it out
                             componentsByIdEffectiveTime.remove(id);
                             writer.write(newLine(line));
+                            copiedLinesPerFile.merge(file.getPath().toString(), 1, Integer::sum);
                         }
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
                 });
             }
+            
+            copiedLinesPerFile.keySet().stream().sorted().forEach(file -> {
+            	context.log("Copied '%s' lines from '%s'", copiedLinesPerFile.get(file), file);
+            });
+            
         }
     }
 

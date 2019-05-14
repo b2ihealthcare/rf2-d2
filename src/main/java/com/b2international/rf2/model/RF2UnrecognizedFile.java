@@ -45,9 +45,12 @@ public final class RF2UnrecognizedFile extends RF2File {
 
     @Override
     public void transform(RF2TransformContext context) throws IOException {
-	    // In case of unrecognized files transform is essentially a copy
-        Files.copy(getPath(), getRF2FileName().createRF2File(context.getParent(), context.getSpecification()).getPath());
-        context.log("Copied unrecognized file '%s'", getPath());
+    	context
+    		.task("Copying unrecognized file '%s'", getPath())
+    		.run(() -> {
+    			// In case of unrecognized files transform is essentially a copy
+    			Files.copy(getPath(), getRF2FileName().createRF2File(context.getParent(), context.getSpecification()).getPath());
+    		});
     }
 
 	@Override

@@ -15,6 +15,10 @@
  */
 package com.b2international.rf2.console;
 
+import java.io.IOException;
+
+import com.google.common.base.Stopwatch;
+
 /**
  * @since 0.3.2
  */
@@ -29,9 +33,42 @@ public interface Console {
 	Console withIndentation(int indentation);
 
 	Console withPrefix(String linePrefix);
-
+	
+	default ConsoleTask task(String taskDescription, Object...args) {
+		return new ConsoleTask(this, taskDescription, args); 
+	}
+	
 	static Console system() {
 		return new SystemConsole();
 	}
+	
+	final class ConsoleTask {
+		
+		private final Console console;
+		private final String taskDescription;
+
+		public ConsoleTask(Console console, String taskDescription, Object...args) {
+			this.console = console;
+			this.taskDescription = String.format(taskDescription, args);
+		}
+		
+		public void run(Console.Task task) throws IOException {
+			final Stopwatch w = Stopwatch.createStarted();
+			try {
+				console.log("Started %s", taskDescription);
+				task.run();
+			} finally {
+				console.log("Finished %s [%s]", taskDescription, w);
+			}
+		}
+		
+	}
+	
+	@FunctionalInterface
+	interface Task {
+		
+		void run() throws IOException;
+		
+	} 
 	
 }

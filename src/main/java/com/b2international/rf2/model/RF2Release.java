@@ -83,79 +83,78 @@ public final class RF2Release extends RF2File {
 		if (Files.exists(getPath())) {
 			throw new IllegalStateException("Cannot overwrite and create RF2 Release at path: " + getPath());
 		}
+		
+		context.task("Creating release '%s'", getPath()).run(() -> {
+			final RF2Specification specification = context.getSpecification();
 
-		final RF2Specification specification = context.getSpecification();
+			try (FileSystem zipfs = openZipfs(true, getPath())) {
+				// root folder with same name
+				RF2Directory rootDir = new RF2DirectoryName(getRF2FileName().getFileName()).createRF2File(zipfs.getPath("/"), specification);
+				rootDir.create(context);
 
-		try (FileSystem zipfs = openZipfs(true, getPath())) {
-			// root folder with same name
-			RF2Directory rootDir = new RF2DirectoryName(getRF2FileName().getFileName()).createRF2File(zipfs.getPath("/"), specification);
-			rootDir.create(context);
+				RF2ReleaseSpecification release = specification.getRelease();
+				for (String contentSubType : release.getContentSubTypes()) {
+					RF2Directory contentSubTypeDir = new RF2DirectoryName(contentSubType).createRF2File(rootDir.getPath(), specification);
+					contentSubTypeDir.create(context);
 
-			RF2ReleaseSpecification release = specification.getRelease();
-			for (String contentSubType : release.getContentSubTypes()) {
-				RF2Directory contentSubTypeDir = new RF2DirectoryName(contentSubType).createRF2File(rootDir.getPath(), specification);
-				contentSubTypeDir.create(context);
+					for (Entry<String, List<RF2ContentFileSpecification>> entry : release.getContent().getFiles().entrySet()) {
+						RF2Directory rf2Directory = new RF2DirectoryName(entry.getKey()).createRF2File(contentSubTypeDir.getPath(), specification);
+						entry.getValue()
+							.stream()
+							.filter(RF2ContentFileSpecification::isDataFile)
+							.forEach(file -> {
+								try {
+									rf2Directory.create(context);
+									file.prepare(rf2Directory.getPath(), release, contentSubType)
+										.create(context);
+								} catch (IOException e) {
+									throw new RuntimeException(e);
+								}
+							});
+					}
+				}
 
+				// create all non-data files outside of the contentSubType directories
 				for (Entry<String, List<RF2ContentFileSpecification>> entry : release.getContent().getFiles().entrySet()) {
-					RF2Directory rf2Directory = new RF2DirectoryName(entry.getKey()).createRF2File(contentSubTypeDir.getPath(), specification);
+					RF2Directory rf2Directory = new RF2DirectoryName(entry.getKey()).createRF2File(rootDir.getPath(), specification);
 					entry.getValue()
 						.stream()
-						.filter(RF2ContentFileSpecification::isDataFile)
+						.filter(Predicate.not(RF2ContentFileSpecification::isDataFile))
 						.forEach(file -> {
 							try {
 								rf2Directory.create(context);
-								file.prepare(rf2Directory.getPath(), release, contentSubType)
+								file.prepare(rf2Directory.getPath(), release, null /*use specification based contentSubType*/)
 									.create(context);
-							} catch (IOException e) {
+							} catch (Exception e) {
 								throw new RuntimeException(e);
 							}
 						});
 				}
-			}
-
-			// create all non-data files outside of the contentSubType directories
-			for (Entry<String, List<RF2ContentFileSpecification>> entry : release.getContent().getFiles().entrySet()) {
-				RF2Directory rf2Directory = new RF2DirectoryName(entry.getKey()).createRF2File(rootDir.getPath(), specification);
-				entry.getValue()
-					.stream()
-					.filter(Predicate.not(RF2ContentFileSpecification::isDataFile))
-					.forEach(file -> {
-						try {
-							rf2Directory.create(context);
-							file.prepare(rf2Directory.getPath(), release, null /*use specification based contentSubType*/)
-								.create(context);
-						} catch (Exception e) {
-							throw new RuntimeException(e);
-						}
-					});
-			}
-			
-		}
-		context.log("Created RF2 release at %s", getPath());
+			}			
+		}); 
 	}
 
 	@Override
 	public void transform(RF2TransformContext context) throws IOException {
-		final RF2File release = getRF2FileName().createRF2File(context.getParent(), context.getSpecification());
-
-		try (FileSystem newReleaseZipfs = openZipfs(true, release.getPath())) {
-			try (FileSystem sourceReleaseZipfs = openZipfs(false, getPath())) {
-
-				for (Path root : sourceReleaseZipfs.getRootDirectories()) {
-					Files.walk(root, 1).forEach(path -> {
-						if (!RF2Directory.ROOT_PATH.equals(path.toString())) {
-							try {
-								specification.detect(path).transform(context.newSubContext(newReleaseZipfs.getPath(root.toString())));
-							} catch (IOException e) {
-								throw new RuntimeException("Couldn't transform path: " + path, e);
+		context.task("Transforming release '%s'", getPath()).run(() -> {
+			final RF2File release = getRF2FileName().createRF2File(context.getParent(), context.getSpecification());
+			try (FileSystem newReleaseZipfs = openZipfs(true, release.getPath())) {
+				try (FileSystem sourceReleaseZipfs = openZipfs(false, getPath())) {
+					
+					for (Path root : sourceReleaseZipfs.getRootDirectories()) {
+						Files.walk(root, 1).forEach(path -> {
+							if (!RF2Directory.ROOT_PATH.equals(path.toString())) {
+								try {
+									specification.detect(path).transform(context.newSubContext(newReleaseZipfs.getPath(root.toString())));
+								} catch (IOException e) {
+									throw new RuntimeException("Couldn't transform path: " + path, e);
+								}
 							}
-						}
-					});
+						});
+					}
 				}
 			}
-		}
-
-        context.log("Transformed release '%s'", release.getPath());
+		});
 	}
 
 }
