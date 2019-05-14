@@ -43,6 +43,8 @@ public abstract class RF2Command implements Runnable {
 	private static final String DEV_VERSION = "@version@";
 	protected static final Path WORK_DIR = Paths.get(System.getProperty("user.dir"));
 	
+	private static RF2Specification SPECIFICATION;
+	
 	protected final Console console = new Console();
 
 	@Override
@@ -73,7 +75,10 @@ public abstract class RF2Command implements Runnable {
 	 * @throws IOException
 	 */
 	public static final RF2Specification getRF2Specification() throws IOException {
-		return RF2Specification.get(WORK_DIR);
+		if (SPECIFICATION == null) {
+			SPECIFICATION = RF2Specification.get(WORK_DIR);
+		}
+		return SPECIFICATION;
 	}
 	
 	/**

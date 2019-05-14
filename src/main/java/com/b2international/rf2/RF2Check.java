@@ -16,15 +16,12 @@
 package com.b2international.rf2;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
 import com.b2international.rf2.check.RF2IssueAcceptor;
 import com.b2international.rf2.model.RF2ContentFile;
 import com.b2international.rf2.model.RF2File;
-import com.b2international.rf2.spec.RF2Specification;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -40,23 +37,22 @@ public final class RF2Check extends RF2Command {
 
 	private static final String PATH_DESCRIPTION = "RF2 source files to check.";
 	
-	@Parameters(arity = "1..*", description = PATH_DESCRIPTION, paramLabel = "PATH")
-	List<String> paths;
+	@Parameters(arity = "1..*", description = PATH_DESCRIPTION, paramLabel = "PATH", converter = RF2FileTypeConverter.class)
+	List<RF2File> sources;
 	
 	@Override
 	public void doRun() throws Exception {
-		RF2Specification specification = getRF2Specification();
-		for (String path : paths) {
-			check(specification, Paths.get(path));
+		for (RF2File source : sources) {
+			check(source);
 		}
 	}
 	
-	private void check(final RF2Specification specification, final Path path) throws IOException {
-		specification.detect(path).visit(file -> {
+	private void check(final RF2File file) throws IOException {
+		file.visit(content -> {
 			try {
-				checkRF2File(file, file.getPath().equals(path));
+				checkRF2File(content, content.getPath().equals(file.getPath()));
 			} catch (IOException e) {
-				console.error("Couldn't check RF2File at %s", file.getRF2FileName());
+				console.error("Couldn't check RF2File at %s", content.getRF2FileName());
 			}
 		});
 	}

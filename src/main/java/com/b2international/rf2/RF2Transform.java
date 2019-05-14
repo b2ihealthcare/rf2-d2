@@ -19,8 +19,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import com.b2international.rf2.model.RF2Directory;
 import com.b2international.rf2.model.RF2File;
-import com.b2international.rf2.spec.RF2Specification;
+
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -40,8 +41,8 @@ public class RF2Transform extends RF2Command {
 	private static final String SCRIPT_DESCRIPTION = "Script Expression or PATH to a .groovy script file to apply to each RF2 line in the specified source file.";
 	private static final String OUTDIR_DESCRIPTION = "Output directory where the transformed RF2 output file will be created.";
 	
-	@Parameters(arity = "1", paramLabel = "PATH", description = PATH_DESCRIPTION, index = "0")
-	String path;
+	@Parameters(arity = "1", paramLabel = "PATH", description = PATH_DESCRIPTION, index = "0", converter = RF2FileTypeConverter.class)
+	RF2File source;
 	
 	@Parameters(arity = "1", paramLabel = "SCRIPT", description = SCRIPT_DESCRIPTION, index = "1")
 	String script;
@@ -63,8 +64,8 @@ public class RF2Transform extends RF2Command {
 			rawScript = script;
 		}
 
-		if (!Files.exists(Paths.get(path))) {
-			console.log("The specified source at '%s' does not exist", path);
+		if (source instanceof RF2Directory) {
+			console.log("Only .txt and .zip files are accepted as RF2 source files. '%s' is a directory.", source.getPath());
 			return;
 		}
 
@@ -73,9 +74,7 @@ public class RF2Transform extends RF2Command {
 			Files.createDirectories(outputDirectory);
 		}
 
-		final RF2Specification defaultSpecification = getRF2Specification();
-		final RF2File sourceFile = defaultSpecification.detect(Paths.get(path));
-		sourceFile.transform(new RF2TransformContext(rawScript, defaultSpecification, outputDirectory, console));
+		source.transform(new RF2TransformContext(rawScript, RF2Command.getRF2Specification(), outputDirectory, console));
 	}
 
 }

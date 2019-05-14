@@ -19,15 +19,14 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.b2international.rf2.model.RF2Directory;
 import com.b2international.rf2.model.RF2File;
 import com.b2international.rf2.spec.RF2ReleaseSpecification;
 import com.b2international.rf2.spec.RF2Specification;
 
-import com.google.common.collect.Lists;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -51,8 +50,8 @@ public final class RF2Create extends RF2Command {
 	private static final String NAMESPACE_DESCRIPTION = "Configure the namespace value in the [CountryNamespace] part of RF2 Release files. Default value is empty.";
 	private static final String CONTENT_SUB_TYPES_DESCRIPTION = "Configure the content sub types to be created in the RF2 Release. Default is ['Delta', 'Snapshot', 'Full'].";
 	
-	@Parameters(arity = "0..*", paramLabel = "PATH", description = PATH_DESCRIPTION)
-	List<String> paths;
+	@Parameters(arity = "0..*", paramLabel = "PATH", description = PATH_DESCRIPTION, converter = RF2FileTypeConverter.class)
+	List<RF2File> sources;
 	
 	@Option(required = false, names = {"-o", "--outdir"}, description = OUTDIR_DESCRIPTION)
 	String outDir = "target";
@@ -86,6 +85,18 @@ public final class RF2Create extends RF2Command {
 		} else {
 			outputDirectory = WORK_DIR.resolve(outDir);
 		}
+		
+		List<RF2File> directories = sources.stream()
+			.filter(RF2Directory.class::isInstance)
+			.collect(Collectors.toList());
+		
+		if (!directories.isEmpty()) {
+			directories.forEach(source -> {
+				console.log("Only .txt and .zip files are accepted as RF2 source files. '%s' is a directory.", source.getPath());
+			});
+			return;
+		}
+		
 		Files.createDirectories(outputDirectory);
 
 		// load RF2 specification
@@ -93,40 +104,6 @@ public final class RF2Create extends RF2Command {
 				// merge overridable options from command line
 				.merge(new RF2Specification(null, null, new RF2ReleaseSpecification(null, product, null, releaseStatus, country, namespace, releaseDate, releaseTime, contentSubTypes, null)));
 		
-		final List<RF2File> sources;
-		final List<String> incorrectPaths = Lists.newArrayList();
-		if (paths != null) {
-			sources = Lists.newArrayList();
-			for (String sourcePath : paths) {
-				if (Paths.get(sourcePath) != null) {
-					sources.add(specification.detect(Paths.get(sourcePath)));
-				} else if (WORK_DIR.resolve(sourcePath) != null) {
-					sources.add(specification.detect(WORK_DIR.resolve(sourcePath)));
-				} else {
-					incorrectPaths.add(sourcePath);
-				}
-			}
-		} else {
-			sources = Collections.emptyList();
-		}
-
-        if (!incorrectPaths.isEmpty()) {
-            incorrectPaths.stream().forEach(incorrectPath -> console.error("File or path could not be resolved: '%s'", incorrectPath));
-            return;
-        }
-
-		boolean validSources = true;
-		for (RF2File source : sources) {
-			if (source instanceof RF2Directory) {
-				console.log("Only .txt and .zip files are accepted as RF2 source files. '%s' is a directory.", source.getPath());
-				validSources = false;
-			}
-		}
-
-		if (!validSources) {
-			return;
-		}
-
 		specification
 			.prepare(outputDirectory)
 			.create(new RF2CreateContext(specification, sources, console));
