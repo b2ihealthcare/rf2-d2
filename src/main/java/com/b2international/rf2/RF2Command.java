@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
+import com.b2international.rf2.console.Console;
 import com.b2international.rf2.spec.RF2Specification;
 import com.google.common.base.Strings;
 
@@ -45,12 +46,12 @@ public abstract class RF2Command implements Runnable {
 	
 	private static RF2Specification SPECIFICATION;
 	
-	protected final Console console = new Console();
+	protected final Console console = Console.system();
 
 	@Override
 	public final void run() {
 		try {
-			doRun();
+			doRun(getRF2Specification());
 		} catch (Exception e) {
 			if (Strings.isNullOrEmpty(e.getMessage())) {
 				console.error("Failed to run command. Unexpected error:");
@@ -66,15 +67,16 @@ public abstract class RF2Command implements Runnable {
 
 	/**
 	 * Actual command implementation.
+	 * @param specification
 	 * @throws Exception
 	 */
-	protected abstract void doRun() throws Exception;
+	protected abstract void doRun(RF2Specification specification) throws Exception;
 	
 	/**
 	 * @return the current {@link RF2Specification} instance read from the working directory and merged with the default spec file.
 	 * @throws IOException
 	 */
-	public static final RF2Specification getRF2Specification() throws IOException {
+	static final RF2Specification getRF2Specification() throws IOException {
 		if (SPECIFICATION == null) {
 			SPECIFICATION = RF2Specification.get(WORK_DIR);
 		}
@@ -97,7 +99,7 @@ public abstract class RF2Command implements Runnable {
 	/**
 	 * @return the CLI version from the {@link #getProperties() properties}.
 	 */
-	public static String getVersion() {
+	public static final String getVersion() {
 		return getProperties().getProperty(VERSION_PROPERTY);
 	}
 	

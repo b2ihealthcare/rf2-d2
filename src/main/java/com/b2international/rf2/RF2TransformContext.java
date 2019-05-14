@@ -17,6 +17,7 @@ package com.b2international.rf2;
 
 import java.nio.file.Path;
 
+import com.b2international.rf2.console.Console;
 import com.b2international.rf2.spec.RF2Specification;
 
 import groovy.lang.GroovyShell;
@@ -45,7 +46,7 @@ public final class RF2TransformContext extends RF2Context {
 	}
 
 	public RF2TransformContext newSubContext(Path parent) {
-		return new RF2TransformContext(compiledScript, specification, parent, console);
+		return new RF2TransformContext(compiledScript, specification, parent, getConsole());
 	}
 
 	public Script getCompiledScript() {

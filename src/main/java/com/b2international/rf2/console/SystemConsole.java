@@ -13,14 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.rf2;
+package com.b2international.rf2.console;
 
 import java.io.PrintStream;
+
+import com.b2international.rf2.Constants;
 
 /**
  * @since 0.1
  */
-public final class Console {
+final class SystemConsole implements Console {
 
 	private static final int DEFAULT_INDENTATION = 0;
 	private static final int TAB_SIZE = 2;
@@ -31,36 +33,41 @@ public final class Console {
 	private final int indentation;
 	private final String linePrefix;
 
-	public Console() {
+	public SystemConsole() {
 		this(DEFAULT_INDENTATION, "");
 	}
 	
-	public Console(int indentation, String linePrefix) {
+	public SystemConsole(int indentation, String linePrefix) {
 		this.indentation = indentation;
 		this.linePrefix = linePrefix;
 	}
 	
+	@Override
 	public final void warn(String message, Object...args) {
 		String tab = Constants.SPACE.repeat(indentation * TAB_SIZE);
 		ERR.println(String.format("%s%sWARN: %s", tab, linePrefix, String.format(message, args)));
 	}
 	
+	@Override
 	public final void error(String message, Object...args) {
 		String tab = Constants.SPACE.repeat(indentation * TAB_SIZE);
 		ERR.println(String.format("%s%sERROR: %s", tab, linePrefix, String.format(message, args)));
 	}
 	
+	@Override
 	public final void log(String message, Object...args) {
 		String tab = Constants.SPACE.repeat(indentation * TAB_SIZE);
 		OUT.println(String.format("%s%s%s", tab, linePrefix, String.format(message, args)));
 	}
 	
+	@Override
 	public Console withIndentation(int indentation) {
-		return new Console(indentation, linePrefix);
+		return new SystemConsole(indentation, linePrefix);
 	}
 	
+	@Override
 	public Console withPrefix(String linePrefix) {
-		return new Console(indentation, linePrefix);
+		return new SystemConsole(indentation, linePrefix);
 	}
 	
 }

@@ -79,7 +79,7 @@ public final class RF2Create extends RF2Command {
 	String[] contentSubTypes;
 	
 	@Override
-	public void doRun() throws Exception {
+	public void doRun(RF2Specification specification) throws Exception {
 		final Path outputDirectory;
 		if (new File(outDir).isAbsolute()) {
 			outputDirectory = Paths.get(outDir);
@@ -105,13 +105,13 @@ public final class RF2Create extends RF2Command {
 		Files.createDirectories(outputDirectory);
 
 		// load RF2 specification
-		RF2Specification specification = getRF2Specification()
+		RF2Specification mergedSpec = specification
 				// merge overridable options from command line
 				.merge(new RF2Specification(null, null, new RF2ReleaseSpecification(null, product, null, releaseStatus, country, namespace, releaseDate, releaseTime, contentSubTypes, null)));
 		
-		specification
+		mergedSpec
 			.prepare(outputDirectory)
-			.create(new RF2CreateContext(specification, sources, console));
+			.create(new RF2CreateContext(mergedSpec, sources, console));
 	}
 
 }

@@ -15,6 +15,8 @@
  */
 package com.b2international.rf2;
 
+import com.b2international.rf2.spec.RF2Specification;
+
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
@@ -44,7 +46,7 @@ public final class RF2 extends RF2Command {
 	boolean usageHelpRequested;
 
 	@Override
-	public void doRun() throws Exception {
+	public void doRun(RF2Specification specification) throws Exception {
 		CommandLine.usage(this, System.out, CommandLine.Help.Ansi.AUTO);
 	}
 	

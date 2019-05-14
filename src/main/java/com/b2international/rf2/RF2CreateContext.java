@@ -22,6 +22,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import com.b2international.rf2.console.Console;
 import com.b2international.rf2.model.RF2ContentFile;
 import com.b2international.rf2.model.RF2File;
 import com.b2international.rf2.spec.RF2Specification;

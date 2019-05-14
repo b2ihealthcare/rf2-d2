@@ -21,6 +21,7 @@ import java.nio.file.Paths;
 
 import com.b2international.rf2.model.RF2Directory;
 import com.b2international.rf2.model.RF2File;
+import com.b2international.rf2.spec.RF2Specification;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -51,7 +52,7 @@ public class RF2Transform extends RF2Command {
 	String outDir = "target";
 	
 	@Override
-	protected void doRun() throws Exception {
+	protected void doRun(RF2Specification specification) throws Exception {
 		final String rawScript;
 		if (script.endsWith(GROOVY_EXT)) {
 			Path scriptPath = Paths.get(script);
@@ -74,7 +75,7 @@ public class RF2Transform extends RF2Command {
 			Files.createDirectories(outputDirectory);
 		}
 
-		source.transform(new RF2TransformContext(rawScript, RF2Command.getRF2Specification(), outputDirectory, console));
+		source.transform(new RF2TransformContext(rawScript, specification, outputDirectory, console));
 	}
 
 }

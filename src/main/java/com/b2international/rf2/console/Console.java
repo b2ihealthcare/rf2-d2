@@ -1,6 +1,6 @@
 /*
  * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,26 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.rf2;
-
-import com.b2international.rf2.console.Console;
-import com.b2international.rf2.console.DelegatingConsole;
-import com.b2international.rf2.spec.RF2Specification;
+package com.b2international.rf2.console;
 
 /**
- * @since 0.3
+ * @since 0.3.2
  */
-public abstract class RF2Context extends DelegatingConsole {
+public interface Console {
 
-    protected final RF2Specification specification;
+	void warn(String message, Object...args);
 
-    public RF2Context(RF2Specification specification, Console console) {
-    	super(console);
-        this.specification = specification;
-    }
+	void error(String message, Object...args);
 
-    public RF2Specification getSpecification() {
-        return specification;
-    }
+	void log(String message, Object...args);
 
+	Console withIndentation(int indentation);
+
+	Console withPrefix(String linePrefix);
+
+	static Console system() {
+		return new SystemConsole();
+	}
+	
 }

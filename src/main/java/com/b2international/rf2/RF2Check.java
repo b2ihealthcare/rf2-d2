@@ -20,8 +20,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.b2international.rf2.check.RF2IssueAcceptor;
+import com.b2international.rf2.console.Console;
 import com.b2international.rf2.model.RF2ContentFile;
 import com.b2international.rf2.model.RF2File;
+import com.b2international.rf2.spec.RF2Specification;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -41,7 +43,7 @@ public final class RF2Check extends RF2Command {
 	List<RF2File> sources;
 	
 	@Override
-	public void doRun() throws Exception {
+	public void doRun(RF2Specification specification) throws Exception {
 		for (RF2File source : sources) {
 			check(source);
 		}
