@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -44,6 +45,7 @@ import com.b2international.rf2.spec.RF2Filter;
 import com.b2international.rf2.validation.RF2ColumnValidator;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.MapMaker;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.common.hash.Hashing;
@@ -245,7 +247,9 @@ public final class RF2ContentFile extends RF2File {
         try (BufferedWriter writer = Files.newBufferedWriter(getPath(), StandardOpenOption.CREATE_NEW)) {
             writer.write(newLine(getHeader()));
 
-            final Map<String, Map<String, String>> componentsByIdEffectiveTime = new HashMap<>();
+            final ConcurrentMap<String, Map<String, String>> componentsByIdEffectiveTime = new MapMaker()
+            		.concurrencyLevel(Math.max(2, Runtime.getRuntime().availableProcessors()))
+            		.makeMap();
             Predicate<String[]> lineFilter = getLineFilter();
 
             context.visitSourceRows(this::fileFilter, lineFilter, /* parallel if */ releaseType.isSnapshot(), line -> {
