@@ -26,9 +26,9 @@ Feature include:
 
 # Download
 
-* [WINDOWS](https://github.com/b2ihealthcare/rf2-d2/releases/download/v0.3.1/rf2-d2-0.3.2-win-x64.zip)
-* [LINUX](https://github.com/b2ihealthcare/rf2-d2/releases/download/v0.3.1/rf2-d2-0.3.2-linux-x64.zip)
-* [MACOS](https://github.com/b2ihealthcare/rf2-d2/releases/download/v0.3.1/rf2-d2-0.3.2-osx-x64.zip)
+* [WINDOWS](https://github.com/b2ihealthcare/rf2-d2/releases/download/v0.3.2/rf2-d2-0.3.2-win-x64.zip)
+* [LINUX](https://github.com/b2ihealthcare/rf2-d2/releases/download/v0.3.2/rf2-d2-0.3.2-linux-x64.zip)
+* [MACOS](https://github.com/b2ihealthcare/rf2-d2/releases/download/v0.3.2/rf2-d2-0.3.2-osx-x64.zip)
 
 # First steps
 
