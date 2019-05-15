@@ -29,7 +29,8 @@ import com.google.common.base.Strings;
  */
 public final class RF2ReleaseSpecification {
 
-	private final String initial;
+
+    private final String initial;
     private final String product;
     private final String format;
     private final String status;
@@ -39,6 +40,7 @@ public final class RF2ReleaseSpecification {
     private final String time;
     private final String[] contentSubTypes;
     private final RF2ReleaseContent content;
+    private final LocalDateTime now = LocalDateTime.now(ZoneId.of("UTC"));
 
     @JsonCreator
     public RF2ReleaseSpecification(
@@ -58,9 +60,8 @@ public final class RF2ReleaseSpecification {
 		this.status = status;
 		this.country = country;
 		this.namespace = namespace;
-		final LocalDateTime now = LocalDateTime.now(ZoneId.of("UTC"));
-		this.date = Strings.isNullOrEmpty(date) ? now.format(DateTimeFormatter.BASIC_ISO_DATE) : date;
-		this.time = Strings.isNullOrEmpty(time) ? now.format(DateTimeFormatter.ofPattern("HHmmss")) : time;
+        this.date = date;
+        this.time = time;
 		this.contentSubTypes = contentSubTypes;
 		this.content = content;
 	}
@@ -90,11 +91,11 @@ public final class RF2ReleaseSpecification {
     }
     
     public String getDate() {
-        return date;
+        return Strings.isNullOrEmpty(date) ? now.format(DateTimeFormatter.BASIC_ISO_DATE) : date;
     }
 
     public String getTime() {
-        return time;
+        return Strings.isNullOrEmpty(time) ? now.format(DateTimeFormatter.ofPattern("HHmmss")) : time;
     }
 
     @JsonProperty("contentSubType")
