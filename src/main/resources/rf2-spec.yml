@@ -6,7 +6,7 @@ release:
   format: "RF2"
   status: "PRODUCTION"
   date: ''
-  time: '120000'
+  time: ''
   country: "INT"
   namespace: ''
   contentSubType:
@@ -31,7 +31,7 @@ release:
         - contentType: StatedRelationship
           header: [id, effectiveTime, active, moduleId, sourceId, destinationId, relationshipGroup, typeId, characteristicTypeId, modifierId]
           include:
-            - characteristicTypeId: 900000000000011006
+            - characteristicTypeId: 900000000000010007
         - contentType: Identifier
           header: [identifierSchemeId, alternateIdentifier, effectiveTime, active, moduleId, referencedComponentId]
         - fileType: sct2
