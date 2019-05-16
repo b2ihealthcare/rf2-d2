@@ -233,13 +233,15 @@ public final class RF2ContentFile extends RF2File {
 	                    numberOfTotalRows++;
 	                }
 	            }
-	            if (numberOfModifiedRows > 0 && numberOfFilteredRows > 0) {
-	                context.log("Total lines: '%s'", numberOfTotalRows);
-	                context.log("Modified lines: '%s'", numberOfModifiedRows);
-	                context.log("Excluded lines: '%s'", numberOfFilteredRows);
-	            } else {
-	            	context.log("Total lines: '%s'", numberOfTotalRows);
-	            }
+	            context.log("Total lines: '%s'", numberOfTotalRows);
+
+	            if (numberOfFilteredRows !=0) {
+                    context.log("Excluded lines: '%s'", numberOfFilteredRows);
+                }
+
+	            if (numberOfModifiedRows !=0) {
+                    context.log("Modified lines: '%s'", numberOfModifiedRows);
+                }
 
 	        } else {
 	            Files.copy(getPath(), contentFile.getPath());

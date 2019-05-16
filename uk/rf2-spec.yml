@@ -38,6 +38,7 @@ release:
       files:
         - fileType: res
           contentType: UKRF1SubsetToRF2ReferenceSetMapping
+          header: [OriginalSubsetId, SubsetName, ConceptId, FSN, Location]
           contentSubType: ''
       DeveloperToolkit:
         UKDrugBonusFiles:
