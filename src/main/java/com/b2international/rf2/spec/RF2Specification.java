@@ -113,7 +113,7 @@ public final class RF2Specification {
 		}
 		
 		String fileName = path.getFileName().toString();
-		RF2FileName rf2Release;
+		RF2FileName rf2Release = null;
 		// directories are always recognized and accepted
 		if (Files.isDirectory(path)) {
 			rf2Release = new RF2DirectoryName(fileName);
@@ -123,8 +123,10 @@ public final class RF2Specification {
 				rf2Release = new RF2ContentFileName(fileName);
 			} else {
 				// if it is not a directory and we are in the OS file system then try to parse the fileName as an RF2Release
-				rf2Release = new RF2ReleaseName(fileName);
-				if (rf2Release.isUnrecognized()) {
+				if (fileName.endsWith(RF2FileName.FILE_EXT_SEPARATOR + RF2File.ZIP)) {
+					rf2Release = new RF2ReleaseName(fileName);
+				}
+				if (rf2Release == null || rf2Release.isUnrecognized()) {
 					// if it is not a release package fall back and treat it as an RF2 File (in general any file can be part of a release)
 					rf2Release = new RF2ContentFileName(fileName);
 				}

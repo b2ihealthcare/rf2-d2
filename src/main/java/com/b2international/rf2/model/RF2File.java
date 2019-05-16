@@ -31,6 +31,7 @@ import com.b2international.rf2.naming.RF2FileName;
 public abstract class RF2File {
 
 	public static final String TXT = "txt";
+	public static final String ZIP = "zip";
 	public static final String TAB = "\t";
 	public static final String CRLF = "\r\n";
 	
