@@ -92,7 +92,7 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 # Versioning
 
-Our [releases](https://github.com/b2ihealthcare/rf2-d2/releases) use [semantic versioning](http://semver.org). You can find a chronologically ordered list of notable changes and previous release on the [releases](https://github.com/b2ihealthcare/rf2-d2/releases) page.
+Our [releases](https://github.com/b2ihealthcare/rf2-d2/releases) use [semantic versioning](http://semver.org). You can find a chronologically ordered list of notable changes and previous releases on the [releases](https://github.com/b2ihealthcare/rf2-d2/releases) page.
 
 # License
 
