@@ -88,11 +88,11 @@ The distribution package can be found in the `build/rf2-d2-<version>.zip` folder
 
 # Contributing
 
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 # Versioning
 
-Our [releases](https://github.com/b2ihealthcare/rf2-d2/releases) use [semantic versioning](http://semver.org). You can find a chronologically ordered list of notable changes in [CHANGELOG.md](CHANGELOG.md).
+Our [releases](https://github.com/b2ihealthcare/rf2-d2/releases) use [semantic versioning](http://semver.org). You can find a chronologically ordered list of notable changes and previous release on the [releases](https://github.com/b2ihealthcare/rf2-d2/releases) page.
 
 # License
 
