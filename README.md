@@ -8,18 +8,17 @@ RF2-D2 is an open source SNOMED CT release tool, which allows you to check, crea
 [![GitHub](https://img.shields.io/github/license/b2ihealthcare/rf2-d2.svg?style=flat-square)](https://github.com/b2ihealthcare/rf2-d2/blob/master/LICENSE)
 
 Feature include:
-* Validation and verification (see `check` command)
+* Validation and verification ([rf2 check](docs/check.md))
 	* Verifies existing RF2 Release file names and structure
     * Validates SNOMED CT content using a number of validation rules (WIP)
-* Packaging (see [create](docs/create.md) command)
+* Packaging ([rf2 create](docs/create.md))
     * Packages a single RF2 Release from one or more RF2 files and other sources 
     * Configure and customize the name of the RF2 Release and RF2 files
     * Configure release structure and add additional content like custom files, documentation and resources
-* Filtering (see `transform` command)
-    * Exclude certain parts from existing RF2 files (for example exclude all content from a module, etc.)
-* Replacements (see `transform` command)
-    * Replaces values in RF2 files using conditions, simple statements and even external scripts
-* Diffing
+* Transformation ([rf2 transform](docs/transform.md))
+    * Filtering out certain parts from existing RF2 files (for example exclude all content from a module, etc.)
+    * Replaces values in RF2 files using conditions, simple statements and even external scripts 
+* Diffing ([rf2 diff](docs/diff.md))
     * Diff RF2 text files and releases (WIP)
 
 # Get RF2-D2
