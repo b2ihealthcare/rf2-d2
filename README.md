@@ -1,5 +1,3 @@
-# Introduction
-
 RF2-D2 is an open source SNOMED CT release tool, which allows you to check, create and publish SNOMED CT Extension and Edition releases with care.
 
 [![build status](https://img.shields.io/travis/b2ihealthcare/rf2-d2/master.svg?style=flat-square)](https://travis-ci.org/b2ihealthcare/rf2-d2)

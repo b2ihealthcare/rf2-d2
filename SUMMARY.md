@@ -11,5 +11,7 @@
 
 ## rf2-spec.yml
 
-* [Overview](docs/spec/index.md)
-* [Reference](docs/spec/reference.md)
+* [version](docs/spec/version.md)
+* [rf2Version](docs/spec/rf2Version.md)
+* [release](docs/spec/release.md)
+* [content](docs/spec/content.md)
