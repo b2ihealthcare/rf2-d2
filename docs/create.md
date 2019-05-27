@@ -1,3 +1,3 @@
-# Check command
+# Create command
 
 Coming soon!
