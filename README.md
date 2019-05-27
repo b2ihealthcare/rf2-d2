@@ -46,35 +46,10 @@ Run the following command to get help about a specific command:
 
     ./rf2 help check
 
-You can add the `rf2-d2-<version>/bin` folder to your PATH, so it will be available globally and can be invoked with command `rf2`. 
+You can add the `rf2-d2-<version>/bin` folder to your PATH, so it will be available globally and can be invoked with command `rf2`.
+Head over to the [docs](https://docs.b2i.sg/rf2-d2) to learn more about what is possible with RF2-D2.
 If you have questions or feedback, feel free to create an issue [here](https://github.com/b2ihealthcare/rf2-d2/issues/new) or [contact us](mailto:info@b2i.sg).
 
-# Examples
-
-Verify RF2 release with the following command:
-
-    rf2 check SnomedCT_RF2_PRODUCTION_20190131T120000Z.zip
-    
-It will print the available release file structure in tree form along with their properties and issues.  
-
-Generate empty RF2 Release with official SNOMED International file structure and naming (the output file will be placed in the default output directory `target`, relative to the current working directory):
-
-    rf2 create
-
-Generate a new RF2 Release based on the previous RF2 Release and a new Delta (or Snapshot) to a specified `OUTDIR_PATH`:
-
-    rf2 create -d 20190131 -o OUTDIR_PATH SnomedCT_PreviousRF2_PRODUCTION_20180731T120000Z.zip SnomedCT_NewDeltaRF2_PRODUCTION_20190131T120000Z.zip
-
-_NOTE: the `-d 20190131` defines the `releaseDate` of the RF2 Release and it is also being used to select the content for the resulting Delta RF2 files._
-
-Generate an RF2 Delta Release from an RF2 Full Release:
-
-    rf2 create -d 20190131 -o OUTDIR_PATH -C Delta SnomedCT_RF2_PRODUCTION_20190131T120000Z.zip
-    
-Generate an RF2 Release from multiple RF2 sources:
-
-    rf2 create -d 20190201 -o OUTDIR_PATH SnomedCT_InternationalRF2_PRODUCTION_20190131T120000Z.zip SnomedCT_Extension1RF2_PRODUCTION_20190201T120000Z.zip SnomedCT_Extension2DeltaRF2_PRODUCTION_20190201T120000Z.zip
-    
 # Building from source
 
 RF2-D2 uses Gradle for its build system. In order to create a distribution, simply run the following command in the cloned directory. 
