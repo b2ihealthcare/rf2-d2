@@ -51,6 +51,13 @@ Will report:
 
     Path 'nonexistent.zip' could not be resolved.
 
+## Output directory
+
+By default, the newly created release package will be placed to the `target` directory inside the current working directory.
+It is possible to override the default output directory and redirect all output files to another directory with the `-o` or `--outdir` option key. Example:
+
+    rf2 create -o /home/user/anotherOutputDirectory
+
 ## How `rf2 create` works
 
 The command is designed to construct a single well-formed RF2 Release package from multiple input source RF2 files.
@@ -84,13 +91,6 @@ By default,
 * `Relationship` and `StatedRelationship` files 
 * `Description` and `TextDefinition` files 
 have default `include`/`exclude` directives attached to them (see here: ). 
-
-## Output directory
-
-By default, the newly created release package will be placed to the `target` directory inside the current working directory.
-It is possible to override the default output directory and redirect all output files to another directory with the `-o` or `--outdir` option key. Example:
-
-    rf2 create -o /home/user/anotherOutputDirectory
 
 ## Examples
 
