@@ -9,7 +9,7 @@
 * [transform](docs/transform.md)
 * [diff](docs/diff.md)
 
-## rf2-spec.yml
+## [rf2-spec.yml](docs/spec/index.md)
 
 * [version](docs/spec/version.md)
 * [rf2Version](docs/spec/rf2Version.md)
