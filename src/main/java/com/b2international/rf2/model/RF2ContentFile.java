@@ -202,8 +202,19 @@ public final class RF2ContentFile extends RF2File {
 	                    params.put("_file", this);
 
 	                    final String[] header = getHeader();
+	                    if (header.length != line.length) {
+	                    	context.warn("Incorrect number of columns in line: %s", Arrays.toString(line));
+	                    	try {
+	                    		// just write the line back as is
+	                            writer.write(newLine(line));
+	                        } catch (IOException e) {
+	                            throw new RuntimeException(e);
+	                        }
+	                    	continue;
+	                    }
+	                    
 	                    for (int i = 0; i < line.length; i++) {
-	                        params.put(header[i], line[i]);
+                    		params.put(header[i], line[i]);
 	                    }
 
 	                    final Binding binding = new Binding(params);
@@ -215,7 +226,8 @@ public final class RF2ContentFile extends RF2File {
 
 	                        final String[] newDataLine = new String[header.length];
 	                        for (int i = 0; i < header.length; i++) {
-	                            newDataLine[i] = String.valueOf(params.get(header[i]));
+	                        	Object newValue = params.get(header[i]);
+	                            newDataLine[i] = newValue == null ? "" : String.valueOf(newValue);
 	                        }
 	                        if (!Arrays.equals(newDataLine, line)) {
 	                            numberOfModifiedRows++;
