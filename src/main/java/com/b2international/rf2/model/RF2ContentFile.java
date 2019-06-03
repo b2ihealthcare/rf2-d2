@@ -442,7 +442,7 @@ public final class RF2ContentFile extends RF2File {
     public final Stream<String[]> rows() throws IOException {
         return Files.lines(getPath())
                 .skip(1)
-                .map(line -> line.split(TAB));
+                .map(line -> line.split(TAB, -1));
     }
 
     /**
@@ -453,7 +453,7 @@ public final class RF2ContentFile extends RF2File {
         return Files.lines(getPath())
                 .skip(1)
                 .parallel()
-                .map(line -> line.split(TAB));
+                .map(line -> line.split(TAB, -1));
     }
 
 }
