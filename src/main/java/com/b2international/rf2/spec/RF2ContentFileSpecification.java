@@ -34,12 +34,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
+
 /**
  * @since 0.3
  */
 public final class RF2ContentFileSpecification {
 
 	private final String[] header;
+	private final String[] dependencies;
 	private final RF2FileType fileType;
 	private final String contentType;
 	private final List<RF2Filter> inclusions;
@@ -52,6 +54,7 @@ public final class RF2ContentFileSpecification {
 	@JsonCreator
 	public RF2ContentFileSpecification(
 			@JsonProperty("header") String[] header, 
+			@JsonProperty("dependencies") String[] dependencies,
 			@JsonProperty("fileType") String fileType,
 			@JsonProperty("contentType") String contentType,
 			@JsonProperty("include") List<RF2Filter> inclusions,
@@ -62,13 +65,14 @@ public final class RF2ContentFileSpecification {
 			@JsonProperty("extension") String extension) {
 		this(
 			header, 
-			fileType == null 
-				? null 
-				: Strings.isNullOrEmpty(fileType) ? RF2FileType.EMPTY : RF2FileType.valueOf(fileType), 
+			dependencies,
+			fileType == null
+				? null
+				: Strings.isNullOrEmpty(fileType) ? RF2FileType.EMPTY : RF2FileType.valueOf(fileType),
 			contentType,
 			inclusions,
 			exclusions,
-			contentSubType, 
+			contentSubType,
 			summary, 
 			languageCode, 
 			extension
@@ -77,6 +81,7 @@ public final class RF2ContentFileSpecification {
 	
 	public RF2ContentFileSpecification(
 			String[] header,
+			String[] dependencies,
 			RF2FileType fileType,
 			String contentType,
 			List<RF2Filter> inclusions,
@@ -98,6 +103,7 @@ public final class RF2ContentFileSpecification {
 		this.contentType = contentType;
 		this.inclusions = inclusions;
 		this.exclusions = exclusions;
+		this.dependencies = dependencies;
 		this.contentSubType = contentSubType;
 		this.summary = summary;
 		this.languageCode = languageCode;
@@ -112,11 +118,12 @@ public final class RF2ContentFileSpecification {
 	public RF2ContentFileSpecification merge(RF2ContentFileSpecification other) {
 		return new RF2ContentFileSpecification(
 			Optional.ofNullable(other.header).orElse(header), 
-			Optional.ofNullable(other.fileType).orElse(fileType), 
+			Optional.ofNullable(other.dependencies).orElse(dependencies),
+			Optional.ofNullable(other.fileType).orElse(fileType),
 			Optional.ofNullable(other.contentType).orElse(contentType),
 			Optional.ofNullable(other.inclusions).orElse(inclusions),
 			Optional.ofNullable(other.exclusions).orElse(exclusions),
-			Optional.ofNullable(other.contentSubType).orElse(contentSubType), 
+			Optional.ofNullable(other.contentSubType).orElse(contentSubType),
 			Optional.ofNullable(other.summary).orElse(summary), 
 			Optional.ofNullable(other.languageCode).orElse(languageCode),
 			Optional.ofNullable(other.extension).orElse(extension)
@@ -137,6 +144,10 @@ public final class RF2ContentFileSpecification {
 
 	public String[] getHeader() {
 		return header;
+	}
+
+	public String[] getDependencies() {
+		return dependencies;
 	}
 
 	public RF2FileType getFileType() {
@@ -187,6 +198,7 @@ public final class RF2ContentFileSpecification {
 				&& Objects.equals(contentType, other.contentType)
 				&& Objects.equals(inclusions, other.inclusions)
 				&& Objects.equals(exclusions, other.exclusions)
+				&& Objects.equals(dependencies, other.dependencies)
 				&& Objects.equals(contentSubType, other.contentSubType)
 				&& Objects.equals(summary, other.summary)
 				&& Objects.equals(languageCode, other.languageCode)

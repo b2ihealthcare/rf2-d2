@@ -18,18 +18,23 @@ release:
       files:
         - contentType: Concept
           header: [id, effectiveTime, active, moduleId, definitionStatusId]
+          dependencies: [definitionStatusId]
         - contentType: Description
           languageCode: en
           header: [id, effectiveTime, active, moduleId, conceptId, languageCode, typeId, term, caseSignificanceId]
+          dependencies: [conceptId, typeId, caseSignificanceId]
         - contentType: TextDefinition
           languageCode: en
           header: [id, effectiveTime, active, moduleId, conceptId, languageCode, typeId, term, caseSignificanceId]
+          dependencies: [conceptId, typeId, caseSignificanceId]
         - contentType: Relationship
           header: [id, effectiveTime, active, moduleId, sourceId, destinationId, relationshipGroup, typeId, characteristicTypeId, modifierId]
+          dependencies: [sourceId, destinationId, typeId, characteristicTypeId, modifierId]
           exclude:
             - characteristicTypeId: 900000000000010007
         - contentType: StatedRelationship
           header: [id, effectiveTime, active, moduleId, sourceId, destinationId, relationshipGroup, typeId, characteristicTypeId, modifierId]
+          dependencies: [sourceId, destinationId, typeId, characteristicTypeId, modifierId]
           include:
             - characteristicTypeId: 900000000000010007
         - contentType: Identifier
@@ -44,29 +49,36 @@ release:
           - contentType: Refset
             summary: Simple
             header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId]
+            dependencies: [refsetId, referencedComponentId]
           - contentType: cRefset
             summary: Association
             header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, targetComponentId]
+            dependencies: [refsetId, referencedComponentId, targetComponentId]
           - contentType: cRefset
             summary: AttributeValue
             header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, valueId]
+            dependencies: [refsetId, referencedComponentId, valueId]
       Language:
         files:
           - contentType: cRefset
             summary: Language
             languageCode: en
             header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, acceptabilityId]
+            dependencies: [refsetId, referencedComponentId, acceptabilityId]
       Map:
         files:
           - contentType: sRefset
             summary: SimpleMap
             header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, mapTarget]
+            dependencies: [refsetId, referencedComponentId, mapTarget]
           - contentType: iissscRefset
             summary: ComplexMap
             header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, mapGroup, mapPriority, mapRule, mapAdvice, mapTarget, correlationId]
+            dependencies: [refsetId, referencedComponentId, correlationId]
           - contentType: iisssccRefset
             summary: ExtendedMap
             header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, mapGroup, mapPriority, mapRule, mapAdvice, mapTarget, correlationId, mapCategoryId]
+            dependencies: [refsetId, referencedComponentId, correlationId, mapCategoryId]
       Metadata:
         files:
           - contentType: cciRefset
@@ -75,18 +87,24 @@ release:
           - contentType: ciRefset
             summary: DescriptionType
             header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, descriptionFormat, descriptionLength]
+            dependencies: [refsetId, referencedComponentId, descriptionFormat]
           - contentType: cissccRefset
             summary: MRCMAttributeDomain
             header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, domainId, grouped, attributeCardinality, attributeInGroupCardinality, ruleStrengthId, contentTypeId]
+            dependencies: [refsetId, referencedComponentId, domainId, ruleStrengthId, contentTypeId]
           - contentType: cRefset
             summary: MRCMModuleScope
             header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, mrcmRuleRefsetId]
+            dependencies: [refsetId, referencedComponentId, mrcmRuleRefsetId]
           - contentType: ssccRefset
             summary: MRCMAttributeRange
             header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, rangeConstraint, attributeRule, ruleStrengthId, contentTypeId]
+            dependencies: [refsetId, referencedComponentId, ruleStrengthId, contentTypeId]
           - contentType: sssssssRefset
             summary: MRCMDomain
             header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, domainConstraint, parentDomain, proximalPrimitiveConstraint, proximalPrimitiveRefinement, domainTemplateForPrecoordination, domainTemplateForPostcoordination, guideURL]
+            dependencies: [refsetId, referencedComponentId]
           - contentType: ssRefset
             summary: ModuleDependency
             header: [id, effectiveTime, active, moduleId, refsetId, referencedComponentId, sourceEffectiveTime, targetEffectiveTime]
+            dependencies: [refsetId, referencedComponentId]
