@@ -94,7 +94,7 @@ public abstract class RF2File {
 			acceptor.error("Missing name part: %s", missing.getSimpleName().replaceAll("RF2", ""));
 		});
 	}
-	
+
 	/**
 	 * Creates this RF2 file at the specified location and file name.
 	 * @param context

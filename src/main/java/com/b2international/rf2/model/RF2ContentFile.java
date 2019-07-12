@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -47,11 +48,13 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Ordering;
 import com.google.common.hash.Hashing;
 
 import groovy.lang.Binding;
 import groovy.lang.Script;
+
 
 /**
  * @since 0.1
@@ -113,6 +116,8 @@ public final class RF2ContentFile extends RF2File {
                 acceptor.error("Header does not conform to specification");
                 return;
             }
+            final String[] dependencies = specification.getDependencies();
+            checkDependencies(actualHeader,  dependencies, acceptor);
 
             // assign validators to RF2 columns
             final Map<Integer, RF2ColumnValidator> validatorsByIndex = new HashMap<>(actualHeader.length);
@@ -134,6 +139,10 @@ public final class RF2ContentFile extends RF2File {
                 }
             });
         }
+    }
+
+    private void checkDependencies(String[] actualHeader, String[] dependencies, RF2IssueAcceptor acceptor) {
+        Sets.difference(Set.of(dependencies), Set.of(actualHeader)).forEach(diff -> acceptor.error("Differing header found in dependencies: '%s'.", diff));
     }
 
     @Override
@@ -269,7 +278,8 @@ public final class RF2ContentFile extends RF2File {
                 try {
                 	// this will initialize the map with 0 counter values, just to register all files even if they are empty, so we will log all applicable files during the process
                 	copiedLinesPerFile.merge(file.getPath().toString(), 0, Integer::sum);
-                	
+
+                	collectModuleDependencies(line, context);
                     String id = line[0];
                     String effectiveTime = line[1];
                     String rawLine = newLine(line);
@@ -339,6 +349,21 @@ public final class RF2ContentFile extends RF2File {
             });
             
         }
+    }
+
+    private void collectModuleDependencies(String[] line, RF2CreateContext context) {
+        final String[] dependencies = specification.getDependencies();
+        if (dependencies == null) {
+            return;
+        }
+
+        final Map<String, Integer> indexesByHeader = getIndexByHeader();
+        final Set<String> dependencyIds = Sets.newHashSet();
+        for (String dependencyHeader : dependencies) {
+            dependencyIds.add(line[indexesByHeader.get(dependencyHeader)]);
+        }
+
+        context.getModuleGraph().add(line, dependencyIds, getType());
     }
 
     private Predicate<String[]> getLineFilter() {
