@@ -32,7 +32,7 @@ public interface RF2ColumnValidator {
 	/**
 	 * No-op RF2 column validator.
 	 */
-	static RF2ColumnValidator NOOP = new RF2ColumnValidator() {
+	RF2ColumnValidator NOOP = new RF2ColumnValidator() {
 		@Override
 		public Set<String> getColumns() {
 			return Set.of();
@@ -46,7 +46,7 @@ public interface RF2ColumnValidator {
 	/**
 	 * Allows any value in a given column.
 	 */
-	static RF2ColumnValidator ALLOW_EMPTY = new RF2ColumnValidator() {
+	RF2ColumnValidator ALLOW_EMPTY = new RF2ColumnValidator() {
 		@Override
 		public Set<String> getColumns() {
 			return Set.of(
@@ -64,7 +64,7 @@ public interface RF2ColumnValidator {
 	/**
 	 * All available {@link RF2ColumnValidator}s.
 	 */
-	static Map<String, RF2ColumnValidator> VALIDATORS = 
+	Map<String, RF2ColumnValidator> VALIDATORS =
 			List.of(
 				// register new validators here
 				new RF2IdentifierValidator(),
@@ -77,9 +77,7 @@ public interface RF2ColumnValidator {
 				ALLOW_EMPTY
 			)
 			.stream()
-			.flatMap(validator -> {
-				return validator.getColumns().stream().map(column -> Map.entry(column, validator));
-			})
+			.flatMap(validator -> validator.getColumns().stream().map(column -> Map.entry(column, validator)))
 			.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	
 	/**
