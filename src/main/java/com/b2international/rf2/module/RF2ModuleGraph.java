@@ -25,6 +25,8 @@ import java.util.Collection;
  */
 public class RF2ModuleGraph {
 
+    private static long MODEL_COMPONENT_MODULE = 900000000000012004L;
+
     private final Long2LongMap moduleToEffectiveTime = new Long2LongOpenHashMap();
     private final PrimitiveLongMultimap moduleToDependencies = new PrimitiveLongMultimap();
     private final Long2ObjectMap<PrimitiveLongMultimap> graphPerEffectiveTime = new Long2ObjectOpenHashMap<>();
@@ -57,10 +59,7 @@ public class RF2ModuleGraph {
                 } catch (NumberFormatException e) {
                     // Ignore exception
                 }
-
             }
-
-
         }
     }
 
@@ -83,7 +82,7 @@ public class RF2ModuleGraph {
                 for (long dependencyId : dependencies) {
                     if (idToModuleDependency.containsKey(dependencyId)) {
                         final long dependencyModule = idToModuleDependency.get(dependencyId);
-                        if (module != dependencyModule) {
+                        if (canAddDependency(module, dependencyModule)) {
                             moduleDependencies.put(module, dependencyModule);
                         }
                     }
@@ -106,16 +105,18 @@ public class RF2ModuleGraph {
                 for (long dependencyId : dependencies) {
                     if (idToModuleDependency.containsKey(dependencyId)) {
                         final long dependencyModule = idToModuleDependency.get(dependencyId);
-                        if (module !=dependencyModule) {
+                        if (canAddDependency(module, dependencyModule)) {
                             moduleDependencies.put(module, dependencyModule);
-
                         }
                     }
                 }
             }
-
-            System.err.println("effectiveTime: " + effectiveTime + "\nmodule dependencies for effectiveTime: " + moduleDependencies);
+            System.err.println("effectiveTime: " + effectiveTime + "module dependencies for effectiveTime: " + moduleDependencies);
         }
+    }
+
+    private boolean canAddDependency(long module, long dependencyModule) {
+        return module != dependencyModule && MODEL_COMPONENT_MODULE != module;
     }
 
 }
