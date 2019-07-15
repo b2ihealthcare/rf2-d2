@@ -20,6 +20,7 @@ dependencies {
 	implementation 'com.fasterxml.jackson.core:jackson-annotations:2.8.11'
 	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.8.11'
 	implementation 'org.codehaus.groovy:groovy-all:2.5.7'
+	implementation 'it.unimi.dsi:fastutil:8.1.0'
 	// test
 	testImplementation 'junit:junit:4.12'
 	testImplementation 'org.assertj:assertj-core:3.10.0'
