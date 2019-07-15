@@ -116,8 +116,7 @@ public final class RF2ContentFile extends RF2File {
                 acceptor.error("Header does not conform to specification");
                 return;
             }
-            final String[] dependencies = specification.getDependencies();
-            checkDependencies(actualHeader,  dependencies, acceptor);
+            checkDependencies(actualHeader, specification.getDependencies(), acceptor);
 
             // assign validators to RF2 columns
             final Map<Integer, RF2ColumnValidator> validatorsByIndex = new HashMap<>(actualHeader.length);

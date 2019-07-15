@@ -114,7 +114,6 @@ public final class RF2Create extends RF2Command {
 		mergedSpec
 			.prepare(outputDirectory)
 			.create(new RF2CreateContext(mergedSpec, sources, moduleGraph, console));
-		System.err.println("Module graph: " + moduleGraph.getModuleDependencies());
 	}
 
 }

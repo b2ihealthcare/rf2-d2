@@ -27,6 +27,6 @@ public final class Constants {
 	public static final String ZIP = "zip";
 	public static final String COMMA = ",";
 	public static final String SPACE = " ";
-	public static final String SHORT_DATEFORMAT = "yyyyMMdd";
+	public static final String SHORT_DATE_FORMAT = "yyyyMMdd";
 	
 }

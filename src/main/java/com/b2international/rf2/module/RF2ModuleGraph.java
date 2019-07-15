@@ -16,29 +16,27 @@
 package com.b2international.rf2.module;
 
 import com.b2international.rf2.naming.file.RF2ContentType;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
+import it.unimi.dsi.fastutil.longs.*;
 
 import java.util.Collection;
-import java.util.Map;
 
 /**
  * @since 0.4.0
  */
 public class RF2ModuleGraph {
 
-    private final Map<String, String> moduleToEffectiveTime = Maps.newHashMap();
-    private final Multimap<String, String> moduleToDependencies = HashMultimap.create();
-    private final Map<String, String> idToModuleDependency = Maps.newHashMap();
+    private final Long2LongMap moduleToEffectiveTime = new Long2LongOpenHashMap();
+    private final PrimitiveLongMultimap moduleToDependencies = new PrimitiveLongMultimap();
+    private final Long2ObjectMap<PrimitiveLongMultimap> graphPerEffectiveTime = new Long2ObjectOpenHashMap<>();
+    private final Long2LongMap idToModuleDependency = new Long2LongOpenHashMap();
 
     public synchronized void add(String[] line, Collection<String> dependencies, String fileType) {
-            final String id = line[0];
-            final String effectiveTime = line[1];
-            final String moduleId = line[3];
+            final long effectiveTime = Long.parseLong(line[1]);
+            final long moduleId = Long.parseLong(line[3]);
             updateNodeEffectiveTime(moduleId, effectiveTime);
 
             if (!RF2ContentType.isRefset(fileType)) {
+                final long id = Long.parseLong(line[0]);
                 synchronized (idToModuleDependency) {
                     idToModuleDependency.put(id, moduleId);
                 }
@@ -46,15 +44,30 @@ public class RF2ModuleGraph {
 
         synchronized (moduleToDependencies) {
             for (String dependency : dependencies) {
-                moduleToDependencies.put(moduleId, dependency);
+                try {
+                    final long dependencyL = Long.parseLong(dependency);
+                    moduleToDependencies.put(moduleId, dependencyL);
+                    if (graphPerEffectiveTime.containsKey(effectiveTime)) {
+                        graphPerEffectiveTime.get(effectiveTime).put(moduleId, dependencyL);
+                    } else {
+                        final PrimitiveLongMultimap dependencyPrimitiveMap = new PrimitiveLongMultimap();
+                        dependencyPrimitiveMap.put(moduleId, dependencyL);
+                        graphPerEffectiveTime.put(effectiveTime, dependencyPrimitiveMap);
+                    }
+                } catch (NumberFormatException e) {
+                    // Ignore exception
+                }
+
             }
+
+
         }
     }
 
-    private void updateNodeEffectiveTime(String moduleId, String newEffectiveTime) {
+    private void updateNodeEffectiveTime(Long moduleId, Long newEffectiveTime) {
         synchronized (moduleToEffectiveTime) {
             if (moduleToEffectiveTime.containsKey(moduleId)) {
-                final String oldEffectiveTime = moduleToEffectiveTime.get(moduleId);
+                final Long oldEffectiveTime = moduleToEffectiveTime.get(moduleId);
                 if (oldEffectiveTime.compareTo(newEffectiveTime) == -1) {
                     moduleToEffectiveTime.put(moduleId, newEffectiveTime);
                 }
@@ -62,15 +75,15 @@ public class RF2ModuleGraph {
         }
     }
 
-    public Multimap<String, String> getModuleDependencies() {
+    public PrimitiveLongMultimap getModuleDependencies() {
         synchronized (moduleToDependencies) {
-            final Multimap<String, String> moduleDependencies = HashMultimap.create();
-            for (String module : moduleToDependencies.keySet()) {
-                final Collection<String> dependencies = moduleToDependencies.get(module);
-                for (String dependencyId : dependencies) {
+            final PrimitiveLongMultimap moduleDependencies = new PrimitiveLongMultimap();
+            for (long module : moduleToDependencies.keySet()) {
+                final LongSet dependencies = moduleToDependencies.get(module);
+                for (long dependencyId : dependencies) {
                     if (idToModuleDependency.containsKey(dependencyId)) {
-                        final String dependencyModule = idToModuleDependency.get(dependencyId);
-                        if (/*!moduleDependencies.containsEntry(module, dependencyModule) && !moduleDependencies.containsEntry(dependencyModule, module) &&*/ !module.equals(dependencyModule)) {
+                        final long dependencyModule = idToModuleDependency.get(dependencyId);
+                        if (module != dependencyModule) {
                             moduleDependencies.put(module, dependencyModule);
                         }
                     }
@@ -81,7 +94,28 @@ public class RF2ModuleGraph {
 
     }
 
-    public Map<String, String> getModuleToEffectiveTime() {
+    public Long2LongMap getModuleToEffectiveTime() {
         return moduleToEffectiveTime;
     }
+
+    public void getGraphPerEffectiveTime() {
+        for (long effectiveTime : graphPerEffectiveTime.keySet()) {
+            final PrimitiveLongMultimap moduleDependencies = new PrimitiveLongMultimap();
+            for (long module : graphPerEffectiveTime.get(effectiveTime).keySet()) {
+                final LongSet dependencies = moduleToDependencies.get(module);
+                for (long dependencyId : dependencies) {
+                    if (idToModuleDependency.containsKey(dependencyId)) {
+                        final long dependencyModule = idToModuleDependency.get(dependencyId);
+                        if (module !=dependencyModule) {
+                            moduleDependencies.put(module, dependencyModule);
+
+                        }
+                    }
+                }
+            }
+
+            System.err.println("effectiveTime: " + effectiveTime + "\nmodule dependencies for effectiveTime: " + moduleDependencies);
+        }
+    }
+
 }
