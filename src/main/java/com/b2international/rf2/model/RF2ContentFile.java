@@ -27,15 +27,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import com.b2international.rf2.Constants;
 import com.b2international.rf2.RF2CreateContext;
 import com.b2international.rf2.RF2TransformContext;
 import com.b2international.rf2.check.RF2IssueAcceptor;
+import com.b2international.rf2.module.PrimitiveLongMultimap;
+import com.b2international.rf2.module.RF2ModuleGraph;
 import com.b2international.rf2.naming.RF2ContentFileName;
 import com.b2international.rf2.naming.RF2FileName;
 import com.b2international.rf2.naming.file.RF2ContentSubType;
@@ -54,6 +58,7 @@ import com.google.common.hash.Hashing;
 
 import groovy.lang.Binding;
 import groovy.lang.Script;
+import it.unimi.dsi.fastutil.longs.LongSet;
 
 
 /**
@@ -104,6 +109,10 @@ public final class RF2ContentFile extends RF2File {
         return specification.isDataFile();
     }
 
+    private boolean isModuleDependencyFile() {
+        return specification.isModuleDependencyFile();
+    }
+
     @Override
     public void check(RF2IssueAcceptor acceptor) throws IOException {
         super.check(acceptor);
@@ -149,7 +158,7 @@ public final class RF2ContentFile extends RF2File {
     	context.task("Creating file '%s'", getPath()).run(() -> {
     		if (isDataFile()) {
     			createDataFile(context);
-    		} else {
+            } else {
     			final Ordering<RF2VersionDate> ordering = Ordering.natural().nullsFirst();
     			final AtomicReference<RF2FileName> matchingSourceFile = new AtomicReference<>();
     			final AtomicReference<RF2VersionDate> maxVersionDate = new AtomicReference<>();
@@ -266,12 +275,13 @@ public final class RF2ContentFile extends RF2File {
             final ConcurrentMap<String, Map<String, String>> componentsByIdEffectiveTime = new MapMaker()
             		.concurrencyLevel(Math.max(2, Runtime.getRuntime().availableProcessors()))
             		.makeMap();
-            
+
             final ConcurrentMap<String, Integer> copiedLinesPerFile = new MapMaker()
             		.concurrencyLevel(Math.max(2, Runtime.getRuntime().availableProcessors()))
             		.makeMap();
-            
-            Predicate<String[]> lineFilter = getLineFilter();
+
+            final Predicate<String[]> lineFilter = getLineFilter();
+            final RF2ModuleGraph moduleGraph = context.getModuleGraph();
 
             context.visitSourceRows(this::fileFilter, lineFilter, /* parallel if */ releaseType.isSnapshot(), (file, line) -> {
                 try {
@@ -279,10 +289,10 @@ public final class RF2ContentFile extends RF2File {
                 	copiedLinesPerFile.merge(file.getPath().toString(), 0, Integer::sum);
 
                 	collectModuleDependencies(line, context);
-                    String id = line[0];
-                    String effectiveTime = line[1];
+                    final String id = line[0];
+                    final String effectiveTime = line[1];
                     String rawLine = newLine(line);
-                    String lineHash = Hashing.sha256().hashString(rawLine, StandardCharsets.UTF_8).toString();
+                    final String lineHash = Hashing.sha256().hashString(rawLine, StandardCharsets.UTF_8).toString();
 
                     if (componentsByIdEffectiveTime.containsKey(id) && componentsByIdEffectiveTime.get(id).containsKey(effectiveTime)) {
                         // log a warning about inconsistent ID-EffectiveTime content, keep the first occurrence of the line and skip the others
@@ -298,13 +308,36 @@ public final class RF2ContentFile extends RF2File {
                             componentsByIdEffectiveTime.put(id, new HashMap<>());
                         }
                         componentsByIdEffectiveTime.get(id).put(effectiveTime, lineHash);
-                        writer.write(rawLine);
+                        // In case of module dependency file apply special logic to writing
+                        if (isModuleDependencyFile()) {
+                            final long sourceModuleId = Long.parseLong(line[3]);
+                            final long targetModuleId = Long.parseLong(line[5]);
+                            final long sourceEffectiveTime = Long.parseLong(line[6]);
+                            final long targetEffectiveTime = Long.parseLong(line[7]);
+                            final LongSet calculatedTargetModuleIds = moduleGraph.get(sourceModuleId);
+                            if (calculatedTargetModuleIds.contains(targetModuleId)) {
+                                final PrimitiveLongMultimap moduleDependenciesForEffectiveTime = moduleGraph.getGraphForEffectiveTime(effectiveTime);
+                                final LongSet dependencies = moduleDependenciesForEffectiveTime.get(sourceModuleId);
+                                if (dependencies.contains(targetModuleId)) {
+                                    final long latestEffectiveTime = moduleGraph.getLatestEffectiveTime(sourceModuleId);
+                                    final long earliestEffectiveTime = moduleGraph.getEarliestEffectiveTime(targetModuleId);
+//                                    tryFixEffectiveTime(rawLine ,context, sourceEffectiveTime, targetEffectiveTime, latestEffectiveTime, earliestEffectiveTime);
+                                    writer.write(rawLine);
+                                } else {
+                                    context.log("FULL release is missing dependency pair source: '%s' target: '%s' in effective time: '%s'", sourceModuleId, targetModuleId, effectiveTime);
+                                }
+                            } else {
+                                context.log("Extra dependency found in FULL file. Skipping... '%s'", line);
+                            }
+                        } else {
+                            writer.write(rawLine);
+                        }
                         // this will increase the number of copied lines by 1
                         copiedLinesPerFile.merge(file.getPath().toString(), 1, Integer::sum);
                     } else if (releaseType.isSnapshot()) {
                         // in case of Snapshot we check that the current effective time is greater than the currently registered and replace if yes
                         if (componentsByIdEffectiveTime.containsKey(id)) {
-                            Entry<String, String> effectiveTimeHash = Iterables.getOnlyElement(componentsByIdEffectiveTime.get(id).entrySet());
+                            final Entry<String, String> effectiveTimeHash = Iterables.getOnlyElement(componentsByIdEffectiveTime.get(id).entrySet());
                             if (effectiveTime.isEmpty() || effectiveTime.compareTo(effectiveTimeHash.getKey()) > 0) {
                                 componentsByIdEffectiveTime.put(id, Map.of(effectiveTime, lineHash));
                             }
@@ -316,7 +349,28 @@ public final class RF2ContentFile extends RF2File {
                         // TODO support closest to specified releaseDate!!!
                         if (currentReleaseDate.equals(effectiveTime)) {
                             componentsByIdEffectiveTime.put(id, Map.of(effectiveTime, lineHash));
-                            writer.write(rawLine);
+                            // In case of module dependency file apply special logic to writing
+                            if (isModuleDependencyFile()) {
+                                final long sourceModuleId = Long.parseLong(line[3]);
+                                final long targetModuleId = Long.parseLong(line[5]);
+                                final long sourceEffectiveTime = Long.parseLong(line[6]);
+                                final long targetEffectiveTime = Long.parseLong(line[7]);
+                                final LongSet calculatedTargetModuleIds = moduleGraph.get(sourceModuleId);
+                                if (calculatedTargetModuleIds.contains(targetModuleId)) {
+                                    final long latestEffectiveTime = moduleGraph.getLatestEffectiveTime(sourceModuleId);
+                                    final long earliestEffectiveTime = moduleGraph.getEarliestEffectiveTime(targetModuleId);
+//                                    tryFixEffectiveTime(rawLine, context, sourceEffectiveTime, targetEffectiveTime, latestEffectiveTime, earliestEffectiveTime);
+                                    writer.write(rawLine);
+                                } else {
+                                    // add new row with known current releaseDate
+                                    final String missingLine = buildModuleDependencyLine(moduleGraph, context.getSpecification().getRelease().getDate(), sourceModuleId, targetModuleId);
+                                    writer.write(missingLine);
+                                    context.log("Added missing module dependency row to delta file '%s'", missingLine);
+                                }
+                            } else {
+                                writer.write(rawLine);
+                            }
+
                             copiedLinesPerFile.merge(file.getPath().toString(), 1, Integer::sum);
                         }
                     }
@@ -329,12 +383,33 @@ public final class RF2ContentFile extends RF2File {
             if (releaseType.isSnapshot()) {
                 context.visitSourceRows(this::fileFilter, lineFilter, false, (file, line) -> {
                     try {
-                        String id = line[0];
-                        String effectiveTime = line[1];
+                        final String id = line[0];
+                        final String effectiveTime = line[1];
                         if (componentsByIdEffectiveTime.containsKey(id) && componentsByIdEffectiveTime.get(id).containsKey(effectiveTime)) {
                             // remove the item from the id effective time map to indicate that we wrote it out
                             componentsByIdEffectiveTime.remove(id);
-                            writer.write(newLine(line));
+                            // In case of module dependency file apply special logic to writing
+                            String newLine = newLine(line);
+
+                            if (isModuleDependencyFile()) {
+                                final long sourceModuleId = Long.parseLong(line[3]);
+                                final long targetModuleId = Long.parseLong(line[5]);
+                                final long sourceEffectiveTime = Long.parseLong(line[6]);
+                                final long targetEffectiveTime = Long.parseLong(line[7]);
+                                final LongSet calculatedTargetModuleIds = moduleGraph.get(sourceModuleId);
+                                if (calculatedTargetModuleIds.contains(targetModuleId)) {
+                                    final long latestEffectiveTime = moduleGraph.getLatestEffectiveTime(sourceModuleId);
+                                    final long earliestEffectiveTime = moduleGraph.getEarliestEffectiveTime(targetModuleId);
+//                                    tryFixEffectiveTime(newLine, context, sourceEffectiveTime, targetEffectiveTime, latestEffectiveTime, earliestEffectiveTime);
+                                    writer.write(newLine);
+                                } else {
+                                    context.log("Extra dependency found in snapshot file. Skipping... '%s'", line);
+                                }
+
+                            } else {
+                                writer.write(newLine);
+                            }
+
                             copiedLinesPerFile.merge(file.getPath().toString(), 1, Integer::sum);
                         }
                     } catch (IOException e) {
@@ -342,12 +417,40 @@ public final class RF2ContentFile extends RF2File {
                     }
                 });
             }
-            
+
             copiedLinesPerFile.keySet().stream().sorted().forEach(file -> {
             	context.log("Copied '%s' lines from '%s'", copiedLinesPerFile.get(file), file);
             });
-            
+
         }
+    }
+
+    private void tryFixEffectiveTime(String newLine, RF2CreateContext context, long sourceEffectiveTime, long targetEffectiveTime, long latestEffectiveTime, long earliestEffectiveTime) {
+        if (latestEffectiveTime >= earliestEffectiveTime) {
+            if (latestEffectiveTime != sourceEffectiveTime) {
+                // change source effectiveTime to latest
+                newLine.replaceAll(Long.toString(sourceEffectiveTime), Long.toString(latestEffectiveTime));
+                context.log("Changed source effective time from '%s' to '%s' for line: %s", sourceEffectiveTime, latestEffectiveTime, newLine);
+            }
+
+            if (earliestEffectiveTime != targetEffectiveTime) {
+                // change target effectiveTime to earliest
+                newLine.replaceAll(Long.toString(targetEffectiveTime), Long.toString(earliestEffectiveTime));
+                context.log("Changed target effective time from '%s' to '%s' for line: %s", targetEffectiveTime, earliestEffectiveTime, newLine);
+            }
+        }
+    }
+
+    private String buildModuleDependencyLine(RF2ModuleGraph moduleGraph, String effectiveTime, long sourceModuleId, long targetModuleId) {
+        // id, effectiveTime, active, moduleId, refsetId, referencedComponentId, sourceEffectiveTime, targetEffectiveTime
+        final String id = UUID.randomUUID().toString();
+        final boolean active = true;
+        final String refsetId = Constants.MODULE_DEPENDENCY_REFSET_ID;
+        final String referencedComponentId = String.valueOf(targetModuleId);
+        final String sourceEffectiveTime = String.valueOf(moduleGraph.getLatestEffectiveTime(sourceModuleId));
+        final String targetEffectiveTime = String.valueOf(moduleGraph.getEarliestEffectiveTime(targetModuleId));
+
+        return String.format("%s%s", String.join(TAB, id, String.valueOf(active), effectiveTime, refsetId, referencedComponentId, sourceEffectiveTime, targetEffectiveTime), CRLF);
     }
 
     private void collectModuleDependencies(String[] line, RF2CreateContext context) {
@@ -428,7 +531,7 @@ public final class RF2ContentFile extends RF2File {
                     return false;
                 }
         }
-        // check actual content type as well, to copy content from the right files
+        // check actual content type as well, to copy content from the right files, filter module dependency file
         return Arrays.equals(file.getHeader(), getHeader());
     }
 

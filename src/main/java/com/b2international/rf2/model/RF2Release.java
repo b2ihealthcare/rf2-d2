@@ -102,6 +102,23 @@ public final class RF2Release extends RF2File {
 						entry.getValue()
 							.stream()
 							.filter(RF2ContentFileSpecification::isDataFile)
+							.filter(spec -> !spec.isModuleDependencyFile())
+							.forEach(file -> {
+								try {
+									rf2Directory.create(context);
+									file.prepare(rf2Directory.getPath(), release, contentSubType)
+										.create(context);
+								} catch (IOException e) {
+									throw new RuntimeException(e);
+								}
+							});
+					}
+
+					for (Entry<String, List<RF2ContentFileSpecification>> entry : release.getContent().getFiles().entrySet()) {
+						final RF2Directory rf2Directory = new RF2DirectoryName(entry.getKey()).createRF2File(contentSubTypeDir.getPath(), specification);
+						entry.getValue()
+							.stream()
+							.filter(RF2ContentFileSpecification::isModuleDependencyFile)
 							.forEach(file -> {
 								try {
 									rf2Directory.create(context);
