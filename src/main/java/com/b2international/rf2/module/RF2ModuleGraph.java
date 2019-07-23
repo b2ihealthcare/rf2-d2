@@ -16,7 +16,11 @@
 package com.b2international.rf2.module;
 
 import com.b2international.rf2.naming.file.RF2ContentType;
-import it.unimi.dsi.fastutil.longs.*;
+import it.unimi.dsi.fastutil.longs.Long2LongMap;
+import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongSet;
 
 import java.util.Collection;
 
@@ -25,18 +29,21 @@ import java.util.Collection;
  */
 public class RF2ModuleGraph {
 
-    private static long MODEL_COMPONENT_MODULE = 900000000000012004L;
+    private static final long MODEL_COMPONENT_MODULE = 900000000000012004L;
 
-    private final Long2LongMap moduleToEffectiveTime = new Long2LongOpenHashMap();
+    private final PrimitiveLongMultimap moduleToEffectiveTimes = new PrimitiveLongMultimap();
     private final PrimitiveLongMultimap moduleToDependencies = new PrimitiveLongMultimap();
     private final Long2ObjectMap<PrimitiveLongMultimap> graphPerEffectiveTime = new Long2ObjectOpenHashMap<>();
     private final Long2LongMap idToModuleDependency = new Long2LongOpenHashMap();
+    private final PrimitiveLongMultimap moduleDependencies = new PrimitiveLongMultimap();
+    private final Long2ObjectMap<PrimitiveLongMultimap> moduleDependenciesPerEffectiveTime = new Long2ObjectOpenHashMap();
+
+    private boolean isDirty;
 
     public synchronized void add(String[] line, Collection<String> dependencies, String fileType) {
             final long effectiveTime = Long.parseLong(line[1]);
             final long moduleId = Long.parseLong(line[3]);
-            updateNodeEffectiveTime(moduleId, effectiveTime);
-
+            isDirty = true;
             if (!RF2ContentType.isRefset(fileType)) {
                 final long id = Long.parseLong(line[0]);
                 synchronized (idToModuleDependency) {
@@ -45,6 +52,7 @@ public class RF2ModuleGraph {
             }
 
         synchronized (moduleToDependencies) {
+            moduleToEffectiveTimes.put(moduleId, effectiveTime);
             for (String dependency : dependencies) {
                 try {
                     final long dependencyL = Long.parseLong(dependency);
@@ -63,20 +71,20 @@ public class RF2ModuleGraph {
         }
     }
 
-    private void updateNodeEffectiveTime(Long moduleId, Long newEffectiveTime) {
-        synchronized (moduleToEffectiveTime) {
-            if (moduleToEffectiveTime.containsKey(moduleId)) {
-                final Long oldEffectiveTime = moduleToEffectiveTime.get(moduleId);
-                if (oldEffectiveTime.compareTo(newEffectiveTime) == -1) {
-                    moduleToEffectiveTime.put(moduleId, newEffectiveTime);
-                }
-            }
+    public PrimitiveLongMultimap getModuleToEffectiveTimes() {
+        return moduleToEffectiveTimes;
+    }
+
+    private void buildGraphs() {
+        if (isDirty) {
+            buildModuleDependencies();
+            buildModuleDependenciesPerEffectiveTime();
+            isDirty = false;
         }
     }
 
-    public PrimitiveLongMultimap getModuleDependencies() {
+    private void buildModuleDependencies() {
         synchronized (moduleToDependencies) {
-            final PrimitiveLongMultimap moduleDependencies = new PrimitiveLongMultimap();
             for (long module : moduleToDependencies.keySet()) {
                 final LongSet dependencies = moduleToDependencies.get(module);
                 for (long dependencyId : dependencies) {
@@ -88,35 +96,82 @@ public class RF2ModuleGraph {
                     }
                 }
             }
-            return moduleDependencies;
         }
-
     }
 
-    public Long2LongMap getModuleToEffectiveTime() {
-        return moduleToEffectiveTime;
-    }
-
-    public void getGraphPerEffectiveTime() {
-        for (long effectiveTime : graphPerEffectiveTime.keySet()) {
-            final PrimitiveLongMultimap moduleDependencies = new PrimitiveLongMultimap();
-            for (long module : graphPerEffectiveTime.get(effectiveTime).keySet()) {
-                final LongSet dependencies = moduleToDependencies.get(module);
-                for (long dependencyId : dependencies) {
-                    if (idToModuleDependency.containsKey(dependencyId)) {
-                        final long dependencyModule = idToModuleDependency.get(dependencyId);
-                        if (canAddDependency(module, dependencyModule)) {
-                            moduleDependencies.put(module, dependencyModule);
+    private void buildModuleDependenciesPerEffectiveTime() {
+        synchronized (moduleDependenciesPerEffectiveTime) {
+            for (long effectiveTime : graphPerEffectiveTime.keySet()) {
+                for (long module : graphPerEffectiveTime.get(effectiveTime).keySet()) {
+                    final LongSet dependencies = moduleToDependencies.get(module);
+                    for (long dependencyId : dependencies) {
+                        if (idToModuleDependency.containsKey(dependencyId)) {
+                            final long dependencyModule = idToModuleDependency.get(dependencyId);
+                            if (canAddDependency(module, dependencyModule)) {
+                                if (moduleDependenciesPerEffectiveTime.containsKey(effectiveTime)) {
+                                    moduleDependenciesPerEffectiveTime.get(effectiveTime).put(module, dependencyModule);
+                                } else {
+                                    final PrimitiveLongMultimap dependencyPrimitiveMap = new PrimitiveLongMultimap();
+                                    dependencyPrimitiveMap.put(module, dependencyModule);
+                                    moduleDependenciesPerEffectiveTime.put(effectiveTime, dependencyPrimitiveMap);
+                                }
+                            }
                         }
                     }
                 }
             }
-            System.err.println("effectiveTime: " + effectiveTime + "module dependencies for effectiveTime: " + moduleDependencies);
         }
+    }
+
+    public LongSet get (String moduleId) {
+        return get(Long.parseLong(moduleId));
+    }
+
+    public LongSet get(long moduleId) {
+        buildGraphs();
+        return moduleDependencies.get(moduleId);
+    }
+
+    public long getEarliestEffectiveTime(long moduleId) {
+        final LongSet effectiveTimesForModule = moduleToEffectiveTimes.get(moduleId);
+        long earliestEffectiveTime = Long.MAX_VALUE;
+
+        for (long effectiveTime : effectiveTimesForModule) {
+            if (effectiveTime < earliestEffectiveTime) {
+                earliestEffectiveTime = effectiveTime;
+            }
+        }
+
+        return earliestEffectiveTime;
+    }
+
+    public long getLatestEffectiveTime(long moduleId) {
+        final LongSet effectiveTimesForModule = moduleToEffectiveTimes.get(moduleId);
+        long latestEffectiveTIme = Long.MIN_VALUE;
+        for (long effectiveTime : effectiveTimesForModule) {
+            if (effectiveTime > latestEffectiveTIme) {
+                latestEffectiveTIme = effectiveTime;
+            }
+        }
+
+        return latestEffectiveTIme;
+    }
+
+    public PrimitiveLongMultimap getGraphForEffectiveTime(String effectiveTime) {
+        return getGraphForEffectiveTime(Long.parseLong(effectiveTime));
+    }
+
+    public PrimitiveLongMultimap getGraphForEffectiveTime(long effectiveTime) {
+        buildGraphs();
+        return moduleDependenciesPerEffectiveTime.get(effectiveTime);
     }
 
     private boolean canAddDependency(long module, long dependencyModule) {
         return module != dependencyModule && MODEL_COMPONENT_MODULE != module;
     }
 
+    public boolean remove(long sourceModuleId, long targetModuleId) {
+        buildGraphs();
+       return moduleDependencies.remove(sourceModuleId, targetModuleId);
+    }
 }

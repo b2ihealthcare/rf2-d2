@@ -17,6 +17,7 @@ package com.b2international.rf2.module;
 
 import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import jline.internal.Nullable;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -90,6 +91,26 @@ public class PrimitiveLongMultimap implements Serializable {
      */
     public int size() {
         return totalSize;
+    }
+
+
+    /**
+     * Removes the mapping for the specified key from this primitive multimap if present.
+     *
+     * @param  key key whose mapping is to be removed from the map
+     * @param  value the value to be removed from the underlying {@Link LongSet}
+     * @return true if the removal was successful false otherwise
+     */
+    public boolean remove(@Nullable long key, @Nullable long value) {
+        final LongSet longSet = primitiveMultimap.get(key);
+        if (longSet != null) {
+            if (longSet.remove(value)) {
+                totalSize--;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override

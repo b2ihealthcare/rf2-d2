@@ -40,6 +40,8 @@ import com.google.common.base.Strings;
  */
 public final class RF2ContentFileSpecification {
 
+	private static final String[] MODULE_DEPENDENCY_HEADER = {"id", "effectiveTime", "active", "moduleId", "refsetId", "referencedComponentId", "sourceEffectiveTime", "targetEffectiveTime"};
+
 	private final String[] header;
 	private final String[] dependencies;
 	private final RF2FileType fileType;
@@ -113,6 +115,11 @@ public final class RF2ContentFileSpecification {
 	@JsonIgnore
 	public boolean isDataFile() {
 		return fileType.isData();
+	}
+
+	@JsonIgnore
+	public boolean isModuleDependencyFile() {
+		return Arrays.equals(header, MODULE_DEPENDENCY_HEADER);
 	}
 	
 	public RF2ContentFileSpecification merge(RF2ContentFileSpecification other) {
@@ -204,5 +211,6 @@ public final class RF2ContentFileSpecification {
 				&& Objects.equals(languageCode, other.languageCode)
 				&& Objects.equals(extension, other.extension);
 	}
+
 
 }
