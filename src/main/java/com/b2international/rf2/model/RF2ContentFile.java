@@ -321,8 +321,10 @@ public final class RF2ContentFile extends RF2File {
                                 if (dependencies.contains(targetModuleId)) {
                                     final long latestEffectiveTime = moduleGraph.getLatestEffectiveTime(sourceModuleId);
                                     final long earliestEffectiveTime = moduleGraph.getEarliestEffectiveTime(targetModuleId);
-//                                    tryFixEffectiveTime(rawLine ,context, sourceEffectiveTime, targetEffectiveTime, latestEffectiveTime, earliestEffectiveTime);
+                                    tryFixEffectiveTime(rawLine ,context, sourceEffectiveTime, targetEffectiveTime, latestEffectiveTime, earliestEffectiveTime);
                                     writer.write(rawLine);
+                                    // this will increase the number of copied lines by 1
+                                    copiedLinesPerFile.merge(file.getPath().toString(), 1, Integer::sum);
                                 } else {
                                     context.log("FULL release is missing dependency pair source: '%s' target: '%s' in effective time: '%s'", sourceModuleId, targetModuleId, effectiveTime);
                                 }
@@ -331,9 +333,10 @@ public final class RF2ContentFile extends RF2File {
                             }
                         } else {
                             writer.write(rawLine);
+                            // this will increase the number of copied lines by 1
+                            copiedLinesPerFile.merge(file.getPath().toString(), 1, Integer::sum);
                         }
-                        // this will increase the number of copied lines by 1
-                        copiedLinesPerFile.merge(file.getPath().toString(), 1, Integer::sum);
+
                     } else if (releaseType.isSnapshot()) {
                         // in case of Snapshot we check that the current effective time is greater than the currently registered and replace if yes
                         if (componentsByIdEffectiveTime.containsKey(id)) {
@@ -359,7 +362,7 @@ public final class RF2ContentFile extends RF2File {
                                 if (calculatedTargetModuleIds.contains(targetModuleId)) {
                                     final long latestEffectiveTime = moduleGraph.getLatestEffectiveTime(sourceModuleId);
                                     final long earliestEffectiveTime = moduleGraph.getEarliestEffectiveTime(targetModuleId);
-//                                    tryFixEffectiveTime(rawLine, context, sourceEffectiveTime, targetEffectiveTime, latestEffectiveTime, earliestEffectiveTime);
+                                    tryFixEffectiveTime(rawLine, context, sourceEffectiveTime, targetEffectiveTime, latestEffectiveTime, earliestEffectiveTime);
                                     writer.write(rawLine);
                                 } else {
                                     // add new row with known current releaseDate
@@ -400,17 +403,17 @@ public final class RF2ContentFile extends RF2File {
                                 if (calculatedTargetModuleIds.contains(targetModuleId)) {
                                     final long latestEffectiveTime = moduleGraph.getLatestEffectiveTime(sourceModuleId);
                                     final long earliestEffectiveTime = moduleGraph.getEarliestEffectiveTime(targetModuleId);
-//                                    tryFixEffectiveTime(newLine, context, sourceEffectiveTime, targetEffectiveTime, latestEffectiveTime, earliestEffectiveTime);
+                                    tryFixEffectiveTime(newLine, context, sourceEffectiveTime, targetEffectiveTime, latestEffectiveTime, earliestEffectiveTime);
+                                    copiedLinesPerFile.merge(file.getPath().toString(), 1, Integer::sum);
                                     writer.write(newLine);
                                 } else {
                                     context.log("Extra dependency found in snapshot file. Skipping... '%s'", line);
                                 }
 
                             } else {
+                                copiedLinesPerFile.merge(file.getPath().toString(), 1, Integer::sum);
                                 writer.write(newLine);
                             }
-
-                            copiedLinesPerFile.merge(file.getPath().toString(), 1, Integer::sum);
                         }
                     } catch (IOException e) {
                         throw new RuntimeException(e);

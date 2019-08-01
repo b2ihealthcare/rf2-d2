@@ -23,6 +23,8 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * @since 0.4.0
@@ -50,7 +52,6 @@ public class RF2ModuleGraph {
                     idToModuleDependency.put(id, moduleId);
                 }
             }
-
         synchronized (moduleToDependencies) {
             moduleToEffectiveTimes.put(moduleId, effectiveTime);
             for (String dependency : dependencies) {
@@ -133,11 +134,11 @@ public class RF2ModuleGraph {
     }
 
     public long getEarliestEffectiveTime(long moduleId) {
-        final LongSet effectiveTimesForModule = moduleToEffectiveTimes.get(moduleId);
         long earliestEffectiveTime = Long.MAX_VALUE;
-
-        for (long effectiveTime : effectiveTimesForModule) {
-            if (effectiveTime < earliestEffectiveTime) {
+        for (Entry<Long, PrimitiveLongMultimap> entry : moduleDependenciesPerEffectiveTime.entrySet()) {
+            final Long effectiveTime = entry.getKey();
+            final PrimitiveLongMultimap dependencies = entry.getValue();
+            if ((dependencies.containsKey(moduleId) || dependencies.containsValue(moduleId)) && effectiveTime < earliestEffectiveTime) {
                 earliestEffectiveTime = effectiveTime;
             }
         }
@@ -146,10 +147,11 @@ public class RF2ModuleGraph {
     }
 
     public long getLatestEffectiveTime(long moduleId) {
-        final LongSet effectiveTimesForModule = moduleToEffectiveTimes.get(moduleId);
         long latestEffectiveTIme = Long.MIN_VALUE;
-        for (long effectiveTime : effectiveTimesForModule) {
-            if (effectiveTime > latestEffectiveTIme) {
+        for (Entry<Long, PrimitiveLongMultimap> entry : moduleDependenciesPerEffectiveTime.entrySet()) {
+            final Long effectiveTime = entry.getKey();
+            final PrimitiveLongMultimap dependencies = entry.getValue();
+            if ((dependencies.containsKey(moduleId) || dependencies.containsValue(moduleId)) && effectiveTime < latestEffectiveTIme) {
                 latestEffectiveTIme = effectiveTime;
             }
         }
