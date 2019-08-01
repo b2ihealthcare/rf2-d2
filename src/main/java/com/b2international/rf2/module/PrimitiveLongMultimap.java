@@ -38,12 +38,38 @@ public class PrimitiveLongMultimap implements Serializable {
      * Returns {@code true} if this map contains a mapping for the
      * specified key.
      *
-     * @param key The key whose presence in this map is to be tested
+     * @param key The key whose presence in this multimap is to be tested
      * @return {@code true} if this map contains a mapping for the specified
      * key.
      */
     public boolean containsKey(long key) {
         return primitiveMultimap.containsKey(key);
+    }
+
+    /**
+     * Returns {@code true} if this multimap maps one or more keys to the
+     * specified value.
+     *
+     * @param value value whose presence in this map is to be tested
+     * @return {@code true} if this map maps one or more keys to th specified value
+     */
+    public boolean containsValue(long value) {
+        for (LongSet longSet : primitiveMultimap.values()) {
+            if (longSet.contains(value)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns {@code true} if this multimap contains at least one key-value pair
+     * with the key {@code key} and the value {@code value}.
+     */
+    public boolean containsEntry(long key, long value) {
+        final LongSet longSet = primitiveMultimap.get(key);
+        return longSet != null && longSet.contains(value);
     }
 
     /**
@@ -120,10 +146,10 @@ public class PrimitiveLongMultimap implements Serializable {
         for (Map.Entry<Long, LongSet> entry : entries) {
             final Long key = entry.getKey();
             final LongSet values = entry.getValue();
-            sb.append(key + " -> [");
+            sb.append(key).append(" -> [");
 
             for (long value : values) {
-                sb.append(value + ", ");
+                sb.append(value).append(", ");
             }
             sb.append("]\n");
         }
