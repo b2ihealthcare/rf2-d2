@@ -15,6 +15,14 @@
  */
 package com.b2international.rf2.model;
 
+import com.b2international.rf2.RF2CreateContext;
+import com.b2international.rf2.RF2TransformContext;
+import com.b2international.rf2.naming.RF2DirectoryName;
+import com.b2international.rf2.naming.RF2ReleaseName;
+import com.b2international.rf2.spec.RF2ContentFileSpecification;
+import com.b2international.rf2.spec.RF2ReleaseSpecification;
+import com.b2international.rf2.spec.RF2Specification;
+
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.FileSystem;
@@ -26,14 +34,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-
-import com.b2international.rf2.RF2CreateContext;
-import com.b2international.rf2.RF2TransformContext;
-import com.b2international.rf2.naming.RF2DirectoryName;
-import com.b2international.rf2.naming.RF2ReleaseName;
-import com.b2international.rf2.spec.RF2ContentFileSpecification;
-import com.b2international.rf2.spec.RF2ReleaseSpecification;
-import com.b2international.rf2.spec.RF2Specification;
 
 /**
  * @since 0.1 
@@ -68,7 +68,7 @@ public final class RF2Release extends RF2File {
 			}
 		}
 	}
-	
+
 	private static FileSystem openZipfs(boolean create, Path path) throws IOException {
 		return FileSystems.newFileSystem(URI.create("jar:" + path.toUri()), Map.of("create", String.valueOf(create)));
 	}
@@ -89,19 +89,20 @@ public final class RF2Release extends RF2File {
 
 			try (FileSystem zipfs = openZipfs(true, getPath())) {
 				// root folder with same name
-				RF2Directory rootDir = new RF2DirectoryName(getRF2FileName().getFileName()).createRF2File(zipfs.getPath("/"), specification);
+				final RF2Directory rootDir = new RF2DirectoryName(getRF2FileName().getFileName()).createRF2File(zipfs.getPath("/"), specification);
 				rootDir.create(context);
 
 				RF2ReleaseSpecification release = specification.getRelease();
 				for (String contentSubType : release.getContentSubTypes()) {
-					RF2Directory contentSubTypeDir = new RF2DirectoryName(contentSubType).createRF2File(rootDir.getPath(), specification);
+					final RF2Directory contentSubTypeDir = new RF2DirectoryName(contentSubType).createRF2File(rootDir.getPath(), specification);
 					contentSubTypeDir.create(context);
 
 					for (Entry<String, List<RF2ContentFileSpecification>> entry : release.getContent().getFiles().entrySet()) {
-						RF2Directory rf2Directory = new RF2DirectoryName(entry.getKey()).createRF2File(contentSubTypeDir.getPath(), specification);
+						final RF2Directory rf2Directory = new RF2DirectoryName(entry.getKey()).createRF2File(contentSubTypeDir.getPath(), specification);
 						entry.getValue()
 							.stream()
 							.filter(RF2ContentFileSpecification::isDataFile)
+							.filter(spec -> !spec.isModuleDependencyFile())
 							.forEach(file -> {
 								try {
 									rf2Directory.create(context);
@@ -112,11 +113,34 @@ public final class RF2Release extends RF2File {
 								}
 							});
 					}
+
+				}
+
+				for (String contentSubType : release.getContentSubTypes()) {
+					final RF2Directory contentSubTypeDir = new RF2DirectoryName(contentSubType).createRF2File(rootDir.getPath(), specification);
+					contentSubTypeDir.create(context);
+
+					for (Entry<String, List<RF2ContentFileSpecification>> entry : release.getContent().getFiles().entrySet()) {
+						final RF2Directory rf2Directory = new RF2DirectoryName(entry.getKey()).createRF2File(contentSubTypeDir.getPath(), specification);
+						entry.getValue()
+								.stream()
+								.filter(RF2ContentFileSpecification::isModuleDependencyFile)
+								.forEach(file -> {
+									try {
+										rf2Directory.create(context);
+										file.prepare(rf2Directory.getPath(), release, contentSubType)
+												.create(context);
+									} catch (IOException e) {
+										throw new RuntimeException(e);
+									}
+								});
+					}
+
 				}
 
 				// create all non-data files outside of the contentSubType directories
 				for (Entry<String, List<RF2ContentFileSpecification>> entry : release.getContent().getFiles().entrySet()) {
-					RF2Directory rf2Directory = new RF2DirectoryName(entry.getKey()).createRF2File(rootDir.getPath(), specification);
+					final RF2Directory rf2Directory = new RF2DirectoryName(entry.getKey()).createRF2File(rootDir.getPath(), specification);
 					entry.getValue()
 						.stream()
 						.filter(Predicate.not(RF2ContentFileSpecification::isDataFile))

@@ -25,18 +25,21 @@ import java.util.stream.Stream;
 import com.b2international.rf2.console.Console;
 import com.b2international.rf2.model.RF2ContentFile;
 import com.b2international.rf2.model.RF2File;
+import com.b2international.rf2.module.RF2ModuleGraph;
 import com.b2international.rf2.spec.RF2Specification;
 
 /**
  * @since 0.1
  */
-public final class RF2CreateContext extends RF2Context{
+public final class RF2CreateContext extends RF2Context {
 
 	private final List<RF2File> sources;
+	private final RF2ModuleGraph moduleGraph;
 
-	public RF2CreateContext(RF2Specification specification, List<RF2File> sources, Console log) {
+	public RF2CreateContext(RF2Specification specification, List<RF2File> sources, RF2ModuleGraph moduleGraph, Console log) {
 		super(specification, log);
 		this.sources = sources == null ? Collections.emptyList() : sources;
+		this.moduleGraph = moduleGraph;
 	}
 	
 	public List<RF2File> getSources() {
@@ -65,5 +68,9 @@ public final class RF2CreateContext extends RF2Context{
 			});
 		}
 	}
-	
+
+	public RF2ModuleGraph getModuleGraph() {
+		return moduleGraph;
+	}
+
 }

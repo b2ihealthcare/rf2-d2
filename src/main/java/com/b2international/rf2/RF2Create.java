@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import com.b2international.rf2.model.RF2Directory;
 import com.b2international.rf2.model.RF2File;
+import com.b2international.rf2.module.RF2ModuleGraph;
 import com.b2international.rf2.spec.RF2ReleaseSpecification;
 import com.b2international.rf2.spec.RF2Specification;
 
@@ -108,10 +109,11 @@ public final class RF2Create extends RF2Command {
 		RF2Specification mergedSpec = specification
 				// merge overridable options from command line
 				.merge(new RF2Specification(null, null, new RF2ReleaseSpecification(null, product, null, releaseStatus, country, namespace, releaseDate, releaseTime, contentSubTypes, null)));
-		
+
+		final RF2ModuleGraph moduleGraph = new RF2ModuleGraph();
 		mergedSpec
 			.prepare(outputDirectory)
-			.create(new RF2CreateContext(mergedSpec, sources, console));
+			.create(new RF2CreateContext(mergedSpec, sources, moduleGraph, console));
 	}
 
 }
