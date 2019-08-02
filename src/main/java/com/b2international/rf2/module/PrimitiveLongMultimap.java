@@ -93,7 +93,6 @@ public class PrimitiveLongMultimap implements Serializable {
         return primitiveMultimap.keySet();
     }
 
-
     /**
      * Stores a key-value pair in the primitive multimap.
      *
@@ -118,7 +117,6 @@ public class PrimitiveLongMultimap implements Serializable {
     public int size() {
         return totalSize;
     }
-
 
     /**
      * Removes the mapping for the specified key from this primitive multimap if present.

@@ -146,12 +146,38 @@ public class RF2ModuleGraph {
         return earliestEffectiveTime;
     }
 
-    public long getLatestEffectiveTime(long moduleId) {
-        long latestEffectiveTIme = Long.MIN_VALUE;
+    public long getEarliestDependency(long sourceModuleId, long targetModuleId) {
+        long earliestEffectiveTime = Long.MAX_VALUE;
         for (Entry<Long, PrimitiveLongMultimap> entry : moduleDependenciesPerEffectiveTime.entrySet()) {
             final Long effectiveTime = entry.getKey();
             final PrimitiveLongMultimap dependencies = entry.getValue();
-            if ((dependencies.containsKey(moduleId) || dependencies.containsValue(moduleId)) && effectiveTime < latestEffectiveTIme) {
+            if (dependencies.containsEntry(sourceModuleId, targetModuleId) && effectiveTime < earliestEffectiveTime) {
+                earliestEffectiveTime = effectiveTime;
+            }
+        }
+
+        return earliestEffectiveTime;
+    }
+
+    public long getLatestDependency(long sourceModuleId, long targetModuleId) {
+        long latestEffectiveTIme = Long.MAX_VALUE;
+        for (Entry<Long, PrimitiveLongMultimap> entry : moduleDependenciesPerEffectiveTime.entrySet()) {
+            final Long effectiveTime = entry.getKey();
+            final PrimitiveLongMultimap dependencies = entry.getValue();
+            if (dependencies.containsEntry(sourceModuleId, targetModuleId) && effectiveTime > latestEffectiveTIme) {
+                latestEffectiveTIme = effectiveTime;
+            }
+        }
+
+        return latestEffectiveTIme;
+    }
+
+    public long getLatestEffectiveTime(long moduleId) {
+        long latestEffectiveTIme = Long.MAX_VALUE;
+        for (Entry<Long, PrimitiveLongMultimap> entry : moduleDependenciesPerEffectiveTime.entrySet()) {
+            final Long effectiveTime = entry.getKey();
+            final PrimitiveLongMultimap dependencies = entry.getValue();
+            if ((dependencies.containsKey(moduleId) || dependencies.containsValue(moduleId)) && effectiveTime > latestEffectiveTIme) {
                 latestEffectiveTIme = effectiveTime;
             }
         }

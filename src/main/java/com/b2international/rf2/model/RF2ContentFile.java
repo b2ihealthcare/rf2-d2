@@ -319,9 +319,9 @@ public final class RF2ContentFile extends RF2File {
                                 final PrimitiveLongMultimap moduleDependenciesForEffectiveTime = moduleGraph.getGraphForEffectiveTime(effectiveTime);
                                 final LongSet dependencies = moduleDependenciesForEffectiveTime.get(sourceModuleId);
                                 if (dependencies.contains(targetModuleId)) {
-                                    final long latestEffectiveTime = moduleGraph.getLatestEffectiveTime(sourceModuleId);
-                                    final long earliestEffectiveTime = moduleGraph.getEarliestEffectiveTime(targetModuleId);
-                                    tryFixEffectiveTime(rawLine ,context, sourceEffectiveTime, targetEffectiveTime, latestEffectiveTime, earliestEffectiveTime);
+                                    final long latestEffectiveTime = moduleGraph.getLatestDependency(sourceModuleId, targetModuleId);
+                                    final long earliestEffectiveTime = moduleGraph.getEarliestDependency(sourceModuleId, targetModuleId);
+                                    tryFixEffectiveTime(rawLine, context, sourceEffectiveTime, targetEffectiveTime, latestEffectiveTime, earliestEffectiveTime);
                                     writer.write(rawLine);
                                     // this will increase the number of copied lines by 1
                                     copiedLinesPerFile.merge(file.getPath().toString(), 1, Integer::sum);
@@ -360,8 +360,8 @@ public final class RF2ContentFile extends RF2File {
                                 final long targetEffectiveTime = Long.parseLong(line[7]);
                                 final LongSet calculatedTargetModuleIds = moduleGraph.get(sourceModuleId);
                                 if (calculatedTargetModuleIds.contains(targetModuleId)) {
-                                    final long latestEffectiveTime = moduleGraph.getLatestEffectiveTime(sourceModuleId);
-                                    final long earliestEffectiveTime = moduleGraph.getEarliestEffectiveTime(targetModuleId);
+                                    final long latestEffectiveTime = moduleGraph.getLatestDependency(sourceModuleId, targetModuleId);
+                                    final long earliestEffectiveTime = moduleGraph.getEarliestDependency(sourceModuleId, targetModuleId);
                                     tryFixEffectiveTime(rawLine, context, sourceEffectiveTime, targetEffectiveTime, latestEffectiveTime, earliestEffectiveTime);
                                     writer.write(rawLine);
                                 } else {
@@ -401,8 +401,8 @@ public final class RF2ContentFile extends RF2File {
                                 final long targetEffectiveTime = Long.parseLong(line[7]);
                                 final LongSet calculatedTargetModuleIds = moduleGraph.get(sourceModuleId);
                                 if (calculatedTargetModuleIds.contains(targetModuleId)) {
-                                    final long latestEffectiveTime = moduleGraph.getLatestEffectiveTime(sourceModuleId);
-                                    final long earliestEffectiveTime = moduleGraph.getEarliestEffectiveTime(targetModuleId);
+                                    final long latestEffectiveTime = moduleGraph.getLatestDependency(sourceModuleId, targetModuleId);
+                                    final long earliestEffectiveTime = moduleGraph.getEarliestDependency(sourceModuleId, targetModuleId);
                                     tryFixEffectiveTime(newLine, context, sourceEffectiveTime, targetEffectiveTime, latestEffectiveTime, earliestEffectiveTime);
                                     copiedLinesPerFile.merge(file.getPath().toString(), 1, Integer::sum);
                                     writer.write(newLine);
@@ -429,31 +429,31 @@ public final class RF2ContentFile extends RF2File {
     }
 
     private void tryFixEffectiveTime(String newLine, RF2CreateContext context, long sourceEffectiveTime, long targetEffectiveTime, long latestEffectiveTime, long earliestEffectiveTime) {
+        final String oldLine = newLine;
         if (latestEffectiveTime >= earliestEffectiveTime) {
             if (latestEffectiveTime != sourceEffectiveTime) {
                 // change source effectiveTime to latest
                 newLine.replaceAll(Long.toString(sourceEffectiveTime), Long.toString(latestEffectiveTime));
-                context.log("Changed source effective time from '%s' to '%s' for line: %s", sourceEffectiveTime, latestEffectiveTime, newLine);
+                context.log("Changed source effective time from '%s' to '%s' for line: %s", sourceEffectiveTime, latestEffectiveTime, oldLine);
             }
 
             if (earliestEffectiveTime != targetEffectiveTime) {
                 // change target effectiveTime to earliest
                 newLine.replaceAll(Long.toString(targetEffectiveTime), Long.toString(earliestEffectiveTime));
-                context.log("Changed target effective time from '%s' to '%s' for line: %s", targetEffectiveTime, earliestEffectiveTime, newLine);
+                context.log("Changed target effective time from '%s' to '%s' for line: %s", targetEffectiveTime, earliestEffectiveTime, oldLine);
             }
         }
     }
 
     private String buildModuleDependencyLine(RF2ModuleGraph moduleGraph, String effectiveTime, long sourceModuleId, long targetModuleId) {
-        // id, effectiveTime, active, moduleId, refsetId, referencedComponentId, sourceEffectiveTime, targetEffectiveTime
         final String id = UUID.randomUUID().toString();
         final boolean active = true;
-        final String refsetId = Constants.MODULE_DEPENDENCY_REFSET_ID;
+        final String refSetId = Constants.MODULE_DEPENDENCY_REFSET_ID;
         final String referencedComponentId = String.valueOf(targetModuleId);
         final String sourceEffectiveTime = String.valueOf(moduleGraph.getLatestEffectiveTime(sourceModuleId));
         final String targetEffectiveTime = String.valueOf(moduleGraph.getEarliestEffectiveTime(targetModuleId));
 
-        return String.format("%s%s", String.join(TAB, id, String.valueOf(active), effectiveTime, refsetId, referencedComponentId, sourceEffectiveTime, targetEffectiveTime), CRLF);
+        return String.format("%s%s", String.join(TAB, id, String.valueOf(active), effectiveTime, refSetId, referencedComponentId, sourceEffectiveTime, targetEffectiveTime), CRLF);
     }
 
     private void collectModuleDependencies(String[] line, RF2CreateContext context) {
