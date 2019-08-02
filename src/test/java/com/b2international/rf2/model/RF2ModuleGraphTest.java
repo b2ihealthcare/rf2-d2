@@ -15,7 +15,6 @@
  */
 package com.b2international.rf2.model;
 
-import com.b2international.rf2.module.PrimitiveLongMultimap;
 import com.b2international.rf2.module.RF2ModuleGraph;
 import com.b2international.rf2.naming.file.RF2ContentType;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -50,8 +49,6 @@ public class RF2ModuleGraphTest {
             moduleGraph.add(line, Set.of(line[4]), RF2ContentType.CONCEPT.getContentType());
         }
 
-        final PrimitiveLongMultimap moduleDependencies = moduleGraph.getModuleDependencies();
-
         final LongSet expectedModule2Dependencies = new LongOpenHashSet();
         expectedModule2Dependencies.add(5);
         expectedModule2Dependencies.add(8);
@@ -62,9 +59,9 @@ public class RF2ModuleGraphTest {
         final LongSet expectedModule8Dependencies = new LongOpenHashSet();
         expectedModule8Dependencies.add(5);
 
-        assertThat(moduleDependencies.get(Long.parseLong(module2))).isEqualTo(expectedModule2Dependencies);
-        assertThat(moduleDependencies.get(Long.parseLong(module5))).isEqualTo(expectedModule5Dependencies);
-        assertThat(moduleDependencies.get(Long.parseLong(module8))).isEqualTo(expectedModule8Dependencies);
+        assertThat(moduleGraph.get(Long.parseLong(module2))).isEqualTo(expectedModule2Dependencies);
+        assertThat(moduleGraph.get(Long.parseLong(module5))).isEqualTo(expectedModule5Dependencies);
+        assertThat(moduleGraph.get(Long.parseLong(module8))).isEqualTo(expectedModule8Dependencies);
     }
 
 }
