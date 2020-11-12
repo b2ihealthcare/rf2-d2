@@ -29,6 +29,7 @@ import java.util.function.Predicate;
 
 import com.b2international.rf2.RF2CreateContext;
 import com.b2international.rf2.RF2TransformContext;
+import com.b2international.rf2.console.Console;
 import com.b2international.rf2.naming.RF2DirectoryName;
 import com.b2international.rf2.naming.RF2ReleaseName;
 import com.b2international.rf2.spec.RF2ContentFileSpecification;
@@ -155,6 +156,10 @@ public final class RF2Release extends RF2File {
 				}
 			}
 		});
+	}
+	
+	@Override
+	public void diff(RF2File other, Console console) throws IOException {
 	}
 
 }

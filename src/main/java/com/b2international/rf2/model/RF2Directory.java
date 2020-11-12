@@ -22,6 +22,7 @@ import java.util.function.Consumer;
 
 import com.b2international.rf2.RF2CreateContext;
 import com.b2international.rf2.RF2TransformContext;
+import com.b2international.rf2.console.Console;
 import com.b2international.rf2.naming.RF2FileName;
 import com.b2international.rf2.spec.RF2Specification;
 
@@ -51,7 +52,7 @@ public final class RF2Directory extends RF2File {
 			}
 		});
 	}
-
+	
 	@Override
 	public String getType() {
 		return "Directory";
@@ -80,6 +81,10 @@ public final class RF2Directory extends RF2File {
 				}
 			}
 		});
+	}
+	
+	@Override
+	public void diff(RF2File other, Console console) throws IOException {
 	}
 
 }

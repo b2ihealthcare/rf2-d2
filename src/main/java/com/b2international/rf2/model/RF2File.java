@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 import com.b2international.rf2.RF2CreateContext;
 import com.b2international.rf2.RF2TransformContext;
 import com.b2international.rf2.check.RF2IssueAcceptor;
+import com.b2international.rf2.console.Console;
 import com.b2international.rf2.naming.RF2FileName;
 
 /**
@@ -108,6 +109,16 @@ public abstract class RF2File {
 	 * @throws IOException
 	 */
 	public abstract void transform(RF2TransformContext context) throws IOException;
+	
+	/**
+	 * Compare this {@link RF2File} against the given other {@link RF2File} and print the differences to the console. Prints nothing if there are no differences.
+	 * 
+	 * @param other
+	 * @param console
+	 * @throws IOException 
+	 * @since 0.4
+	 */
+	public abstract void diff(RF2File other, Console console) throws IOException;
 
 	/**
 	 * @return the type (or category) of this {@link RF2File}.

@@ -22,6 +22,7 @@ import java.util.function.Consumer;
 
 import com.b2international.rf2.RF2CreateContext;
 import com.b2international.rf2.RF2TransformContext;
+import com.b2international.rf2.console.Console;
 import com.b2international.rf2.naming.RF2FileName;
 
 /**
@@ -56,6 +57,11 @@ public final class RF2UnrecognizedFile extends RF2File {
 	@Override
 	public String getType() {
 		return "Unrecognized";
+	}
+	
+	@Override
+	public void diff(RF2File other, Console console) throws IOException {
+		
 	}
 	
 }

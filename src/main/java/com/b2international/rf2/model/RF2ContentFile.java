@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -35,6 +37,7 @@ import java.util.stream.Stream;
 import com.b2international.rf2.RF2CreateContext;
 import com.b2international.rf2.RF2TransformContext;
 import com.b2international.rf2.check.RF2IssueAcceptor;
+import com.b2international.rf2.console.Console;
 import com.b2international.rf2.naming.RF2ContentFileName;
 import com.b2international.rf2.naming.RF2FileName;
 import com.b2international.rf2.naming.file.RF2ContentSubType;
@@ -43,6 +46,8 @@ import com.b2international.rf2.naming.file.RF2VersionDate;
 import com.b2international.rf2.spec.RF2ContentFileSpecification;
 import com.b2international.rf2.spec.RF2Filter;
 import com.b2international.rf2.validation.RF2ColumnValidator;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
@@ -58,7 +63,12 @@ import groovy.lang.Script;
  */
 public final class RF2ContentFile extends RF2File {
 
-    private final RF2ContentFileSpecification specification;
+    private static final Comparator<? super String[]> ROW_COMPARATOR = (left, right) -> ComparisonChain.start()
+        		.compare(left[1], right[1]) // effectiveTime first
+        		.compare(left[0], right[0]) // ID second
+        		.result();
+    
+	private final RF2ContentFileSpecification specification;
     private String[] header;
 
     public RF2ContentFile(Path parent, RF2ContentFileName fileName, RF2ContentFileSpecification specification) {
@@ -76,8 +86,8 @@ public final class RF2ContentFile extends RF2File {
         if (!path.toString().endsWith(TXT) || !Files.exists(path)) {
             return null;
         }
-        try {
-            return Files.lines(path).findFirst().orElse("N/A").split(TAB);
+        try (Stream<String> line = Files.lines(path)) {
+            return line.findFirst().orElse("N/A").split(TAB);
         } catch (IOException e) {
             throw new RuntimeException("Couldn't extract RF2 file header from path: " + path, e);
         }
@@ -260,6 +270,60 @@ public final class RF2ContentFile extends RF2File {
 	        }    		
     	});
     }
+    
+    @Override
+    public void diff(RF2File other, Console console) throws IOException {
+    	Preconditions.checkArgument(other instanceof RF2ContentFile, "Cannot compare non-content RF2 file '%s' with '%s'", other.getPath(), getPath());
+    	RF2ContentFile otherContentFile = (RF2ContentFile) other;
+    	Preconditions.checkArgument(Arrays.equals(getHeader(), otherContentFile.getHeader()), "Cannot compare content files with different headers: '%s' vs '%s'", getHeader(), otherContentFile.getHeader());
+    	Iterator<String[]> compareRows = sortedRows().iterator();
+    	Iterator<String[]> baseRows = otherContentFile.sortedRows().iterator();
+
+    	// since both streams are sorted, we can compare them line by line by iterating over both at the same time
+    	String[] compareRow = compareRows.hasNext() ? compareRows.next() : null;
+    	String[] baseRow = baseRows.hasNext() ? baseRows.next() : null;
+    	while (compareRow != null && baseRow != null) {
+    		if (!Arrays.equals(compareRow, baseRow)) {
+    			// not equal lines
+    			int compare = ROW_COMPARATOR.compare(compareRow, baseRow);
+    			if (compare == 0) {
+    				// same ID, effectiveTime, but different value somewhere, register both as +/-
+    				console.log("-%s", line(baseRow));
+    				console.log("+%s", line(compareRow));
+    			} else if (compare < 0) {
+    				// compare is earlier than base, compare values are missing from base
+    				console.log("+%s", line(compareRow));
+    				compareRow = compareRows.hasNext() ? compareRows.next() : null;
+    			} else {
+    				// compare is later than base, base values are missing from compare, proceed in base
+    				console.log("-%s", line(baseRow));
+    				baseRow = baseRows.hasNext() ? baseRows.next() : null;
+    			}
+    		} else {
+    			// proceed in both streams
+    			baseRow = baseRows.hasNext() ? baseRows.next() : null;
+    			compareRow = compareRows.hasNext() ? compareRows.next() : null;
+    		}
+    	}
+
+    	// if there are items in either of the streams, then register them as +/-
+    	if (baseRow != null) {
+    		console.log("-%s", line(baseRow));
+    		while (baseRows.hasNext()) {
+    			baseRow = baseRows.next();
+    			console.log("-%s", line(baseRow));
+    		}
+    	}
+
+    	if (compareRow != null) {
+    		console.log("+%s", line(compareRow));
+    		while (compareRows.hasNext()) {
+    			compareRow = compareRows.next();
+    			console.log("+%s", line(compareRow));
+    		}
+    	}
+
+    }
 
     private void createDataFile(RF2CreateContext context) throws IOException {
         final RF2ContentSubType releaseType = getRF2FileName().getElement(RF2ContentSubType.class).orElse(null);
@@ -421,10 +485,14 @@ public final class RF2ContentFile extends RF2File {
     }
 
     private String newLine(String[] values) {
-        return String.format("%s%s", String.join(TAB, values), CRLF);
+        return line(values).concat(CRLF);
     }
 
-    /**
+    private String line(String[] values) {
+		return String.join(TAB, values);
+	}
+
+	/**
      * @return the current RF2 header by reading the first line of the file or if this is a non-existing file returns the header from the spec for kind of RF2 files
      */
     public final String[] getHeader() {
@@ -455,6 +523,19 @@ public final class RF2ContentFile extends RF2File {
         return Files.lines(getPath())
                 .skip(1)
                 .map(line -> line.split(TAB, -1));
+    }
+    
+    /**
+	 * NOTE: this method does not read the entire source file into memory just by calling it, but when starting a terminal operation on the returned
+	 * Stream, due to the sort's nature, it will load the entire file content into memory which might cause memory issues on certain environment or
+	 * scenarios.
+	 * 
+	 * @return the actual raw data from this RF2 content file without header and each line converted into String[] objects in a sequential stream
+	 *         sorted by effectiveTime then by ID.
+	 * @throws IOException
+	 */
+    public final Stream<String[]> sortedRows() throws IOException {
+    	return rows().sorted(ROW_COMPARATOR);
     }
 
     /**
