@@ -29,22 +29,22 @@ public abstract class DelegatingConsole implements Console {
 	}
 	
 	@Override
-	public final void warn(String message, Object... args) {
+	public void warn(String message, Object... args) {
 		console.warn(message, args);
 	}
 
 	@Override
-	public final void error(String message, Object... args) {
+	public void error(String message, Object... args) {
 		console.error(message, args);
 	}
 
 	@Override
-	public final void log(String message, Object... args) {
+	public void log(String message, Object... args) {
 		console.log(message, args);
 	}
 
 	@Override
-	public final Console withIndentation(int indentation) {
+	public Console withIndentation(int indentation) {
 		return console.withIndentation(indentation);
 	}
 
@@ -54,7 +54,7 @@ public abstract class DelegatingConsole implements Console {
 	}
 	
 	@Override
-	public final Console withPrefix(String linePrefix) {
+	public Console withPrefix(String linePrefix) {
 		return console.withPrefix(linePrefix);
 	}
 	
