@@ -30,7 +30,7 @@ import com.b2international.rf2.spec.RF2Specification;
 /**
  * @since 0.1
  */
-public final class RF2CreateContext extends RF2Context{
+public final class RF2CreateContext extends RF2Context {
 
 	private final List<RF2File> sources;
 

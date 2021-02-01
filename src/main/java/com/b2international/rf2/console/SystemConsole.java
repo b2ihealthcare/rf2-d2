@@ -18,6 +18,7 @@ package com.b2international.rf2.console;
 import java.io.PrintStream;
 
 import com.b2international.rf2.Constants;
+import com.google.common.base.Preconditions;
 
 /**
  * @since 0.1
@@ -63,6 +64,16 @@ final class SystemConsole implements Console {
 	@Override
 	public Console withIndentation(int indentation) {
 		return new SystemConsole(indentation, linePrefix);
+	}
+	
+	@Override
+	public Console indent(int indentWith) {
+		Preconditions.checkArgument(indentWith >= 0, "indentWith parameter should be greater than or equal to 0. Got: %s", indentWith);
+		if (indentWith == 0) {
+			return this;
+		} else {
+			return new SystemConsole(this.indentation + indentWith, linePrefix);
+		}
 	}
 	
 	@Override

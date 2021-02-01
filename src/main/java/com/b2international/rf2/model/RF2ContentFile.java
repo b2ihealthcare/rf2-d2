@@ -279,6 +279,10 @@ public final class RF2ContentFile extends RF2File {
     	Iterator<String[]> compareRows = sortedRows().iterator();
     	Iterator<String[]> baseRows = otherContentFile.sortedRows().iterator();
 
+    	console.log("%s -> %s", getRF2FileName(), other.getRF2FileName());
+    	
+    	Console rowConsole = console.indent(2);
+    	
     	// since both streams are sorted, we can compare them line by line by iterating over both at the same time
     	String[] compareRow = compareRows.hasNext() ? compareRows.next() : null;
     	String[] baseRow = baseRows.hasNext() ? baseRows.next() : null;
@@ -288,15 +292,17 @@ public final class RF2ContentFile extends RF2File {
     			int compare = ROW_COMPARATOR.compare(compareRow, baseRow);
     			if (compare == 0) {
     				// same ID, effectiveTime, but different value somewhere, register both as +/-
-    				console.log("-%s", line(baseRow));
-    				console.log("+%s", line(compareRow));
+    				rowConsole.log("-%s", line(baseRow));
+    				rowConsole.log("+%s", line(compareRow));
+    				baseRow = baseRows.hasNext() ? baseRows.next() : null;
+        			compareRow = compareRows.hasNext() ? compareRows.next() : null;
     			} else if (compare < 0) {
     				// compare is earlier than base, compare values are missing from base
-    				console.log("+%s", line(compareRow));
+    				rowConsole.log("+%s", line(compareRow));
     				compareRow = compareRows.hasNext() ? compareRows.next() : null;
     			} else {
     				// compare is later than base, base values are missing from compare, proceed in base
-    				console.log("-%s", line(baseRow));
+    				rowConsole.log("-%s", line(baseRow));
     				baseRow = baseRows.hasNext() ? baseRows.next() : null;
     			}
     		} else {
@@ -308,18 +314,18 @@ public final class RF2ContentFile extends RF2File {
 
     	// if there are items in either of the streams, then register them as +/-
     	if (baseRow != null) {
-    		console.log("-%s", line(baseRow));
+    		rowConsole.log("-%s", line(baseRow));
     		while (baseRows.hasNext()) {
     			baseRow = baseRows.next();
-    			console.log("-%s", line(baseRow));
+    			rowConsole.log("-%s", line(baseRow));
     		}
     	}
 
     	if (compareRow != null) {
-    		console.log("+%s", line(compareRow));
+    		rowConsole.log("+%s", line(compareRow));
     		while (compareRows.hasNext()) {
     			compareRow = compareRows.next();
-    			console.log("+%s", line(compareRow));
+    			rowConsole.log("+%s", line(compareRow));
     		}
     	}
 

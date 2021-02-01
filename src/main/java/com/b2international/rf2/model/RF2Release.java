@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,14 @@ import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import com.b2international.rf2.RF2CreateContext;
 import com.b2international.rf2.RF2TransformContext;
@@ -35,6 +38,8 @@ import com.b2international.rf2.naming.RF2ReleaseName;
 import com.b2international.rf2.spec.RF2ContentFileSpecification;
 import com.b2international.rf2.spec.RF2ReleaseSpecification;
 import com.b2international.rf2.spec.RF2Specification;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 0.1 
@@ -57,13 +62,11 @@ public final class RF2Release extends RF2File {
 		visitor.accept(this);
 		try (FileSystem zipfs = openZipfs(false, getPath())) {
 			for (Path root : zipfs.getRootDirectories()) {
-				Files.walk(root, 1).forEach(path -> {
-					if (!RF2Directory.ROOT_PATH.equals(path.toString())) {
-						try {
-							specification.detect(path).visit(visitor);
-						} catch (IOException e) {
-							throw new RuntimeException("Couldn't visit path: " + path, e);
-						}
+				listFiles(root).forEach(path -> {
+					try {
+						specification.detect(path).visit(visitor);
+					} catch (IOException e) {
+						throw new RuntimeException("Couldn't visit path: " + path, e);
 					}
 				});
 			}
@@ -143,13 +146,11 @@ public final class RF2Release extends RF2File {
 				try (FileSystem sourceReleaseZipfs = openZipfs(false, getPath())) {
 					
 					for (Path root : sourceReleaseZipfs.getRootDirectories()) {
-						Files.walk(root, 1).forEach(path -> {
-							if (!RF2Directory.ROOT_PATH.equals(path.toString())) {
-								try {
-									specification.detect(path).transform(context.newSubContext(newReleaseZipfs.getPath(root.toString())));
-								} catch (IOException e) {
-									throw new RuntimeException("Couldn't transform path: " + path, e);
-								}
+						listFiles(root).forEach(path -> {
+							try {
+								specification.detect(path).transform(context.newSubContext(newReleaseZipfs.getPath(root.toString())));
+							} catch (IOException e) {
+								throw new RuntimeException("Couldn't transform path: " + path, e);
 							}
 						});
 					}
@@ -160,6 +161,21 @@ public final class RF2Release extends RF2File {
 	
 	@Override
 	public void diff(RF2File other, Console console) throws IOException {
+		Preconditions.checkArgument(other instanceof RF2Release, "RF2 Release '%s' cannot be compared with file: '%s'", getRF2FileName(), other.getRF2FileName());
+		console.log("%s -> %s", getRF2FileName(), other.getRF2FileName());
+		try (FileSystem compareZipfs = openZipfs(false, getPath())) {
+			try (FileSystem baseZipfs = openZipfs(false, other.getPath())) {
+				Path compareRoot = Iterables.getOnlyElement(compareZipfs.getRootDirectories());
+				Path baseRoot = Iterables.getOnlyElement(baseZipfs.getRootDirectories());
+				Path compareFile = listFiles(compareRoot).findFirst().get();
+				Path baseFile = listFiles(baseRoot).findFirst().get();
+				specification.detect(compareFile).diff(specification.detect(baseFile), console.indent(2));
+			}
+		}
+	}
+
+	private Stream<Path> listFiles(Path root) throws IOException {
+		return Files.walk(root, 1).filter(path -> !RF2Directory.ROOT_PATH.equals(path.toString())).sorted();
 	}
 
 }
