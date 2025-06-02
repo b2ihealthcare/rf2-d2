@@ -47,8 +47,8 @@ Run the following command to get help about a specific command:
     ./rf2 help check
 
 You can add the `rf2-d2-<version>/bin` folder to your PATH, so it will be available globally and can be invoked with command `rf2`.
-Head over to the [docs](https://docs.b2i.sg/rf2-d2) to learn more about what is possible with RF2-D2.
-If you have questions or feedback, feel free to create an issue [here](https://github.com/b2ihealthcare/rf2-d2/issues/new) or [contact us](mailto:info@b2i.sg).
+Head over to the [docs](https://docs.b2ihealthcare.com/rf2-d2) to learn more about what is possible with RF2-D2.
+If you have questions or feedback, feel free to create an issue [here](https://github.com/b2ihealthcare/rf2-d2/issues/new) or [contact us](mailto:info@b2ihealthcare.com).
 
 # Building from source
 
